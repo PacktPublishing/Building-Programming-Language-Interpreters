@@ -3,6 +3,7 @@ find_package(GTest REQUIRED)
 foreach(
     TEST
     001-empty
+    002-interpreter-state
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

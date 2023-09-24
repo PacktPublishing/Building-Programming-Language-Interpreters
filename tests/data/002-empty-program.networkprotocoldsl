@@ -1,0 +1,5 @@
+message "Server Automatically Closes" { 
+    sender: Server; 
+    when: Connected; 
+    then: Closed; 
+}

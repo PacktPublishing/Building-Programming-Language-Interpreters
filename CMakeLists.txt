@@ -9,6 +9,10 @@ add_library(
 
     src/networkprotocoldsl/entrypoint.cpp
     src/networkprotocoldsl/entrypoint.hpp
+    src/networkprotocoldsl/interpretedprogram.hpp
+    src/networkprotocoldsl/interpretedprogram.cpp
+    src/networkprotocoldsl/interpreter.hpp
+    src/networkprotocoldsl/interpreter.cpp
 )
 
 target_include_directories(
