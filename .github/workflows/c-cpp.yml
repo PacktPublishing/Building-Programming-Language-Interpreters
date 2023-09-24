@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: build-depends
+      run: sudo apt-get -y install libgtest-dev build-essential cmake libgtest-dev
+    - name: configure
+      run: mkdir build && cd build && cmake ../
+    - name: make
+      run: make -C build/
+    - name: make test
+      run: make -C build/ test
