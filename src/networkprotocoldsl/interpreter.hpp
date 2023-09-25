@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <memory>
+#include <stack>
 
 namespace networkprotocoldsl {
 
@@ -67,21 +68,21 @@ public:
  * running.
  */
 class Continuation {
-  std::vector<ExecutionStackFrame> stack;
+  std::stack<ExecutionStackFrame> stack;
   std::optional<Value> result;
 
 public:
-  Continuation(const OpTreeNode &o) { stack.push_back(ExecutionStackFrame(o)); }
+  Continuation(const OpTreeNode &o) { stack.push(ExecutionStackFrame(o)); }
 
   bool step() {
     if (stack.size()) {
-      while (!stack.back().is_ready()) {
-        stack.push_back(stack.back().next_op());
+      while (!stack.top().is_ready()) {
+        stack.push(stack.top().next_op());
       }
-      result = stack.back().execute();
-      stack.pop_back();
+      result = stack.top().execute();
+      stack.pop();
       if (stack.size()) {
-        stack.back().push_back(*result);
+        stack.top().push_back(*result);
         return true;
       } else {
         return false;
