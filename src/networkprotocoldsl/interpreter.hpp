@@ -17,10 +17,10 @@ namespace networkprotocoldsl {
 enum class ExecutionStackFrameState {
   MissingArguments,
   WaitingForCallback,
+  WaitingCallbackData,
   Ready,
   Exited
 };
-
 
 /**
  * The execution frame points to a specific operation and the
@@ -37,7 +37,8 @@ class ExecutionStackFrame {
     return std::make_tuple(v[Indices]...);
   }
 
-  template <OperationConcept O> ExecutionStackFrameState is_specific_operation_ready(const O &o) {
+  template <OperationConcept O>
+  ExecutionStackFrameState is_specific_operation_ready(const O &o) {
     if (accumulator.size() < std::tuple_size<typename O::Arguments>::value) {
       return ExecutionStackFrameState::MissingArguments;
     } else {
@@ -88,7 +89,8 @@ public:
 
   ExecutionStackFrameState step() {
     if (stack.size()) {
-      while (stack.top().is_ready() == ExecutionStackFrameState::MissingArguments) {
+      while (stack.top().is_ready() ==
+             ExecutionStackFrameState::MissingArguments) {
         stack.push(stack.top().next_op());
       }
       result = stack.top().execute();
