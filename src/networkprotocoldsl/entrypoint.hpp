@@ -1,8 +1,6 @@
 #ifndef NETWORKPROTOCOLDSL_ENTRYPOINT_HPP
 #define NETWORKPROTOCOLDSL_ENTRYPOINT_HPP
 
-namespace networkprotocoldsl {
-
-};
+namespace networkprotocoldsl {};
 
 #endif // NETWORKPROTOCOLDSL_ENTRYPOINT_HPP
