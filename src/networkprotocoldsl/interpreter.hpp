@@ -18,8 +18,6 @@ class ExecutionStackFrame {
   const OpTreeNode &optreenode;
   std::vector<Value> accumulator;
 
-  template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-
   template <std::size_t... Indices>
   auto make_argument_tuple(const std::vector<Value> &v,
                            std::index_sequence<Indices...>) {
@@ -46,16 +44,13 @@ public:
 
   bool is_ready() {
     return std::visit(
-        overloaded{
-            [this](auto &o) { return is_specific_operation_ready(o); },
-        },
+        [this](auto &o) { return is_specific_operation_ready(o); },
         optreenode.operation);
   }
 
   Value execute() {
-    return std::visit(
-        overloaded{[this](auto &o) { return execute_specific_operation(o); }},
-        optreenode.operation);
+    return std::visit([this](auto &o) { return execute_specific_operation(o); },
+                      optreenode.operation);
   }
 
   void push_back(Value v) { accumulator.push_back(v); }
