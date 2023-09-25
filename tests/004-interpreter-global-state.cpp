@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(operations, literal) {
+TEST(interpreter_global_state, iterate) {
   using namespace networkprotocoldsl;
 
   operation::Int32Literal il1(10);
@@ -17,16 +17,16 @@ TEST(operations, literal) {
   Interpreter i2 = p.get_instance();
   ASSERT_FALSE(i1.get_result().has_value());
   ASSERT_FALSE(i2.get_result().has_value());
-  ASSERT_TRUE(i1.step());
-  ASSERT_TRUE(i2.step());
+  ASSERT_EQ(ExecutionStackFrameState::MissingArguments, i1.step());
+  ASSERT_EQ(ExecutionStackFrameState::MissingArguments, i2.step());
   ASSERT_EQ(Value(10), *(i1.get_result()));
   ASSERT_EQ(Value(10), *(i2.get_result()));
-  ASSERT_TRUE(i1.step());
-  ASSERT_TRUE(i2.step());
+  ASSERT_EQ(ExecutionStackFrameState::Ready, i1.step());
+  ASSERT_EQ(ExecutionStackFrameState::Ready, i2.step());
   ASSERT_EQ(Value(20), *(i1.get_result()));
   ASSERT_EQ(Value(20), *(i2.get_result()));
-  ASSERT_FALSE(i1.step());
-  ASSERT_FALSE(i2.step());
+  ASSERT_EQ(ExecutionStackFrameState::Exited, i1.step());
+  ASSERT_EQ(ExecutionStackFrameState::Exited, i2.step());
   ASSERT_EQ(Value(30), *(i1.get_result()));
   ASSERT_EQ(Value(30), *(i2.get_result()));
 }

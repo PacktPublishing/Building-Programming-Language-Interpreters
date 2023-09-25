@@ -11,6 +11,18 @@
 namespace networkprotocoldsl {
 
 /**
+ * Represents the state of the execution consider external factors,
+ * such as waiting for a callback to be evaluated.
+ */
+enum class ExecutionStackFrameState {
+  MissingArguments,
+  WaitingForCallback,
+  Ready,
+  Exited
+};
+
+
+/**
  * The execution frame points to a specific operation and the
  * accumulation of inputs for that operation. The actual operation can
  * only happen when the right number of inputs has been provided.
@@ -25,11 +37,11 @@ class ExecutionStackFrame {
     return std::make_tuple(v[Indices]...);
   }
 
-  template <OperationConcept O> bool is_specific_operation_ready(const O &o) {
+  template <OperationConcept O> ExecutionStackFrameState is_specific_operation_ready(const O &o) {
     if (accumulator.size() < std::tuple_size<typename O::Arguments>::value) {
-      return false;
+      return ExecutionStackFrameState::MissingArguments;
     } else {
-      return true;
+      return ExecutionStackFrameState::Ready;
     }
   }
 
@@ -43,7 +55,7 @@ class ExecutionStackFrame {
 public:
   ExecutionStackFrame(const OpTreeNode &o) : optreenode(o) {}
 
-  bool is_ready() {
+  ExecutionStackFrameState is_ready() {
     return std::visit(
         [this](auto &o) { return is_specific_operation_ready(o); },
         optreenode.operation);
@@ -57,7 +69,7 @@ public:
   void push_back(Value v) { accumulator.push_back(v); }
 
   const OpTreeNode &next_op() {
-    assert(!is_ready());
+    assert(is_ready() == ExecutionStackFrameState::MissingArguments);
     return optreenode.children[accumulator.size()];
   }
 };
@@ -74,21 +86,21 @@ class Continuation {
 public:
   Continuation(const OpTreeNode &o) { stack.push(ExecutionStackFrame(o)); }
 
-  bool step() {
+  ExecutionStackFrameState step() {
     if (stack.size()) {
-      while (!stack.top().is_ready()) {
+      while (stack.top().is_ready() == ExecutionStackFrameState::MissingArguments) {
         stack.push(stack.top().next_op());
       }
       result = stack.top().execute();
       stack.pop();
       if (stack.size()) {
         stack.top().push_back(*result);
-        return true;
+        return stack.top().is_ready();
       } else {
-        return false;
+        return ExecutionStackFrameState::Exited;
       }
     } else {
-      return false;
+      return ExecutionStackFrameState::Exited;
     }
   }
 
@@ -115,7 +127,7 @@ public:
   Interpreter(std::shared_ptr<const OpTree> o)
       : optree(o), continuation(o->root){};
 
-  bool step() { return continuation.step(); }
+  ExecutionStackFrameState step() { return continuation.step(); }
 
   std::optional<Value> get_result() { return continuation.get_result(); }
 };
