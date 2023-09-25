@@ -30,6 +30,8 @@ enum class ExecutionStackFrameState {
 class ExecutionStackFrame {
   const OpTreeNode &optreenode;
   std::vector<Value> accumulator;
+  std::optional<std::string> callback_key;
+  bool callback_called = false;
 
   template <std::size_t... Indices>
   auto make_argument_tuple(const std::vector<Value> &v,
@@ -42,7 +44,16 @@ class ExecutionStackFrame {
     if (accumulator.size() < std::tuple_size<typename O::Arguments>::value) {
       return ExecutionStackFrameState::MissingArguments;
     } else {
-      return ExecutionStackFrameState::Ready;
+      callback_key = o.callback_key();
+      if (callback_key.has_value()) {
+        if (callback_called) {
+          return ExecutionStackFrameState::WaitingCallbackData;
+        } else {
+          return ExecutionStackFrameState::WaitingForCallback;
+        }
+      } else {
+        return ExecutionStackFrameState::Ready;
+      }
     }
   }
 
@@ -50,6 +61,7 @@ class ExecutionStackFrame {
     typename O::Arguments args(make_argument_tuple(
         accumulator, std::make_index_sequence<
                          std::tuple_size<typename O::Arguments>::value>()));
+    assert(!callback_key.has_value());
     return o(args);
   }
 
@@ -73,6 +85,10 @@ public:
     assert(is_ready() == ExecutionStackFrameState::MissingArguments);
     return optreenode.children[accumulator.size()];
   }
+
+  std::optional<std::string> get_callback_key() { return callback_key; }
+
+  void set_callback_called() { callback_called = true; }
 };
 
 /**
@@ -89,17 +105,22 @@ public:
 
   ExecutionStackFrameState step() {
     if (stack.size()) {
-      while (stack.top().is_ready() ==
+      ExecutionStackFrameState state;
+      while ((state = stack.top().is_ready()) ==
              ExecutionStackFrameState::MissingArguments) {
         stack.push(stack.top().next_op());
       }
-      result = stack.top().execute();
-      stack.pop();
-      if (stack.size()) {
-        stack.top().push_back(*result);
-        return stack.top().is_ready();
+      if (state == ExecutionStackFrameState::Ready) {
+        result = stack.top().execute();
+        stack.pop();
+        if (stack.size()) {
+          stack.top().push_back(*result);
+          return stack.top().is_ready();
+        } else {
+          return ExecutionStackFrameState::Exited;
+        }
       } else {
-        return ExecutionStackFrameState::Exited;
+        return state;
       }
     } else {
       return ExecutionStackFrameState::Exited;
@@ -107,6 +128,26 @@ public:
   }
 
   std::optional<Value> get_result() { return result; }
+
+  std::optional<std::string> get_callback_key() {
+    assert(stack.size() > 0);
+    return stack.top().get_callback_key();
+  }
+
+  void set_callback_called() {
+    assert(stack.size() > 0);
+    stack.top().set_callback_called();
+  }
+
+  void set_callback_return(Value v) {
+    assert(stack.size() > 0);
+    assert(stack.top().get_callback_key().has_value());
+    result = v;
+    stack.pop();
+    if (stack.size()) {
+      stack.top().push_back(v);
+    }
+  }
 };
 
 /***
@@ -132,6 +173,14 @@ public:
   ExecutionStackFrameState step() { return continuation.step(); }
 
   std::optional<Value> get_result() { return continuation.get_result(); }
+
+  std::optional<std::string> get_callback_key() {
+    return continuation.get_callback_key();
+  }
+
+  void set_callback_called() { continuation.set_callback_called(); }
+
+  void set_callback_return(Value v) { continuation.set_callback_return(v); }
 };
 
 } // namespace networkprotocoldsl

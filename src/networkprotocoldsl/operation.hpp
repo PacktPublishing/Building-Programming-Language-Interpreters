@@ -4,6 +4,8 @@
 #include <networkprotocoldsl/value.hpp>
 
 #include <cstdint>
+#include <optional>
+#include <string>
 #include <tuple>
 #include <variant>
 
@@ -19,6 +21,7 @@ concept OperationConcept = requires(OT op, OT::Arguments args) {
     std::tuple_size<typename OT::Arguments>::value
     } -> std::convertible_to<std::size_t>;
   { op(args) } -> std::convertible_to<Value>;
+  { op.callback_key() } -> std::convertible_to<std::optional<std::string>>;
 };
 
 namespace operation {
@@ -33,6 +36,7 @@ public:
   using Arguments = std::tuple<>;
   Int32Literal(int32_t v) : int32_v(v) {}
   Value operator()(Arguments a) const { return int32_v; }
+  std::optional<std::string> callback_key() const { return std::nullopt; }
 };
 static_assert(OperationConcept<Int32Literal>);
 
@@ -50,8 +54,19 @@ public:
         },
         std::get<0>(a));
   }
+  std::optional<std::string> callback_key() const { return std::nullopt; }
 };
 static_assert(OperationConcept<Add>);
+
+class UnaryCallback {
+  const std::string key;
+
+public:
+  UnaryCallback(std::string c) : key(c) {}
+  using Arguments = std::tuple<Value>;
+  Value operator()(Arguments a) const { return 0; }
+  std::optional<std::string> callback_key() const { return key; }
+};
 
 }; // namespace operation
 
@@ -62,7 +77,8 @@ static_assert(OperationConcept<Add>);
  * operations that may happen in the execution of the interpreted
  * code.
  */
-using Operation = std::variant<operation::Int32Literal, operation::Add>;
+using Operation = std::variant<operation::Int32Literal, operation::Add,
+                               operation::UnaryCallback>;
 
 } // namespace networkprotocoldsl
 
