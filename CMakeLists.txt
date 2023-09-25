@@ -13,6 +13,12 @@ add_library(
     src/networkprotocoldsl/interpretedprogram.cpp
     src/networkprotocoldsl/interpreter.hpp
     src/networkprotocoldsl/interpreter.cpp
+    src/networkprotocoldsl/value.hpp
+    src/networkprotocoldsl/value.cpp
+    src/networkprotocoldsl/operation.hpp
+    src/networkprotocoldsl/operation.cpp
+    src/networkprotocoldsl/optree.hpp
+    src/networkprotocoldsl/optree.cpp
 )
 
 target_include_directories(

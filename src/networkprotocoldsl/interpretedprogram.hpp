@@ -1,9 +1,12 @@
 #ifndef NETWORKPROTOCOLDSL_INTERPRETEDPROGRAM_HPP
 #define NETWORKPROTOCOLDSL_INTERPRETERPROGRAM_HPP
 
+#include <memory>
 #include <string>
 
 #include <networkprotocoldsl/interpreter.hpp>
+#include <networkprotocoldsl/operation.hpp>
+#include <networkprotocoldsl/optree.hpp>
 
 namespace networkprotocoldsl {
 
@@ -17,18 +20,27 @@ namespace networkprotocoldsl {
  */
 class InterpretedProgram {
   std::string source_file;
+  std::shared_ptr<const OpTree> optree;
 
 public:
-  /***
+  /**
    * Parses source code and creates the object that can be used to
    * instantiate interpreters for this specific code.
    */
-  InterpretedProgram(std::string sf) : source_file(sf) {}
+  InterpretedProgram(std::string sf)
+      : source_file(sf), optree(std::make_shared<const OpTree>(
+                             OpTree({operation::Int32Literal(0), {}}))) {}
 
-  /***
+  /**
+   * Skips the parsing and receives an optree instead.
+   */
+  InterpretedProgram(std::shared_ptr<const OpTree> o)
+      : source_file("-"), optree(o) {}
+
+  /**
    * Obtains an instance of an interpreter for this program.
    */
-  Interpreter get_instance() { return Interpreter(); };
+  Interpreter get_instance() { return Interpreter(optree); };
 };
 
 } // namespace networkprotocoldsl

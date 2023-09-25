@@ -4,6 +4,8 @@ foreach(
     TEST
     001-empty
     002-interpreter-state
+    003-literal-and-add-operations
+    004-interpreter-global-state
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(
