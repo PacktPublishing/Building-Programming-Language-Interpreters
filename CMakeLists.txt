@@ -27,6 +27,8 @@ add_library(
     src/networkprotocoldsl/operation/unarycallback.cpp
     src/networkprotocoldsl/operation/readint32native.hpp
     src/networkprotocoldsl/operation/readint32native.cpp
+    src/networkprotocoldsl/operation/writeint32native.hpp
+    src/networkprotocoldsl/operation/writeint32native.cpp
     src/networkprotocoldsl/operation.hpp
     src/networkprotocoldsl/operation.cpp
     src/networkprotocoldsl/operationconcepts.hpp

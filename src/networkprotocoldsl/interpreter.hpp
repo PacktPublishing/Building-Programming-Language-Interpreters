@@ -45,6 +45,16 @@ public:
   }
 
   void set_callback_return(Value v) { continuation.set_callback_return(v); }
+
+  size_t handle_read(std::string_view in) {
+    return continuation.handle_read(in);
+  }
+
+  std::string_view get_write_buffer() {
+    return continuation.get_write_buffer();
+  }
+
+  size_t handle_write(size_t s) { return continuation.handle_write(s); }
 };
 
 } // namespace networkprotocoldsl

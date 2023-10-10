@@ -1,5 +1,5 @@
-#ifndef NETWORKPROTOCOLDSL_OPERATION_READINT32NATIVE_HPP
-#define NETWORKPROTOCOLDSL_OPERATION_READINT32NATIVE_HPP
+#ifndef NETWORKPROTOCOLDSL_OPERATION_WRITEINT32NATIVE_HPP
+#define NETWORKPROTOCOLDSL_OPERATION_WRITEINT32NATIVE_HPP
 
 #include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/value.hpp>
@@ -15,10 +15,10 @@ namespace networkprotocoldsl {
 
 namespace operation {
 
-class ReadInt32Native {
+class WriteInt32Native {
 public:
-  using Arguments = std::tuple<>;
-  ReadInt32Native() {}
+  using Arguments = std::tuple<Value>;
+  WriteInt32Native() {}
 
   OperationResult operator()(InputOutputOperationContext &ctx,
                              Arguments a) const;
@@ -29,7 +29,7 @@ public:
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
 };
-static_assert(InputOutputOperationConcept<ReadInt32Native>);
+static_assert(InputOutputOperationConcept<WriteInt32Native>);
 
 } // namespace operation
 

@@ -41,6 +41,12 @@ public:
   const std::vector<Value> &get_callback_arguments();
 
   void set_callback_return(Value v);
+
+  size_t handle_read(std::string_view in);
+
+  std::string_view get_write_buffer();
+
+  size_t handle_write(size_t s);
 };
 
 } // namespace networkprotocoldsl

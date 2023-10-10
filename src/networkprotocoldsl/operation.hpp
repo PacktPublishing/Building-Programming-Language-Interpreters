@@ -7,6 +7,7 @@
 #include <networkprotocoldsl/operation/int32literal.hpp>
 #include <networkprotocoldsl/operation/readint32native.hpp>
 #include <networkprotocoldsl/operation/unarycallback.hpp>
+#include <networkprotocoldsl/operation/writeint32native.hpp>
 
 namespace networkprotocoldsl {
 
@@ -19,7 +20,8 @@ namespace networkprotocoldsl {
  */
 using Operation =
     std::variant<operation::Int32Literal, operation::Add,
-                 operation::UnaryCallback, operation::ReadInt32Native>;
+                 operation::UnaryCallback, operation::ReadInt32Native,
+                 operation::WriteInt32Native>;
 
 } // namespace networkprotocoldsl
 

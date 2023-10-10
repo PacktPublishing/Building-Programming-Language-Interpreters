@@ -78,6 +78,7 @@ concept CallbackOperationConcept = requires(OT op, typename OT::Arguments args,
  */
 struct InputOutputOperationContext {
   std::string buffer;
+  std::string::iterator write_it;
 };
 
 /**
@@ -85,12 +86,15 @@ struct InputOutputOperationContext {
  * handling IO buffers.
  */
 template <typename OT>
-concept InputOutputOperationConcept = requires(
-    OT op, typename OT::Arguments args, InputOutputOperationContext ctx) {
+concept InputOutputOperationConcept = requires(OT op,
+                                               typename OT::Arguments args,
+                                               InputOutputOperationContext ctx,
+                                               std::string_view sv, size_t s) {
   {OperationConcept<OT>};
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
-  { op.handle_read(ctx) } -> std::convertible_to<std::size_t>;
-  { op.handle_write(ctx) } -> std::convertible_to<std::size_t>;
+  { op.handle_read(ctx, sv) } -> std::convertible_to<std::size_t>;
+  { op.get_write_buffer(ctx) } -> std::convertible_to<std::string_view>;
+  {op.handle_write(ctx, s)};
 };
 
 } // namespace networkprotocoldsl

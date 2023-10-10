@@ -1,6 +1,7 @@
 #include <networkprotocoldsl/interpretedprogram.hpp>
 #include <networkprotocoldsl/optree.hpp>
 
+#include <cstring>
 #include <gtest/gtest.h>
 
 TEST(interpreter_global_state, iterate) {
@@ -66,4 +67,79 @@ TEST(interpreter_global_state, callback) {
 
   ASSERT_EQ(ContinuationState::Exited, i.step());
   ASSERT_EQ(Value(20), std::get<Value>(i.get_result()));
+}
+
+TEST(interpreter_global_state, input_output) {
+  using namespace networkprotocoldsl;
+
+  operation::ReadInt32Native r;
+  operation::Add add;
+  operation::WriteInt32Native w;
+
+  auto optree =
+      std::make_shared<OpTree>(OpTree({w, {{add, {{r, {}}, {r, {}}}}}}));
+
+  InterpretedProgram p(optree);
+  Interpreter i = p.get_instance();
+
+  ASSERT_EQ(ContinuationState::Blocked, i.step());
+  ASSERT_EQ(ReasonForBlockedOperation::WaitingForRead,
+            std::get<ReasonForBlockedOperation>(i.get_result()));
+
+  int input1 = 42;
+  int input2 = 900;
+  char buffer[8] = {};
+  std::memcpy(&(buffer[0]), &input1, 4);
+  std::memcpy(&(buffer[4]), &input2, 4);
+
+  size_t amount_read;
+
+  amount_read = i.handle_read({buffer, 2});
+  ASSERT_EQ(2, amount_read);
+
+  ASSERT_EQ(ContinuationState::Blocked, i.step());
+  ASSERT_EQ(ReasonForBlockedOperation::WaitingForRead,
+            std::get<ReasonForBlockedOperation>(i.get_result()));
+
+  amount_read = i.handle_read({&(buffer[2]), 3});
+  ASSERT_EQ(2, amount_read);
+
+  ASSERT_EQ(ContinuationState::Ready, i.step());
+  ASSERT_EQ(Value(42), std::get<Value>(i.get_result()));
+
+  ASSERT_EQ(ContinuationState::Blocked, i.step());
+  ASSERT_EQ(ReasonForBlockedOperation::WaitingForRead,
+            std::get<ReasonForBlockedOperation>(i.get_result()));
+
+  amount_read = i.handle_read({&(buffer[4]), 3});
+  ASSERT_EQ(3, amount_read);
+
+  ASSERT_EQ(ContinuationState::Blocked, i.step());
+  ASSERT_EQ(ReasonForBlockedOperation::WaitingForRead,
+            std::get<ReasonForBlockedOperation>(i.get_result()));
+
+  amount_read = i.handle_read({&(buffer[7]), 1});
+  ASSERT_EQ(1, amount_read);
+
+  ASSERT_EQ(ContinuationState::Ready, i.step());
+  ASSERT_EQ(Value(900), std::get<Value>(i.get_result()));
+
+  ASSERT_EQ(ContinuationState::Ready, i.step());
+  ASSERT_EQ(Value(942), std::get<Value>(i.get_result()));
+
+  ASSERT_EQ(ContinuationState::Blocked, i.step());
+  ASSERT_EQ(ReasonForBlockedOperation::WaitingForWrite,
+            std::get<ReasonForBlockedOperation>(i.get_result()));
+
+  std::string_view write_buf = i.get_write_buffer();
+  ASSERT_EQ(4, write_buf.length());
+
+  ASSERT_EQ(4, i.handle_write(4));
+
+  int output;
+  memcpy(&output, write_buf.begin(), 4);
+  ASSERT_EQ(942, output);
+
+  ASSERT_EQ(ContinuationState::Exited, i.step());
+  ASSERT_EQ(Value(0), std::get<Value>(i.get_result()));
 }

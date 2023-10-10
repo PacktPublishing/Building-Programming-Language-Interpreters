@@ -1,17 +1,44 @@
 #include <networkprotocoldsl/operation/readint32native.hpp>
 
+#include <cstring>
+
 namespace networkprotocoldsl::operation {
 
 OperationResult ReadInt32Native::operator()(InputOutputOperationContext &ctx,
                                             Arguments a) const {
-  return ReasonForBlockedOperation::WaitingForRead;
+  if (ctx.buffer.length() < 4) {
+    return ReasonForBlockedOperation::WaitingForRead;
+  } else {
+    int v = 0;
+    std::memcpy(&v, ctx.buffer.c_str(), 4);
+    return v;
+  }
 }
 
-size_t ReadInt32Native::handle_read(InputOutputOperationContext &ctx) const {
-  return 0;
+size_t ReadInt32Native::handle_read(InputOutputOperationContext &ctx,
+                                    std::string_view in) const {
+  int expecting = 4 - ctx.buffer.length();
+  if (expecting > 0) {
+    int coming = in.length();
+    if (in.length() > expecting) {
+      ctx.buffer.append(in, 0, expecting);
+      return expecting;
+    } else {
+      ctx.buffer.append(in, 0, coming);
+      return coming;
+    }
+  } else {
+    return 0;
+  }
 }
 
-size_t ReadInt32Native::handle_write(InputOutputOperationContext &ctx) const {
+std::string_view
+ReadInt32Native::get_write_buffer(InputOutputOperationContext &ctx) const {
+  return ctx.buffer;
+}
+
+size_t ReadInt32Native::handle_write(InputOutputOperationContext &ctx,
+                                     size_t s) const {
   return 0;
 }
 
