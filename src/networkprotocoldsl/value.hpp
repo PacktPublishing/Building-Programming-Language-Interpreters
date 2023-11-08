@@ -22,7 +22,7 @@ struct Callable {
 /**
  * A value is a variant of different types.
  */
-using Value = std::variant<int32_t, value::Callable, value::RuntimeError>;
+using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError>;
 } // namespace networkprotocoldsl
 
 #endif // NETWORKPROTOCOLDSL_VALUE_HPP
