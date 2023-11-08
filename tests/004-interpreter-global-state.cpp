@@ -18,16 +18,16 @@ TEST(interpreter_global_state, iterate) {
   Interpreter i2 = p.get_instance();
   ASSERT_EQ(ContinuationState::Ready, i1.step());
   ASSERT_EQ(ContinuationState::Ready, i2.step());
-  ASSERT_EQ(Value(10), std::get<Value>(i1.get_result()));
-  ASSERT_EQ(Value(10), std::get<Value>(i2.get_result()));
+  ASSERT_EQ(10, std::get<int32_t>(std::get<Value>(i1.get_result())));
+  ASSERT_EQ(10, std::get<int32_t>(std::get<Value>(i2.get_result())));
   ASSERT_EQ(ContinuationState::Ready, i1.step());
   ASSERT_EQ(ContinuationState::Ready, i2.step());
-  ASSERT_EQ(Value(20), std::get<Value>(i1.get_result()));
-  ASSERT_EQ(Value(20), std::get<Value>(i2.get_result()));
+  ASSERT_EQ(20, std::get<int32_t>(std::get<Value>(i1.get_result())));
+  ASSERT_EQ(20, std::get<int32_t>(std::get<Value>(i2.get_result())));
   ASSERT_EQ(ContinuationState::Exited, i1.step());
   ASSERT_EQ(ContinuationState::Exited, i2.step());
-  ASSERT_EQ(Value(30), std::get<Value>(i1.get_result()));
-  ASSERT_EQ(Value(30), std::get<Value>(i2.get_result()));
+  ASSERT_EQ(30, std::get<int32_t>(std::get<Value>(i1.get_result())));
+  ASSERT_EQ(30, std::get<int32_t>(std::get<Value>(i2.get_result())));
 }
 
 TEST(interpreter_global_state, callback) {
@@ -41,7 +41,7 @@ TEST(interpreter_global_state, callback) {
   InterpretedProgram p(optree);
   Interpreter i = p.get_instance();
   ASSERT_EQ(ContinuationState::Ready, i.step());
-  ASSERT_EQ(Value(10), std::get<Value>(i.get_result()));
+  ASSERT_EQ(10, std::get<int32_t>(std::get<Value>(i.get_result())));
 
   ASSERT_EQ(ContinuationState::Blocked, i.step());
   ASSERT_EQ(ReasonForBlockedOperation::WaitingForCallback,
@@ -66,7 +66,7 @@ TEST(interpreter_global_state, callback) {
   i.set_callback_return(std::get<int32_t>(arg) * 2);
 
   ASSERT_EQ(ContinuationState::Exited, i.step());
-  ASSERT_EQ(Value(20), std::get<Value>(i.get_result()));
+  ASSERT_EQ(20, std::get<int32_t>(std::get<Value>(i.get_result())));
 }
 
 TEST(interpreter_global_state, input_output) {
@@ -105,7 +105,7 @@ TEST(interpreter_global_state, input_output) {
   ASSERT_EQ(2, amount_read);
 
   ASSERT_EQ(ContinuationState::Ready, i.step());
-  ASSERT_EQ(Value(42), std::get<Value>(i.get_result()));
+  ASSERT_EQ(42, std::get<int32_t>(std::get<Value>(i.get_result())));
 
   ASSERT_EQ(ContinuationState::Blocked, i.step());
   ASSERT_EQ(ReasonForBlockedOperation::WaitingForRead,
@@ -122,10 +122,10 @@ TEST(interpreter_global_state, input_output) {
   ASSERT_EQ(1, amount_read);
 
   ASSERT_EQ(ContinuationState::Ready, i.step());
-  ASSERT_EQ(Value(900), std::get<Value>(i.get_result()));
+  ASSERT_EQ(900, std::get<int32_t>(std::get<Value>(i.get_result())));
 
   ASSERT_EQ(ContinuationState::Ready, i.step());
-  ASSERT_EQ(Value(942), std::get<Value>(i.get_result()));
+  ASSERT_EQ(942, std::get<int32_t>(std::get<Value>(i.get_result())));
 
   ASSERT_EQ(ContinuationState::Blocked, i.step());
   ASSERT_EQ(ReasonForBlockedOperation::WaitingForWrite,
@@ -141,5 +141,5 @@ TEST(interpreter_global_state, input_output) {
   ASSERT_EQ(942, output);
 
   ASSERT_EQ(ContinuationState::Exited, i.step());
-  ASSERT_EQ(Value(0), std::get<Value>(i.get_result()));
+  ASSERT_EQ(0, std::get<int32_t>(std::get<Value>(i.get_result())));
 }
