@@ -12,7 +12,8 @@
 namespace networkprotocoldsl {
 
 using OperationContextVariant =
-    std::variant<bool, CallbackOperationContext, InputOutputOperationContext>;
+    std::variant<bool, CallbackOperationContext, ControlFlowOperationContext,
+                 InputOutputOperationContext>;
 
 /**
  * The execution frame points to a specific operation and the

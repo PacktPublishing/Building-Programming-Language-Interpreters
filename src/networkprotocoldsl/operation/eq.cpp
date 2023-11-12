@@ -15,11 +15,11 @@ static Value _eq(int32_t lhs, Value rhs) {
                     rhs);
 }
 
-static Value _eq(value::Callable lhs, Value rhs) {
+static Value _eq(value::Callable lhs, auto rhs) {
   return value::RuntimeError::TypeError;
 }
 
-static Value _eq(value::RuntimeError lhs, Value rhs) { return rhs; }
+static Value _eq(value::RuntimeError lhs, auto rhs) { return lhs; }
 
 Value Eq::operator()(Arguments a) const {
   return std::visit([&a](auto lhs) { return _eq(lhs, std::get<1>(a)); },

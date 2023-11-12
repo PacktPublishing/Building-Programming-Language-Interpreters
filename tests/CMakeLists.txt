@@ -7,6 +7,7 @@ foreach(
     003-literal-and-add-operations
     004-interpreter-global-state
     005-operator-eq
+    006-operator-if
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

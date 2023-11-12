@@ -2,7 +2,35 @@
 
 namespace networkprotocoldsl {
 
-template <InterpretedOperationConcept O>
+template <typename O> static Value _get_callable(Continuation *c, const O &o) {
+  return value::RuntimeError::TypeError;
+}
+
+template <ControlFlowOperationConcept O>
+static Value _get_callable(Continuation *c, const O &o) {
+  return o.get_callable(
+      std::get<ControlFlowOperationContext>(c->top().get_context()));
+}
+
+template <typename O>
+static void _set_callable_invoked(Continuation *c, const O &o) {}
+
+template <ControlFlowOperationConcept O>
+static void _set_callable_invoked(Continuation *c, const O &o) {
+  return o.set_callable_invoked(
+      std::get<ControlFlowOperationContext>(c->top().get_context()));
+}
+
+template <typename O>
+static void _set_callable_return(Continuation *c, const O &o, Value v) {}
+
+template <ControlFlowOperationConcept O>
+static void _set_callable_return(Continuation *c, const O &o, Value v) {
+  return o.set_callable_return(
+      std::get<ControlFlowOperationContext>(c->top().get_context()), v);
+}
+
+template <typename O>
 static std::string _get_callback_key(Continuation *c, const O &o) {
   return "N/A";
 }
@@ -13,12 +41,7 @@ static std::string _get_callback_key(Continuation *c, const O &o) {
       std::get<CallbackOperationContext>(c->top().get_context()));
 }
 
-template <InputOutputOperationConcept O>
-static std::string _get_callback_key(Continuation *c, const O &o) {
-  return "N/A";
-}
-
-template <InterpretedOperationConcept O>
+template <typename O>
 static void _set_callback_called(Continuation *c, const O &o) {}
 
 template <CallbackOperationConcept O>
@@ -27,10 +50,7 @@ static void _set_callback_called(Continuation *c, const O &o) {
       std::get<CallbackOperationContext>(c->top().get_context()));
 }
 
-template <InputOutputOperationConcept O>
-static void _set_callback_called(Continuation *c, const O &o) {}
-
-template <InterpretedOperationConcept O>
+template <typename O>
 static void _set_callback_return(Continuation *c, const O &o, Value v) {}
 
 template <CallbackOperationConcept O>
@@ -39,15 +59,7 @@ static void _set_callback_return(Continuation *c, const O &o, Value v) {
       std::get<CallbackOperationContext>(c->top().get_context()), v);
 }
 
-template <InputOutputOperationConcept O>
-static void _set_callback_return(Continuation *c, const O &o, Value v) {}
-
-template <InterpretedOperationConcept O>
-static size_t _handle_read(Continuation *c, const O &o, std::string_view s) {
-  return 0;
-}
-
-template <CallbackOperationConcept O>
+template <typename O>
 static size_t _handle_read(Continuation *c, const O &o, std::string_view s) {
   return 0;
 }
@@ -58,12 +70,7 @@ static size_t _handle_read(Continuation *c, const O &o, std::string_view s) {
       std::get<InputOutputOperationContext>(c->top().get_context()), s);
 }
 
-template <InterpretedOperationConcept O>
-static std::string_view _get_write_buffer(Continuation *c, const O &o) {
-  return std::string_view();
-}
-
-template <CallbackOperationConcept O>
+template <typename O>
 static std::string_view _get_write_buffer(Continuation *c, const O &o) {
   return std::string_view();
 }
@@ -74,12 +81,7 @@ static std::string_view _get_write_buffer(Continuation *c, const O &o) {
       std::get<InputOutputOperationContext>(c->top().get_context()));
 }
 
-template <InterpretedOperationConcept O>
-static size_t _handle_write(Continuation *c, const O &o, size_t s) {
-  return 0;
-}
-
-template <CallbackOperationConcept O>
+template <typename O>
 static size_t _handle_write(Continuation *c, const O &o, size_t s) {
   return 0;
 }
@@ -98,8 +100,9 @@ static ContinuationState map_result_to_state(ReasonForBlockedOperation r) {
   return ContinuationState::Blocked;
 }
 
-Continuation::Continuation(const OpTreeNode &o) {
-  stack.push(ExecutionStackFrame(o));
+Continuation::Continuation(std::shared_ptr<const OpTree> ot) {
+  optree = ot;
+  stack.push(ExecutionStackFrame(optree->root));
 }
 
 ExecutionStackFrame &Continuation::top() { return stack.top(); }
@@ -108,11 +111,20 @@ ContinuationState Continuation::result_to_state() {
   return std::visit([this](auto &r) { return map_result_to_state(r); }, result);
 }
 
-ContinuationState Continuation::step() {
+ContinuationState Continuation::prepare() {
   if (stack.size()) {
     while (!stack.top().has_arguments_ready()) {
       stack.push(stack.top().next_op());
     }
+    return ContinuationState::Ready;
+  } else {
+    return ContinuationState::Exited;
+  }
+}
+
+ContinuationState Continuation::step() {
+  state = prepare();
+  if (state == ContinuationState::Ready) {
     result = stack.top().execute();
     state = result_to_state();
     if (state == ContinuationState::Ready) {
@@ -123,10 +135,8 @@ ContinuationState Continuation::step() {
         state = ContinuationState::Exited;
       }
     }
-    return state;
-  } else {
-    return ContinuationState::Exited;
   }
+  return state;
 }
 
 OperationResult Continuation::get_result() { return result; }
@@ -163,6 +173,22 @@ std::string_view Continuation::get_write_buffer() {
 size_t Continuation::handle_write(size_t s) {
   return std::visit([this, s](auto &o) { return _handle_write(this, o, s); },
                     stack.top().get_operation());
+}
+
+Value Continuation::get_callable() {
+  return std::visit([this](auto &o) { return _get_callable(this, o); },
+                    stack.top().get_operation());
+}
+
+void Continuation::set_callable_invoked() {
+  std::visit([this](auto &o) { _set_callable_invoked(this, o); },
+             stack.top().get_operation());
+}
+
+void Continuation::set_callable_return(Value v) {
+  result = v;
+  std::visit([this, &v](auto &o) { _set_callable_return(this, o, v); },
+             stack.top().get_operation());
 }
 
 }; // namespace networkprotocoldsl

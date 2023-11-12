@@ -19,20 +19,29 @@ enum class ContinuationState { MissingArguments, Ready, Blocked, Exited };
  * running.
  */
 class Continuation {
+  std::shared_ptr<const OpTree> optree;
   std::stack<ExecutionStackFrame> stack;
   ContinuationState state = ContinuationState::MissingArguments;
-  OperationResult result;
+  OperationResult result = false;
 
 public:
-  Continuation(const OpTreeNode &o);
+  Continuation(std::shared_ptr<const OpTree> ot);
 
   ExecutionStackFrame &top();
 
   ContinuationState result_to_state();
 
+  ContinuationState prepare();
+
   ContinuationState step();
 
   OperationResult get_result();
+
+  Value get_callable();
+
+  void set_callable_invoked();
+
+  void set_callable_return(Value v);
 
   std::string get_callback_key();
 

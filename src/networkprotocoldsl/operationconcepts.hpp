@@ -17,7 +17,9 @@ enum class ReasonForBlockedOperation {
   WaitingForCallback,
   WaitingCallbackData,
   WaitingForRead,
-  WaitingForWrite
+  WaitingForWrite,
+  WaitingForCallableInvocation,
+  WaitingForCallableResult,
 };
 
 /**
@@ -95,6 +97,30 @@ concept InputOutputOperationConcept = requires(OT op,
   { op.handle_read(ctx, sv) } -> std::convertible_to<std::size_t>;
   { op.get_write_buffer(ctx) } -> std::convertible_to<std::string_view>;
   {op.handle_write(ctx, s)};
+};
+
+/**
+ * Callback operations have a specific context type
+ */
+struct ControlFlowOperationContext {
+  std::optional<Value> callable;
+  std::optional<Value> value;
+  bool callable_invoked = false;
+};
+
+/**
+ * The callback operation concept offers the additional interfaces for
+ * handling the status of the callback.
+ */
+template <typename OT>
+concept ControlFlowOperationConcept =
+    requires(OT op, typename OT::Arguments args, Value v,
+             ControlFlowOperationContext ctx) {
+  {OperationConcept<OT>};
+  { op.get_callable(ctx) } -> std::convertible_to<Value>;
+  { op(ctx, args) } -> std::convertible_to<OperationResult>;
+  {op.set_callable_return(ctx, v)};
+  {op.set_callable_invoked(ctx)};
 };
 
 } // namespace networkprotocoldsl

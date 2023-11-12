@@ -25,10 +25,14 @@ add_library(
     src/networkprotocoldsl/operation/add.cpp
     src/networkprotocoldsl/operation/eq.hpp
     src/networkprotocoldsl/operation/eq.cpp
+    src/networkprotocoldsl/operation/if.hpp
+    src/networkprotocoldsl/operation/if.cpp
     src/networkprotocoldsl/operation/unarycallback.hpp
     src/networkprotocoldsl/operation/unarycallback.cpp
     src/networkprotocoldsl/operation/readint32native.hpp
     src/networkprotocoldsl/operation/readint32native.cpp
+    src/networkprotocoldsl/operation/staticcallable.hpp
+    src/networkprotocoldsl/operation/staticcallable.cpp
     src/networkprotocoldsl/operation/writeint32native.hpp
     src/networkprotocoldsl/operation/writeint32native.cpp
     src/networkprotocoldsl/operation.hpp

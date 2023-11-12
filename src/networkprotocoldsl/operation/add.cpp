@@ -4,7 +4,7 @@ namespace networkprotocoldsl::operation {
 
 static Value _add(int32_t lhs, int32_t rhs) { return rhs + lhs; }
 
-static Value _add(int32_t lhs, value::Callable rhs) {
+static Value _add(int32_t lhs, auto rhs) {
   return value::RuntimeError::TypeError;
 }
 
@@ -15,11 +15,11 @@ static Value _add(int32_t lhs, Value rhs) {
                     rhs);
 }
 
-static Value _add(value::Callable lhs, Value rhs) {
+static Value _add(value::Callable lhs, auto rhs) {
   return value::RuntimeError::TypeError;
 }
 
-static Value _add(value::RuntimeError lhs, Value rhs) { return rhs; }
+static Value _add(value::RuntimeError lhs, auto rhs) { return rhs; }
 
 Value Add::operator()(Arguments a) const {
   return std::visit([&a](auto lhs) { return _add(lhs, std::get<1>(a)); },

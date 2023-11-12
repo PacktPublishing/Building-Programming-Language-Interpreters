@@ -15,6 +15,11 @@ static OperationContextVariant initialize_context(const O &o) {
   return false;
 }
 
+template <ControlFlowOperationConcept O>
+static OperationContextVariant initialize_context(const O &o) {
+  return ControlFlowOperationContext();
+}
+
 template <CallbackOperationConcept O>
 static OperationContextVariant initialize_context(const O &o) {
   return CallbackOperationContext();
@@ -54,6 +59,16 @@ static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(std::get<CallbackOperationContext>(frame->get_context()), args);
+}
+
+template <ControlFlowOperationConcept O>
+static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
+                                                  const O &o) {
+  typename O::Arguments args(make_argument_tuple(
+      frame->get_accumulator(),
+      std::make_index_sequence<
+          std::tuple_size<typename O::Arguments>::value>()));
+  return o(std::get<ControlFlowOperationContext>(frame->get_context()), args);
 }
 
 template <InputOutputOperationConcept O>

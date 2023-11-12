@@ -5,8 +5,10 @@
 
 #include <networkprotocoldsl/operation/add.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
+#include <networkprotocoldsl/operation/if.hpp>
 #include <networkprotocoldsl/operation/int32literal.hpp>
 #include <networkprotocoldsl/operation/readint32native.hpp>
+#include <networkprotocoldsl/operation/staticcallable.hpp>
 #include <networkprotocoldsl/operation/unarycallback.hpp>
 #include <networkprotocoldsl/operation/writeint32native.hpp>
 
@@ -21,7 +23,8 @@ namespace networkprotocoldsl {
  */
 using Operation =
     std::variant<operation::Int32Literal, operation::Add, operation::Eq,
-                 operation::UnaryCallback, operation::ReadInt32Native,
+                 operation::If, operation::UnaryCallback,
+                 operation::ReadInt32Native, operation::StaticCallable,
                  operation::WriteInt32Native>;
 
 } // namespace networkprotocoldsl

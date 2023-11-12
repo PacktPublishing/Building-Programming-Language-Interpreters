@@ -20,7 +20,7 @@ namespace networkprotocoldsl {
  */
 class Interpreter {
   std::shared_ptr<const OpTree> optree;
-  Continuation continuation;
+  std::stack<Continuation> continuation_stack;
 
 public:
   /***
@@ -28,33 +28,67 @@ public:
    * to be executed in the context of a given socket.
    */
   Interpreter(std::shared_ptr<const OpTree> o)
-      : optree(o), continuation(o->root){};
+      : optree(o), continuation_stack({o}){};
 
-  ContinuationState step() { return continuation.step(); }
-
-  ContinuationState result_to_state() { return continuation.result_to_state(); }
-
-  OperationResult get_result() { return continuation.get_result(); }
-
-  std::string get_callback_key() { return continuation.get_callback_key(); }
-
-  void set_callback_called() { continuation.set_callback_called(); }
-
-  const std::vector<Value> &get_callback_arguments() {
-    return continuation.get_callback_arguments();
+  ContinuationState step() {
+    ContinuationState s = continuation_stack.top().step();
+    if (s == ContinuationState::Blocked) {
+      ReasonForBlockedOperation reason = std::get<ReasonForBlockedOperation>(
+          continuation_stack.top().get_result());
+      if (reason == ReasonForBlockedOperation::WaitingForCallableInvocation) {
+        value::Callable callable =
+            std::get<value::Callable>(continuation_stack.top().get_callable());
+        continuation_stack.top().set_callable_invoked();
+        continuation_stack.push(Continuation(callable.tree));
+        return continuation_stack.top().prepare();
+      } else {
+        return s;
+      }
+    } else if (s == ContinuationState::Exited) {
+      Value r = std::get<Value>(continuation_stack.top().get_result());
+      if (continuation_stack.size() > 1) {
+        continuation_stack.pop();
+        continuation_stack.top().set_callable_return(r);
+        return continuation_stack.top().prepare();
+      } else {
+        return s;
+      }
+    } else {
+      return s;
+    }
   }
 
-  void set_callback_return(Value v) { continuation.set_callback_return(v); }
+  ContinuationState result_to_state() {
+    return continuation_stack.top().result_to_state();
+  }
+
+  OperationResult get_result() { return continuation_stack.top().get_result(); }
+
+  std::string get_callback_key() {
+    return continuation_stack.top().get_callback_key();
+  }
+
+  void set_callback_called() { continuation_stack.top().set_callback_called(); }
+
+  const std::vector<Value> &get_callback_arguments() {
+    return continuation_stack.top().get_callback_arguments();
+  }
+
+  void set_callback_return(Value v) {
+    continuation_stack.top().set_callback_return(v);
+  }
 
   size_t handle_read(std::string_view in) {
-    return continuation.handle_read(in);
+    return continuation_stack.top().handle_read(in);
   }
 
   std::string_view get_write_buffer() {
-    return continuation.get_write_buffer();
+    return continuation_stack.top().get_write_buffer();
   }
 
-  size_t handle_write(size_t s) { return continuation.handle_write(s); }
+  size_t handle_write(size_t s) {
+    return continuation_stack.top().handle_write(s);
+  }
 };
 
 } // namespace networkprotocoldsl
