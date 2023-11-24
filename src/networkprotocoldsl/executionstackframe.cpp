@@ -30,11 +30,28 @@ static OperationContextVariant initialize_context(const O &o) {
   return InputOutputOperationContext();
 }
 
+static OperationContextVariant
+initialize_context(const operation::OpSequence &o) {
+  return false;
+}
+
 template <OperationConcept O>
 static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
                                           const O &o) {
   if (frame->get_accumulator().size() <
       std::tuple_size<typename O::Arguments>::value) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
+                                          const operation::OpSequence &o) {
+  std::vector<Value> &acc = frame->get_accumulator();
+  if (acc.size() < frame->get_children_count() &&
+      !(acc.size() > 0 &&
+        std::holds_alternative<value::RuntimeError>(acc.back()))) {
     return false;
   } else {
     return true;
@@ -81,6 +98,12 @@ static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
   return o(std::get<InputOutputOperationContext>(frame->get_context()), args);
 }
 
+static OperationResult
+execute_specific_operation(ExecutionStackFrame *frame,
+                           const operation::OpSequence &o) {
+  return frame->get_accumulator().back();
+}
+
 ExecutionStackFrame::ExecutionStackFrame(const OpTreeNode &o) : optreenode(o) {
   ctx = std::visit([this](auto &o) { return initialize_context(o); },
                    optreenode.operation);
@@ -108,6 +131,10 @@ const OpTreeNode &ExecutionStackFrame::next_op() {
 
 const Operation &ExecutionStackFrame::get_operation() {
   return optreenode.operation;
+}
+
+size_t ExecutionStackFrame::get_children_count() {
+  return optreenode.children.size();
 }
 
 OperationContextVariant &ExecutionStackFrame::get_context() { return ctx; }

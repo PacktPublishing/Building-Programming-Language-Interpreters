@@ -38,6 +38,8 @@ public:
 
   const Operation &get_operation();
 
+  size_t get_children_count();
+
   OperationContextVariant &get_context();
 
   std::vector<Value> &get_accumulator();
