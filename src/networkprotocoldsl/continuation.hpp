@@ -21,17 +21,21 @@ enum class ContinuationState { MissingArguments, Ready, Blocked, Exited };
 class Continuation {
   std::shared_ptr<const OpTree> optree;
   std::stack<ExecutionStackFrame> stack;
+  std::shared_ptr<LexicalPad> pad;
   ContinuationState state = ContinuationState::MissingArguments;
   OperationResult result = false;
 
 public:
-  Continuation(std::shared_ptr<const OpTree> ot);
+  Continuation(std::shared_ptr<const OpTree> ot,
+               std::shared_ptr<LexicalPad> pad);
 
   ExecutionStackFrame &top();
 
   ContinuationState result_to_state();
 
   ContinuationState prepare();
+
+  std::shared_ptr<LexicalPad> get_pad();
 
   ContinuationState step();
 

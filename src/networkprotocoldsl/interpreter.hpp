@@ -2,6 +2,7 @@
 #define NETWORKPROTOCOLDSL_INTERPRETER_HPP
 
 #include <networkprotocoldsl/continuation.hpp>
+#include <networkprotocoldsl/lexicalpad.hpp>
 
 #include <cassert>
 #include <memory>
@@ -20,6 +21,7 @@ namespace networkprotocoldsl {
  */
 class Interpreter {
   std::shared_ptr<const OpTree> optree;
+  std::shared_ptr<LexicalPad> rootpad;
   std::stack<Continuation> continuation_stack;
 
 public:
@@ -27,8 +29,10 @@ public:
    * An interpreter is constructed from an already parsed program
    * to be executed in the context of a given socket.
    */
-  Interpreter(std::shared_ptr<const OpTree> o)
-      : optree(o), continuation_stack({o}){};
+  Interpreter(std::shared_ptr<const OpTree> o, std::shared_ptr<LexicalPad> p)
+      : optree(o), rootpad(p),
+        continuation_stack(
+            {Continuation(o, std::make_shared<LexicalPad>(LexicalPad(*p)))}){};
 
   ContinuationState step() {
     ContinuationState s = continuation_stack.top().step();
@@ -39,7 +43,12 @@ public:
         value::Callable callable =
             std::get<value::Callable>(continuation_stack.top().get_callable());
         continuation_stack.top().set_callable_invoked();
-        continuation_stack.push(Continuation(callable.tree));
+        std::shared_ptr<LexicalPad> parent_pad =
+            callable.inherits_lexical_pad ? continuation_stack.top().get_pad()
+                                          : rootpad;
+        continuation_stack.push(
+            Continuation(callable.tree,
+                         std::make_shared<LexicalPad>(LexicalPad(parent_pad))));
         return continuation_stack.top().prepare();
       } else {
         return s;

@@ -1,6 +1,7 @@
 #ifndef INCLUDED_NETWORKPROTOCOLDSL_OPERATIONCONCEPTS_HPP
 #define INCLUDED_NETWORKPROTOCOLDSL_OPERATIONCONCEPTS_HPP
 
+#include <networkprotocoldsl/lexicalpad.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <optional>
@@ -121,6 +122,18 @@ concept ControlFlowOperationConcept =
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
   {op.set_callable_return(ctx, v)};
   {op.set_callable_invoked(ctx)};
+};
+
+/**
+ * The lexpad operations require access to the currently active
+ * lexical pad.
+ */
+template <typename OT>
+concept LexicalPadOperationConcept = requires(OT op,
+                                              typename OT::Arguments args,
+                                              std::shared_ptr<LexicalPad> pad) {
+  {OperationConcept<OT>};
+  { op(args, pad) } -> std::convertible_to<Value>;
 };
 
 } // namespace networkprotocoldsl

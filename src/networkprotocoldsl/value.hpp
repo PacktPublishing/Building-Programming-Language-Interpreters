@@ -12,10 +12,13 @@ class OpTree;
 
 namespace value {
 
-enum class RuntimeError { TypeError };
+enum class RuntimeError { TypeError, NameError };
 
 struct Callable {
   std::shared_ptr<const OpTree> tree;
+  bool inherits_lexical_pad;
+  Callable(std::shared_ptr<const OpTree> t)
+      : tree(t), inherits_lexical_pad(true) {}
 };
 } // namespace value
 

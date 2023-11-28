@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 
+#include <networkprotocoldsl/lexicalpad.hpp>
 #include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/optree.hpp>
 
@@ -24,9 +25,10 @@ class ExecutionStackFrame {
   const OpTreeNode &optreenode;
   std::vector<Value> accumulator;
   OperationContextVariant ctx;
+  std::shared_ptr<LexicalPad> pad;
 
 public:
-  ExecutionStackFrame(const OpTreeNode &o);
+  ExecutionStackFrame(const OpTreeNode &o, std::shared_ptr<LexicalPad> pad);
 
   bool has_arguments_ready();
 
@@ -35,6 +37,8 @@ public:
   void push_back(Value v);
 
   const OpTreeNode &next_op();
+
+  std::shared_ptr<LexicalPad> get_pad();
 
   const Operation &get_operation();
 

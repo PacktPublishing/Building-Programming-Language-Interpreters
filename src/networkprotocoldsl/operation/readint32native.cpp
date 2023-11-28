@@ -17,7 +17,7 @@ OperationResult ReadInt32Native::operator()(InputOutputOperationContext &ctx,
 
 size_t ReadInt32Native::handle_read(InputOutputOperationContext &ctx,
                                     std::string_view in) const {
-  int expecting = 4 - ctx.buffer.length();
+  size_t expecting = 4 - ctx.buffer.length();
   if (expecting > 0) {
     int coming = in.length();
     if (in.length() > expecting) {

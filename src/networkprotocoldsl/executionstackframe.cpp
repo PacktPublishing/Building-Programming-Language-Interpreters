@@ -30,6 +30,11 @@ static OperationContextVariant initialize_context(const O &o) {
   return InputOutputOperationContext();
 }
 
+template <LexicalPadOperationConcept O>
+static OperationContextVariant initialize_context(const O &o) {
+  return false;
+}
+
 static OperationContextVariant
 initialize_context(const operation::OpSequence &o) {
   return false;
@@ -98,13 +103,25 @@ static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
   return o(std::get<InputOutputOperationContext>(frame->get_context()), args);
 }
 
+template <LexicalPadOperationConcept O>
+static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
+                                                  const O &o) {
+  typename O::Arguments args(make_argument_tuple(
+      frame->get_accumulator(),
+      std::make_index_sequence<
+          std::tuple_size<typename O::Arguments>::value>()));
+  return o(args, frame->get_pad());
+}
+
 static OperationResult
 execute_specific_operation(ExecutionStackFrame *frame,
                            const operation::OpSequence &o) {
   return frame->get_accumulator().back();
 }
 
-ExecutionStackFrame::ExecutionStackFrame(const OpTreeNode &o) : optreenode(o) {
+ExecutionStackFrame::ExecutionStackFrame(const OpTreeNode &o,
+                                         std::shared_ptr<LexicalPad> p)
+    : optreenode(o), pad(p) {
   ctx = std::visit([this](auto &o) { return initialize_context(o); },
                    optreenode.operation);
 }
@@ -114,6 +131,8 @@ bool ExecutionStackFrame::has_arguments_ready() {
       [this](auto &o) { return operation_has_arguments_ready(this, o); },
       optreenode.operation);
 }
+
+std::shared_ptr<LexicalPad> ExecutionStackFrame::get_pad() { return pad; }
 
 OperationResult ExecutionStackFrame::execute() {
   assert(has_arguments_ready());

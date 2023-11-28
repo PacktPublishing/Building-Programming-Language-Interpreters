@@ -17,6 +17,8 @@ add_library(
     src/networkprotocoldsl/interpretedprogram.cpp
     src/networkprotocoldsl/interpreter.hpp
     src/networkprotocoldsl/interpreter.cpp
+    src/networkprotocoldsl/lexicalpad.hpp
+    src/networkprotocoldsl/lexicalpad.cpp
     src/networkprotocoldsl/value.hpp
     src/networkprotocoldsl/value.cpp
     src/networkprotocoldsl/operation/int32literal.hpp
@@ -27,6 +29,14 @@ add_library(
     src/networkprotocoldsl/operation/eq.cpp
     src/networkprotocoldsl/operation/if.hpp
     src/networkprotocoldsl/operation/if.cpp
+    src/networkprotocoldsl/operation/lexicalpadget.hpp
+    src/networkprotocoldsl/operation/lexicalpadget.cpp
+    src/networkprotocoldsl/operation/lexicalpadset.hpp
+    src/networkprotocoldsl/operation/lexicalpadset.cpp
+    src/networkprotocoldsl/operation/lexicalpadinitialize.hpp
+    src/networkprotocoldsl/operation/lexicalpadinitialize.cpp
+    src/networkprotocoldsl/operation/lexicalpadinitializeglobal.hpp
+    src/networkprotocoldsl/operation/lexicalpadinitializeglobal.cpp
     src/networkprotocoldsl/operation/unarycallback.hpp
     src/networkprotocoldsl/operation/unarycallback.cpp
     src/networkprotocoldsl/operation/opsequence.hpp
@@ -54,7 +64,8 @@ target_include_directories(
 target_compile_options(
     networkprotocoldsl
     PUBLIC
-    -fconcepts-diagnostics-depth=10
+    -Wall
+#    -fconcepts-diagnostics-depth=10
 )
 
 enable_testing()

@@ -100,9 +100,10 @@ static ContinuationState map_result_to_state(ReasonForBlockedOperation r) {
   return ContinuationState::Blocked;
 }
 
-Continuation::Continuation(std::shared_ptr<const OpTree> ot) {
+Continuation::Continuation(std::shared_ptr<const OpTree> ot,
+                           std::shared_ptr<LexicalPad> pad) {
   optree = ot;
-  stack.push(ExecutionStackFrame(optree->root));
+  stack.push(ExecutionStackFrame(optree->root, pad));
 }
 
 ExecutionStackFrame &Continuation::top() { return stack.top(); }
@@ -114,13 +115,16 @@ ContinuationState Continuation::result_to_state() {
 ContinuationState Continuation::prepare() {
   if (stack.size()) {
     while (!stack.top().has_arguments_ready()) {
-      stack.push(stack.top().next_op());
+      stack.push(
+          ExecutionStackFrame(stack.top().next_op(), stack.top().get_pad()));
     }
     return ContinuationState::Ready;
   } else {
     return ContinuationState::Exited;
   }
 }
+
+std::shared_ptr<LexicalPad> Continuation::get_pad() { return pad; }
 
 ContinuationState Continuation::step() {
   state = prepare();

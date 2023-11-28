@@ -9,6 +9,7 @@ foreach(
     005-operator-eq
     006-operator-if
     007-opsequence
+    008-lexicalpad
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

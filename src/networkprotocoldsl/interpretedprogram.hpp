@@ -5,6 +5,7 @@
 #include <string>
 
 #include <networkprotocoldsl/interpreter.hpp>
+#include <networkprotocoldsl/lexicalpad.hpp>
 #include <networkprotocoldsl/operation.hpp>
 #include <networkprotocoldsl/optree.hpp>
 
@@ -40,7 +41,9 @@ public:
   /**
    * Obtains an instance of an interpreter for this program.
    */
-  Interpreter get_instance() { return Interpreter(optree); };
+  Interpreter get_instance() {
+    return Interpreter(optree, std::make_shared<LexicalPad>(LexicalPad()));
+  };
 };
 
 } // namespace networkprotocoldsl
