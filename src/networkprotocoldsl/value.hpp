@@ -5,10 +5,23 @@
 #include <memory>
 #include <string>
 #include <variant>
+#include <vector>
 
 namespace networkprotocoldsl {
+
 // fwd declaration to avoid cyclic inclusion.
 class OpTree;
+
+// fwd declare complex value types, to allow value types
+// that contain other values.
+namespace value {
+  enum class RuntimeError;
+  struct Callable;
+  struct DynamicList;
+}
+
+// variant of all types possible
+using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError, value::DynamicList>;
 
 namespace value {
 
@@ -20,12 +33,13 @@ struct Callable {
   Callable(std::shared_ptr<const OpTree> t)
       : tree(t), inherits_lexical_pad(true) {}
 };
+
+struct DynamicList {
+  std::shared_ptr<std::vector<Value>> values;
+};
+
 } // namespace value
 
-/**
- * A value is a variant of different types.
- */
-using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError>;
 } // namespace networkprotocoldsl
 
 #endif // NETWORKPROTOCOLDSL_VALUE_HPP
