@@ -18,7 +18,11 @@ namespace operation {
  * Operation that instructs the interpreter to execute the child
  * operations one at a time.
  */
-class OpSequence {};
+class OpSequence {
+public:
+  Value operator()(std::shared_ptr<std::vector<Value>> args) const;
+};
+static_assert(DynamicInputOperationConcept<OpSequence>);
 
 }; // namespace operation
 

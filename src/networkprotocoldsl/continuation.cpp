@@ -109,7 +109,7 @@ Continuation::Continuation(std::shared_ptr<const OpTree> ot,
 ExecutionStackFrame &Continuation::top() { return stack.top(); }
 
 ContinuationState Continuation::result_to_state() {
-  return std::visit([this](auto &r) { return map_result_to_state(r); }, result);
+  return std::visit([](auto &r) { return map_result_to_state(r); }, result);
 }
 
 ContinuationState Continuation::prepare() {
@@ -156,7 +156,7 @@ void Continuation::set_callback_called() {
 }
 
 const std::vector<Value> &Continuation::get_callback_arguments() {
-  return stack.top().get_accumulator();
+  return *(stack.top().get_accumulator());
 }
 
 void Continuation::set_callback_return(Value v) {

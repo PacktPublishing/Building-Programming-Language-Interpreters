@@ -25,6 +25,8 @@ add_library(
     src/networkprotocoldsl/operation/int32literal.cpp
     src/networkprotocoldsl/operation/add.hpp
     src/networkprotocoldsl/operation/add.cpp
+    src/networkprotocoldsl/operation/dynamiclist.hpp
+    src/networkprotocoldsl/operation/dynamiclist.cpp
     src/networkprotocoldsl/operation/eq.hpp
     src/networkprotocoldsl/operation/eq.cpp
     src/networkprotocoldsl/operation/if.hpp

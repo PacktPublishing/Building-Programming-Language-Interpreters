@@ -4,6 +4,7 @@
 #include <variant>
 
 #include <networkprotocoldsl/operation/add.hpp>
+#include <networkprotocoldsl/operation/dynamiclist.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
 #include <networkprotocoldsl/operation/if.hpp>
 #include <networkprotocoldsl/operation/int32literal.hpp>
@@ -27,11 +28,12 @@ namespace networkprotocoldsl {
  * code.
  */
 using Operation = std::variant<
-    operation::Int32Literal, operation::Add, operation::Eq, operation::If,
-    operation::UnaryCallback, operation::OpSequence, operation::LexicalPadGet,
-    operation::LexicalPadSet, operation::LexicalPadInitialize,
-    operation::LexicalPadInitializeGlobal, operation::ReadInt32Native,
-    operation::StaticCallable, operation::WriteInt32Native>;
+    operation::Int32Literal, operation::Add, operation::DynamicList,
+    operation::Eq, operation::If, operation::UnaryCallback,
+    operation::OpSequence, operation::LexicalPadGet, operation::LexicalPadSet,
+    operation::LexicalPadInitialize, operation::LexicalPadInitializeGlobal,
+    operation::ReadInt32Native, operation::StaticCallable,
+    operation::WriteInt32Native>;
 
 } // namespace networkprotocoldsl
 

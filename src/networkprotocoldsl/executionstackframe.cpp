@@ -1,3 +1,5 @@
+#include "networkprotocoldsl/operationconcepts.hpp"
+#include <memory>
 #include <networkprotocoldsl/executionstackframe.hpp>
 
 #include <cassert>
@@ -35,15 +37,15 @@ static OperationContextVariant initialize_context(const O &o) {
   return false;
 }
 
-static OperationContextVariant
-initialize_context(const operation::OpSequence &o) {
+template <DynamicInputOperationConcept O>
+static OperationContextVariant initialize_context(const O &o) {
   return false;
 }
 
 template <OperationConcept O>
 static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
                                           const O &o) {
-  if (frame->get_accumulator().size() <
+  if (frame->get_accumulator()->size() <
       std::tuple_size<typename O::Arguments>::value) {
     return false;
   } else {
@@ -51,12 +53,13 @@ static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
   }
 }
 
+template <DynamicInputOperationConcept O>
 static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
-                                          const operation::OpSequence &o) {
-  std::vector<Value> &acc = frame->get_accumulator();
-  if (acc.size() < frame->get_children_count() &&
-      !(acc.size() > 0 &&
-        std::holds_alternative<value::RuntimeError>(acc.back()))) {
+                                          const O &o) {
+  std::shared_ptr<std::vector<Value>> acc = frame->get_accumulator();
+  if (acc->size() < frame->get_children_count() &&
+      !(acc->size() > 0 &&
+        std::holds_alternative<value::RuntimeError>(acc->back()))) {
     return false;
   } else {
     return true;
@@ -67,7 +70,7 @@ template <InterpretedOperationConcept O>
 static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
                                                   const O &o) {
   typename O::Arguments args(make_argument_tuple(
-      frame->get_accumulator(),
+      *(frame->get_accumulator()),
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(args);
@@ -77,7 +80,7 @@ template <CallbackOperationConcept O>
 static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
                                                   const O &o) {
   typename O::Arguments args(make_argument_tuple(
-      frame->get_accumulator(),
+      *(frame->get_accumulator()),
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(std::get<CallbackOperationContext>(frame->get_context()), args);
@@ -87,7 +90,7 @@ template <ControlFlowOperationConcept O>
 static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
                                                   const O &o) {
   typename O::Arguments args(make_argument_tuple(
-      frame->get_accumulator(),
+      *(frame->get_accumulator()),
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(std::get<ControlFlowOperationContext>(frame->get_context()), args);
@@ -97,7 +100,7 @@ template <InputOutputOperationConcept O>
 static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
                                                   const O &o) {
   typename O::Arguments args(make_argument_tuple(
-      frame->get_accumulator(),
+      *(frame->get_accumulator()),
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(std::get<InputOutputOperationContext>(frame->get_context()), args);
@@ -107,23 +110,24 @@ template <LexicalPadOperationConcept O>
 static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
                                                   const O &o) {
   typename O::Arguments args(make_argument_tuple(
-      frame->get_accumulator(),
+      *(frame->get_accumulator()),
       std::make_index_sequence<
           std::tuple_size<typename O::Arguments>::value>()));
   return o(args, frame->get_pad());
 }
 
-static OperationResult
-execute_specific_operation(ExecutionStackFrame *frame,
-                           const operation::OpSequence &o) {
-  return frame->get_accumulator().back();
+template <DynamicInputOperationConcept O>
+static OperationResult execute_specific_operation(ExecutionStackFrame *frame,
+                                                  const O &o) {
+  return o(frame->get_accumulator());
 }
 
 ExecutionStackFrame::ExecutionStackFrame(const OpTreeNode &o,
                                          std::shared_ptr<LexicalPad> p)
     : optreenode(o), pad(p) {
-  ctx = std::visit([this](auto &o) { return initialize_context(o); },
+  ctx = std::visit([](auto &o) { return initialize_context(o); },
                    optreenode.operation);
+  accumulator = std::make_shared<std::vector<Value>>();
 }
 
 bool ExecutionStackFrame::has_arguments_ready() {
@@ -141,11 +145,11 @@ OperationResult ExecutionStackFrame::execute() {
       optreenode.operation);
 }
 
-void ExecutionStackFrame::push_back(Value v) { accumulator.push_back(v); }
+void ExecutionStackFrame::push_back(Value v) { accumulator->push_back(v); }
 
 const OpTreeNode &ExecutionStackFrame::next_op() {
   assert(!has_arguments_ready());
-  return optreenode.children[accumulator.size()];
+  return optreenode.children[accumulator->size()];
 }
 
 const Operation &ExecutionStackFrame::get_operation() {
@@ -158,7 +162,7 @@ size_t ExecutionStackFrame::get_children_count() {
 
 OperationContextVariant &ExecutionStackFrame::get_context() { return ctx; }
 
-std::vector<Value> &ExecutionStackFrame::get_accumulator() {
+std::shared_ptr<std::vector<Value>> ExecutionStackFrame::get_accumulator() {
   return accumulator;
 }
 

@@ -23,7 +23,7 @@ using OperationContextVariant =
  */
 class ExecutionStackFrame {
   const OpTreeNode &optreenode;
-  std::vector<Value> accumulator;
+  std::shared_ptr<std::vector<Value>> accumulator;
   OperationContextVariant ctx;
   std::shared_ptr<LexicalPad> pad;
 
@@ -46,7 +46,7 @@ public:
 
   OperationContextVariant &get_context();
 
-  std::vector<Value> &get_accumulator();
+  std::shared_ptr<std::vector<Value>> get_accumulator();
 };
 
 } // namespace networkprotocoldsl
