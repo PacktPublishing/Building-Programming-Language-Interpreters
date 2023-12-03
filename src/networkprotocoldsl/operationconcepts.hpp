@@ -114,6 +114,7 @@ concept InputOutputOperationConcept =
 struct ControlFlowOperationContext {
   std::optional<Value> callable;
   std::optional<Value> value;
+  std::shared_ptr<std::vector<Value>> arglist;
   bool callable_invoked = false;
 };
 
@@ -127,6 +128,7 @@ concept ControlFlowOperationConcept =
              ControlFlowOperationContext ctx) {
       { OperationConcept<OT> };
       { op.get_callable(ctx) } -> std::convertible_to<Value>;
+      { op.get_argument_list(ctx) } -> std::convertible_to<std::shared_ptr<std::vector<Value>>>;
       { op(ctx, args) } -> std::convertible_to<OperationResult>;
       { op.set_callable_return(ctx, v) };
       { op.set_callable_invoked(ctx) };

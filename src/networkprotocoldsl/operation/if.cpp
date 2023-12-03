@@ -1,6 +1,8 @@
+#include <memory>
 #include <networkprotocoldsl/operation/if.hpp>
 
 #include <cassert>
+#include <vector>
 
 namespace networkprotocoldsl::operation {
 
@@ -80,6 +82,10 @@ void If::set_callable_invoked(ControlFlowOperationContext &ctx) const {
 
 void If::set_callable_return(ControlFlowOperationContext &ctx, Value v) const {
   ctx.value = v;
+}
+
+std::shared_ptr<std::vector<Value>> If::get_argument_list(ControlFlowOperationContext &ctx) const {
+  return ctx.arglist;
 }
 
 } // namespace networkprotocoldsl::operation

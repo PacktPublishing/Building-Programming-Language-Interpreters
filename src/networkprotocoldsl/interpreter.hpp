@@ -46,9 +46,17 @@ public:
         std::shared_ptr<LexicalPad> parent_pad =
             callable.inherits_lexical_pad ? continuation_stack.top().get_pad()
                                           : rootpad;
-        continuation_stack.push(
-            Continuation(callable.tree,
-                         std::make_shared<LexicalPad>(LexicalPad(parent_pad))));
+        std::shared_ptr<LexicalPad> pad =
+            std::make_shared<LexicalPad>(LexicalPad(parent_pad));
+        std::shared_ptr<std::vector<Value>> arglist =
+            continuation_stack.top().get_argument_list();
+        for (size_t i = 0; i < callable.argument_names.size(); i++) {
+          if (i >= arglist->size()) {
+            break;
+          }
+          pad->initialize(callable.argument_names.at(i), arglist->at(i));
+        }
+        continuation_stack.push(Continuation(callable.tree, pad));
         return continuation_stack.top().prepare();
       } else {
         return s;

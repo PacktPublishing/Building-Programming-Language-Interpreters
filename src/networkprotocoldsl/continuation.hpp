@@ -1,6 +1,7 @@
 #ifndef INCLUDED_NETWORKPROTOCOLDSL_CONTINUATION_HPP
 #define INCLUDED_NETWORKPROTOCOLDSL_CONTINUATION_HPP
 
+#include <memory>
 #include <networkprotocoldsl/executionstackframe.hpp>
 
 #include <stack>
@@ -42,6 +43,8 @@ public:
   OperationResult get_result();
 
   Value get_callable();
+
+  std::shared_ptr<std::vector<Value>> get_argument_list();
 
   void set_callable_invoked();
 

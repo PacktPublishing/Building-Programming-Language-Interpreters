@@ -1,6 +1,7 @@
 #ifndef NETWORKPROTOCOLDSL_OPERATION_IF_HPP
 #define NETWORKPROTOCOLDSL_OPERATION_IF_HPP
 
+#include <memory>
 #include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/value.hpp>
 
@@ -23,6 +24,7 @@ public:
   OperationResult operator()(ControlFlowOperationContext &ctx,
                              Arguments a) const;
   Value get_callable(ControlFlowOperationContext &ctx) const;
+  std::shared_ptr<std::vector<Value>> get_argument_list(ControlFlowOperationContext &ctx) const;
   void set_callable_invoked(ControlFlowOperationContext &ctx) const;
   void set_callable_return(ControlFlowOperationContext &ctx, Value v) const;
 };

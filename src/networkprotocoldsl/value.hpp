@@ -29,9 +29,12 @@ enum class RuntimeError { TypeError, NameError };
 
 struct Callable {
   std::shared_ptr<const OpTree> tree;
+  std::vector<std::string> argument_names;
   bool inherits_lexical_pad;
   Callable(std::shared_ptr<const OpTree> t)
-      : tree(t), inherits_lexical_pad(true) {}
+      : tree(t), argument_names({}), inherits_lexical_pad(true) {}
+  Callable(std::shared_ptr<const OpTree> t, std::vector<std::string>& names, bool inherits)
+      : tree(t), argument_names(names), inherits_lexical_pad(inherits) {}
 };
 
 struct DynamicList {

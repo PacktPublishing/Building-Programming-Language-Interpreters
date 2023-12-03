@@ -29,6 +29,8 @@ add_library(
     src/networkprotocoldsl/operation/dynamiclist.cpp
     src/networkprotocoldsl/operation/eq.hpp
     src/networkprotocoldsl/operation/eq.cpp
+    src/networkprotocoldsl/operation/functioncall.hpp
+    src/networkprotocoldsl/operation/functioncall.cpp
     src/networkprotocoldsl/operation/if.hpp
     src/networkprotocoldsl/operation/if.cpp
     src/networkprotocoldsl/operation/lexicalpadget.hpp

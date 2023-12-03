@@ -1,4 +1,6 @@
+#include <memory>
 #include <networkprotocoldsl/continuation.hpp>
+#include <vector>
 
 namespace networkprotocoldsl {
 
@@ -9,6 +11,16 @@ template <typename O> static Value _get_callable(Continuation *c, const O &o) {
 template <ControlFlowOperationConcept O>
 static Value _get_callable(Continuation *c, const O &o) {
   return o.get_callable(
+      std::get<ControlFlowOperationContext>(c->top().get_context()));
+}
+
+template <typename O> static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c, const O &o) {
+  return std::make_shared<std::vector<Value>>();
+}
+
+template <ControlFlowOperationConcept O>
+static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c, const O &o) {
+  return o.get_argument_list(
       std::get<ControlFlowOperationContext>(c->top().get_context()));
 }
 
@@ -181,6 +193,11 @@ size_t Continuation::handle_write(size_t s) {
 
 Value Continuation::get_callable() {
   return std::visit([this](auto &o) { return _get_callable(this, o); },
+                    stack.top().get_operation());
+}
+
+std::shared_ptr<std::vector<Value>> Continuation::get_argument_list() {
+  return std::visit([this](auto &o) { return _get_argument_list(this, o); },
                     stack.top().get_operation());
 }
 
