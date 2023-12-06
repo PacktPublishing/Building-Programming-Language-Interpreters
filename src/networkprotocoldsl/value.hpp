@@ -33,7 +33,7 @@ struct Callable {
   bool inherits_lexical_pad;
   Callable(std::shared_ptr<const OpTree> t)
       : tree(t), argument_names({}), inherits_lexical_pad(true) {}
-  Callable(std::shared_ptr<const OpTree> t, std::vector<std::string>& names, bool inherits)
+  Callable(std::shared_ptr<const OpTree> t, const std::vector<std::string>& names, bool inherits)
       : tree(t), argument_names(names), inherits_lexical_pad(inherits) {}
 };
 

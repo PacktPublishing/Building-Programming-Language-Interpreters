@@ -60,6 +60,7 @@ static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
   if (acc->size() < frame->get_children_count() &&
       !(acc->size() > 0 &&
         std::holds_alternative<value::RuntimeError>(acc->back()))) {
+    assert(acc->size() < frame->get_children_count());
     return false;
   } else {
     return true;
@@ -149,6 +150,7 @@ void ExecutionStackFrame::push_back(Value v) { accumulator->push_back(v); }
 
 const OpTreeNode &ExecutionStackFrame::next_op() {
   assert(!has_arguments_ready());
+  assert(accumulator->size() < optreenode.children.size());
   return optreenode.children[accumulator->size()];
 }
 

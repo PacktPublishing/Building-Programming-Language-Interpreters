@@ -32,7 +32,7 @@ public:
   Interpreter(std::shared_ptr<const OpTree> o, std::shared_ptr<LexicalPad> p)
       : optree(o), rootpad(p),
         continuation_stack(
-            {Continuation(o, std::make_shared<LexicalPad>(LexicalPad(*p)))}){};
+            {Continuation(o, rootpad)}){};
 
   ContinuationState step() {
     ContinuationState s = continuation_stack.top().step();

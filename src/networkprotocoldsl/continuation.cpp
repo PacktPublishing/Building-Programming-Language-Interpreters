@@ -113,8 +113,9 @@ static ContinuationState map_result_to_state(ReasonForBlockedOperation r) {
 }
 
 Continuation::Continuation(std::shared_ptr<const OpTree> ot,
-                           std::shared_ptr<LexicalPad> pad) {
+                           std::shared_ptr<LexicalPad> p) {
   optree = ot;
+  pad = p;
   stack.push(ExecutionStackFrame(optree->root, pad));
 }
 

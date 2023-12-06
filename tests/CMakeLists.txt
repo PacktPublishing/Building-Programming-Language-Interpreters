@@ -10,6 +10,7 @@ foreach(
     006-operator-if
     007-opsequence
     008-lexicalpad
+    009-recursive-factorial
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(
