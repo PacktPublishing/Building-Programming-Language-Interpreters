@@ -84,7 +84,7 @@ void If::set_callable_return(ControlFlowOperationContext &ctx, Value v) const {
   ctx.value = v;
 }
 
-std::shared_ptr<std::vector<Value>>
+std::shared_ptr<const std::vector<Value>>
 If::get_argument_list(ControlFlowOperationContext &ctx) const {
   return ctx.arglist;
 }

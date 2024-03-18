@@ -40,7 +40,7 @@ struct Callable {
 };
 
 struct DynamicList {
-  std::shared_ptr<std::vector<Value>> values;
+  std::shared_ptr<const std::vector<Value>> values;
 };
 
 } // namespace value

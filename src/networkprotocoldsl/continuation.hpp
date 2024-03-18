@@ -44,7 +44,7 @@ public:
 
   Value get_callable();
 
-  std::shared_ptr<std::vector<Value>> get_argument_list();
+  std::shared_ptr<const std::vector<Value>> get_argument_list();
 
   void set_callable_invoked();
 

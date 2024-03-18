@@ -64,7 +64,7 @@ void FunctionCall::set_callable_return(ControlFlowOperationContext &ctx,
   ctx.value = v;
 }
 
-std::shared_ptr<std::vector<Value>>
+std::shared_ptr<const std::vector<Value>>
 FunctionCall::get_argument_list(ControlFlowOperationContext &ctx) const {
   return ctx.arglist;
 }

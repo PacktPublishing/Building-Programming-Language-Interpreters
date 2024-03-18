@@ -46,7 +46,7 @@ public:
                                           : rootpad;
         std::shared_ptr<LexicalPad> pad =
             std::make_shared<LexicalPad>(LexicalPad(parent_pad));
-        std::shared_ptr<std::vector<Value>> arglist =
+        std::shared_ptr<const std::vector<Value>> arglist =
             continuation_stack.top().get_argument_list();
         for (size_t i = 0; i < callable.argument_names.size(); i++) {
           if (i >= arglist->size()) {
