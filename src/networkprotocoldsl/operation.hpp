@@ -17,10 +17,12 @@
 #include <networkprotocoldsl/operation/multiply.hpp>
 #include <networkprotocoldsl/operation/opsequence.hpp>
 #include <networkprotocoldsl/operation/readint32native.hpp>
+#include <networkprotocoldsl/operation/readstaticoctets.hpp>
 #include <networkprotocoldsl/operation/staticcallable.hpp>
 #include <networkprotocoldsl/operation/subtract.hpp>
 #include <networkprotocoldsl/operation/unarycallback.hpp>
 #include <networkprotocoldsl/operation/writeint32native.hpp>
+#include <networkprotocoldsl/operation/writestaticoctets.hpp>
 
 namespace networkprotocoldsl {
 
@@ -37,8 +39,9 @@ using Operation = std::variant<
     operation::LesserEqual, operation::LexicalPadGet,
     operation::LexicalPadInitialize, operation::LexicalPadInitializeGlobal,
     operation::LexicalPadSet, operation::Multiply, operation::OpSequence,
-    operation::ReadInt32Native, operation::StaticCallable, operation::Subtract,
-    operation::UnaryCallback, operation::WriteInt32Native>;
+    operation::ReadInt32Native, operation::ReadStaticOctets,
+    operation::StaticCallable, operation::Subtract, operation::UnaryCallback,
+    operation::WriteInt32Native, operation::WriteStaticOctets>;
 
 } // namespace networkprotocoldsl
 

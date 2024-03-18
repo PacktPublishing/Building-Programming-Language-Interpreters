@@ -1,0 +1,21 @@
+(OpSequence
+  (LexicalPadInitialize <"verb">
+   (ReadOctetUntilTerminator <" ">) ),
+  (LexicalPadInitialize <"request_target">
+   (ReadOctetUntilTerminator <" ">)),
+  (ReadStaticOctets <"HTTP/">),
+  (LexicalPadInitialize <"major_version">
+   (ReadIntegerFromASCII)),
+  (ReadStaticOctets <".">),
+  (LexicalPadInitialize <"minor_version">
+   (ReadIntegerFromASCII)),
+  (ReadStaticOctets <"\r\l">),
+  (LexicalPadInitialize <"headers">
+   (GenerateList
+    (StaticCallable
+      <(OpSequence
+        (TerminateListIfReadAhead <"\r\l">),
+        (DynamicList
+         (ReadOctetUntilTerminator <":">),
+         (ReadOctetUntilTerminator <"\r\l">)))>))),
+  (LexicalPadAsDictionary))

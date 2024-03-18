@@ -49,6 +49,8 @@ add_library(
     src/networkprotocoldsl/operation/opsequence.hpp
     src/networkprotocoldsl/operation/readint32native.cpp
     src/networkprotocoldsl/operation/readint32native.hpp
+    src/networkprotocoldsl/operation/readstaticoctets.cpp
+    src/networkprotocoldsl/operation/readstaticoctets.hpp
     src/networkprotocoldsl/operation/staticcallable.cpp
     src/networkprotocoldsl/operation/staticcallable.hpp
     src/networkprotocoldsl/operation/subtract.cpp
@@ -57,6 +59,8 @@ add_library(
     src/networkprotocoldsl/operation/unarycallback.hpp
     src/networkprotocoldsl/operation/writeint32native.cpp
     src/networkprotocoldsl/operation/writeint32native.hpp
+    src/networkprotocoldsl/operation/writestaticoctets.cpp
+    src/networkprotocoldsl/operation/writestaticoctets.hpp
     src/networkprotocoldsl/operationconcepts.cpp
     src/networkprotocoldsl/operationconcepts.hpp
     src/networkprotocoldsl/optree.cpp

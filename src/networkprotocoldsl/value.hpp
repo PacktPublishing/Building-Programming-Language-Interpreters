@@ -15,9 +15,9 @@ class OpTree;
 // fwd declare complex value types, to allow value types
 // that contain other values.
 namespace value {
-  enum class RuntimeError;
-  struct Callable;
-  struct DynamicList;
+enum class RuntimeError;
+struct Callable;
+struct DynamicList;
 }
 
 // variant of all types possible
@@ -25,7 +25,7 @@ using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError, 
 
 namespace value {
 
-enum class RuntimeError { TypeError, NameError };
+enum class RuntimeError { TypeError, NameError, ProtocolMismatchError };
 
 struct Callable {
   std::shared_ptr<const OpTree> tree;
