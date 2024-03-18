@@ -18,11 +18,12 @@ namespace value {
 enum class RuntimeError;
 struct Callable;
 struct DynamicList;
+struct Octets;
 } // namespace value
 
 // variant of all types possible
 using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError,
-                           value::DynamicList>;
+                           value::DynamicList, value::Octets>;
 
 namespace value {
 
@@ -41,6 +42,10 @@ struct Callable {
 
 struct DynamicList {
   std::shared_ptr<const std::vector<Value>> values;
+};
+
+struct Octets {
+  std::shared_ptr<const std::string> data;
 };
 
 } // namespace value

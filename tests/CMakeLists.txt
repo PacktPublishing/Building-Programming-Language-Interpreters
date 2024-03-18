@@ -12,6 +12,7 @@ foreach(
     008-lexicalpad
     009-recursive-factorial
     010-read-write-static-octets
+    011-write-inttoascii
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

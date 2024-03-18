@@ -33,6 +33,8 @@ add_library(
     src/networkprotocoldsl/operation/if.hpp
     src/networkprotocoldsl/operation/int32literal.cpp
     src/networkprotocoldsl/operation/int32literal.hpp
+    src/networkprotocoldsl/operation/inttoascii.cpp
+    src/networkprotocoldsl/operation/inttoascii.hpp
     src/networkprotocoldsl/operation/lesserequal.cpp
     src/networkprotocoldsl/operation/lesserequal.hpp
     src/networkprotocoldsl/operation/lexicalpadget.cpp
@@ -59,6 +61,8 @@ add_library(
     src/networkprotocoldsl/operation/unarycallback.hpp
     src/networkprotocoldsl/operation/writeint32native.cpp
     src/networkprotocoldsl/operation/writeint32native.hpp
+    src/networkprotocoldsl/operation/writeoctets.cpp
+    src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
     src/networkprotocoldsl/operationconcepts.cpp
