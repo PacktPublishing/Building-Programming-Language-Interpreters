@@ -7,7 +7,7 @@
 namespace networkprotocoldsl::operation {
 
 OperationResult WriteStaticOctets::operator()(InputOutputOperationContext &ctx,
-                                             Arguments a) const {
+                                              Arguments a) const {
   if (ctx.buffer.length() == 0) {
     ctx.buffer = contents;
     ctx.it = ctx.buffer.begin();
@@ -20,7 +20,7 @@ OperationResult WriteStaticOctets::operator()(InputOutputOperationContext &ctx,
 }
 
 size_t WriteStaticOctets::handle_read(InputOutputOperationContext &ctx,
-                                     std::string_view in) const {
+                                      std::string_view in) const {
   return 0;
 }
 
@@ -30,7 +30,7 @@ WriteStaticOctets::get_write_buffer(InputOutputOperationContext &ctx) const {
 }
 
 size_t WriteStaticOctets::handle_write(InputOutputOperationContext &ctx,
-                                      size_t s) const {
+                                       size_t s) const {
   size_t consumed = 0;
   while (s > 0 && ctx.it != ctx.buffer.end()) {
     s--;

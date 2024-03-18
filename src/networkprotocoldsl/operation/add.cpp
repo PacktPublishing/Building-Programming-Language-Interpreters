@@ -21,8 +21,9 @@ static Value _add(value::Callable lhs, auto rhs) {
 
 static Value _add(value::RuntimeError lhs, auto rhs) { return rhs; }
 
-template <typename LHS, typename RHS>
-static Value _add(LHS lhs, RHS rhs) { return value::RuntimeError::TypeError; }
+template <typename LHS, typename RHS> static Value _add(LHS lhs, RHS rhs) {
+  return value::RuntimeError::TypeError;
+}
 
 Value Add::operator()(Arguments a) const {
   return std::visit([&a](auto lhs) { return _add(lhs, std::get<1>(a)); },

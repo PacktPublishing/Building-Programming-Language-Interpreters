@@ -5,7 +5,7 @@
 namespace networkprotocoldsl::operation {
 
 Value DynamicList::operator()(std::shared_ptr<std::vector<Value>> args) const {
-  return value::DynamicList({ args });
+  return value::DynamicList({args});
 }
 
 } // namespace networkprotocoldsl::operation

@@ -30,9 +30,7 @@ public:
    * to be executed in the context of a given socket.
    */
   Interpreter(std::shared_ptr<const OpTree> o, std::shared_ptr<LexicalPad> p)
-      : optree(o), rootpad(p),
-        continuation_stack(
-            {Continuation(o, rootpad)}){};
+      : optree(o), rootpad(p), continuation_stack({Continuation(o, rootpad)}){};
 
   ContinuationState step() {
     ContinuationState s = continuation_stack.top().step();

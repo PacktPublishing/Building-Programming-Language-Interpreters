@@ -12,12 +12,12 @@ TEST(read_write_static_octets, good_write) {
   using namespace networkprotocoldsl;
 
   operation::WriteStaticOctets wso("GET");
-  auto optree1 = std::make_shared<OpTree>(OpTree({ wso, {} }));
+  auto optree1 = std::make_shared<OpTree>(OpTree({wso, {}}));
   InterpretedProgram p1(optree1);
   Interpreter i1 = p1.get_instance();
 
   operation::ReadStaticOctets rso("GET");
-  auto optree2 = std::make_shared<OpTree>(OpTree({ rso, {} }));
+  auto optree2 = std::make_shared<OpTree>(OpTree({rso, {}}));
   InterpretedProgram p2(optree2);
   Interpreter i2 = p2.get_instance();
 
@@ -38,25 +38,26 @@ TEST(read_write_static_octets, good_write) {
 
   ASSERT_EQ(ContinuationState::Exited, i1.step());
   ASSERT_EQ(true, std::holds_alternative<Value>(i1.get_result()));
-  ASSERT_EQ(true, std::holds_alternative<int32_t>(std::get<Value>(i1.get_result())));
+  ASSERT_EQ(true,
+            std::holds_alternative<int32_t>(std::get<Value>(i1.get_result())));
   ASSERT_EQ(0, std::get<int32_t>(std::get<Value>(i1.get_result())));
   ASSERT_EQ(ContinuationState::Exited, i2.step());
   ASSERT_EQ(true, std::holds_alternative<Value>(i2.get_result()));
-  ASSERT_EQ(true, std::holds_alternative<bool>(std::get<Value>(i2.get_result())));
+  ASSERT_EQ(true,
+            std::holds_alternative<bool>(std::get<Value>(i2.get_result())));
   ASSERT_EQ(true, std::get<bool>(std::get<Value>(i2.get_result())));
-
 }
 
 TEST(read_write_static_octets, bad_write) {
   using namespace networkprotocoldsl;
 
   operation::WriteStaticOctets wso("GOT");
-  auto optree1 = std::make_shared<OpTree>(OpTree({ wso, {} }));
+  auto optree1 = std::make_shared<OpTree>(OpTree({wso, {}}));
   InterpretedProgram p1(optree1);
   Interpreter i1 = p1.get_instance();
 
   operation::ReadStaticOctets rso("GET");
-  auto optree2 = std::make_shared<OpTree>(OpTree({ rso, {} }));
+  auto optree2 = std::make_shared<OpTree>(OpTree({rso, {}}));
   InterpretedProgram p2(optree2);
   Interpreter i2 = p2.get_instance();
 
@@ -77,11 +78,13 @@ TEST(read_write_static_octets, bad_write) {
 
   ASSERT_EQ(ContinuationState::Exited, i1.step());
   ASSERT_EQ(true, std::holds_alternative<Value>(i1.get_result()));
-  ASSERT_EQ(true, std::holds_alternative<int32_t>(std::get<Value>(i1.get_result())));
+  ASSERT_EQ(true,
+            std::holds_alternative<int32_t>(std::get<Value>(i1.get_result())));
   ASSERT_EQ(0, std::get<int32_t>(std::get<Value>(i1.get_result())));
   ASSERT_EQ(ContinuationState::Exited, i2.step());
   ASSERT_EQ(true, std::holds_alternative<Value>(i2.get_result()));
-  ASSERT_EQ(true, std::holds_alternative<value::RuntimeError>(std::get<Value>(i2.get_result())));
-  ASSERT_EQ(value::RuntimeError::ProtocolMismatchError, std::get<value::RuntimeError>(std::get<Value>(i2.get_result())));
-
+  ASSERT_EQ(true, std::holds_alternative<value::RuntimeError>(
+                      std::get<Value>(i2.get_result())));
+  ASSERT_EQ(value::RuntimeError::ProtocolMismatchError,
+            std::get<value::RuntimeError>(std::get<Value>(i2.get_result())));
 }

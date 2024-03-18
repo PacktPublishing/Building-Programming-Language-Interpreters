@@ -55,9 +55,9 @@ concept DynamicInputOperationConcept =
  * Interpreted operations cannot block, and must always return a value.
  */
 template <typename OT>
-concept InterpretedOperationConcept =
-    requires(OT op, typename OT::Arguments args) {
-      { OperationConcept<OT> };
+concept InterpretedOperationConcept = requires(OT op,
+                                               typename OT::Arguments args) {
+  {OperationConcept<OT>};
   { op(args) } -> std::convertible_to<Value>;
 };
 
@@ -74,14 +74,14 @@ struct CallbackOperationContext {
  * handling the status of the callback.
  */
 template <typename OT>
-concept CallbackOperationConcept =
-    requires(OT op, typename OT::Arguments args, Value v,
+concept CallbackOperationConcept = requires(OT op, typename OT::Arguments args,
+                                            Value v,
                                             CallbackOperationContext ctx) {
-      { OperationConcept<OT> };
+  {OperationConcept<OT>};
   { op.callback_key(ctx) } -> std::convertible_to<std::string>;
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
-      { op.set_callback_called(ctx) };
-      { op.set_callback_return(ctx, v) };
+  {op.set_callback_called(ctx)};
+  {op.set_callback_return(ctx, v)};
 };
 
 /**
@@ -98,14 +98,15 @@ struct InputOutputOperationContext {
  * handling IO buffers.
  */
 template <typename OT>
-concept InputOutputOperationConcept =
-    requires(OT op, typename OT::Arguments args,
-             InputOutputOperationContext ctx, std::string_view sv, size_t s) {
-      { OperationConcept<OT> };
+concept InputOutputOperationConcept = requires(OT op,
+                                               typename OT::Arguments args,
+                                               InputOutputOperationContext ctx,
+                                               std::string_view sv, size_t s) {
+  {OperationConcept<OT>};
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
   { op.handle_read(ctx, sv) } -> std::convertible_to<std::size_t>;
   { op.get_write_buffer(ctx) } -> std::convertible_to<std::string_view>;
-      { op.handle_write(ctx, s) };
+  {op.handle_write(ctx, s)};
 };
 
 /**
@@ -126,12 +127,14 @@ template <typename OT>
 concept ControlFlowOperationConcept =
     requires(OT op, typename OT::Arguments args, Value v,
              ControlFlowOperationContext ctx) {
-      { OperationConcept<OT> };
+  {OperationConcept<OT>};
   { op.get_callable(ctx) } -> std::convertible_to<Value>;
-      { op.get_argument_list(ctx) } -> std::convertible_to<std::shared_ptr<std::vector<Value>>>;
+  {
+    op.get_argument_list(ctx)
+    } -> std::convertible_to<std::shared_ptr<std::vector<Value>>>;
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
-      { op.set_callable_return(ctx, v) };
-      { op.set_callable_invoked(ctx) };
+  {op.set_callable_return(ctx, v)};
+  {op.set_callable_invoked(ctx)};
 };
 
 /**
@@ -139,12 +142,11 @@ concept ControlFlowOperationConcept =
  * lexical pad.
  */
 template <typename OT>
-concept LexicalPadOperationConcept = requires(
-    OT op, typename OT::Arguments args, std::shared_ptr<LexicalPad> pad) {
-                                       { OperationConcept<OT> };
-                                       {
-                                         op(args, pad)
-                                         } -> std::convertible_to<Value>;
+concept LexicalPadOperationConcept = requires(OT op,
+                                              typename OT::Arguments args,
+                                              std::shared_ptr<LexicalPad> pad) {
+  {OperationConcept<OT>};
+  { op(args, pad) } -> std::convertible_to<Value>;
 };
 
 } // namespace networkprotocoldsl

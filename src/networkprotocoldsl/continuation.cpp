@@ -14,12 +14,15 @@ static Value _get_callable(Continuation *c, const O &o) {
       std::get<ControlFlowOperationContext>(c->top().get_context()));
 }
 
-template <typename O> static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c, const O &o) {
+template <typename O>
+static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c,
+                                                              const O &o) {
   return std::make_shared<std::vector<Value>>();
 }
 
 template <ControlFlowOperationConcept O>
-static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c, const O &o) {
+static std::shared_ptr<std::vector<Value>> _get_argument_list(Continuation *c,
+                                                              const O &o) {
   return o.get_argument_list(
       std::get<ControlFlowOperationContext>(c->top().get_context()));
 }

@@ -21,8 +21,9 @@ static Value _eq(value::Callable lhs, auto rhs) {
 
 static Value _eq(value::RuntimeError lhs, auto rhs) { return lhs; }
 
-template <typename LHS, typename RHS>
-static Value _eq(LHS lhs, RHS rhs) { return value::RuntimeError::TypeError; }
+template <typename LHS, typename RHS> static Value _eq(LHS lhs, RHS rhs) {
+  return value::RuntimeError::TypeError;
+}
 
 Value Eq::operator()(Arguments a) const {
   return std::visit([&a](auto lhs) { return _eq(lhs, std::get<1>(a)); },
