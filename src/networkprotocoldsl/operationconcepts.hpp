@@ -91,6 +91,7 @@ concept CallbackOperationConcept = requires(OT op, typename OT::Arguments args,
 struct InputOutputOperationContext {
   std::string buffer;
   std::string::iterator it;
+  bool ready;
 };
 
 /**

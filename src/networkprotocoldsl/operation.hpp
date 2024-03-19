@@ -18,6 +18,8 @@
 #include <networkprotocoldsl/operation/multiply.hpp>
 #include <networkprotocoldsl/operation/opsequence.hpp>
 #include <networkprotocoldsl/operation/readint32native.hpp>
+#include <networkprotocoldsl/operation/readintfromascii.hpp>
+#include <networkprotocoldsl/operation/readoctetsuntilterminator.hpp>
 #include <networkprotocoldsl/operation/readstaticoctets.hpp>
 #include <networkprotocoldsl/operation/staticcallable.hpp>
 #include <networkprotocoldsl/operation/subtract.hpp>
@@ -41,7 +43,8 @@ using Operation = std::variant<
     operation::IntToAscii, operation::LesserEqual, operation::LexicalPadGet,
     operation::LexicalPadInitialize, operation::LexicalPadInitializeGlobal,
     operation::LexicalPadSet, operation::Multiply, operation::OpSequence,
-    operation::ReadInt32Native, operation::ReadStaticOctets,
+    operation::ReadInt32Native, operation::ReadIntFromAscii,
+    operation::ReadOctetsUntilTerminator, operation::ReadStaticOctets,
     operation::StaticCallable, operation::Subtract, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
     operation::WriteStaticOctets>;

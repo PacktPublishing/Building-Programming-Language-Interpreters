@@ -13,6 +13,7 @@ foreach(
     009-recursive-factorial
     010-read-write-static-octets
     011-write-inttoascii
+    012-read-int-and-terminator
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

@@ -51,6 +51,10 @@ add_library(
     src/networkprotocoldsl/operation/opsequence.hpp
     src/networkprotocoldsl/operation/readint32native.cpp
     src/networkprotocoldsl/operation/readint32native.hpp
+    src/networkprotocoldsl/operation/readintfromascii.cpp
+    src/networkprotocoldsl/operation/readintfromascii.hpp
+    src/networkprotocoldsl/operation/readoctetsuntilterminator.cpp
+    src/networkprotocoldsl/operation/readoctetsuntilterminator.hpp
     src/networkprotocoldsl/operation/readstaticoctets.cpp
     src/networkprotocoldsl/operation/readstaticoctets.hpp
     src/networkprotocoldsl/operation/staticcallable.cpp
