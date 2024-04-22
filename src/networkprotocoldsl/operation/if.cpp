@@ -1,3 +1,4 @@
+#include <networkprotocoldsl/value.hpp>
 #include <memory>
 #include <networkprotocoldsl/operation/if.hpp>
 
@@ -28,6 +29,22 @@ static OperationResult _if(ControlFlowOperationContext &ctx, auto cond,
 
 static OperationResult _if(ControlFlowOperationContext &ctx, auto cond,
                            auto _then, value::RuntimeError r) {
+  return r;
+}
+
+static OperationResult _if(ControlFlowOperationContext &ctx,
+                           value::ControlFlowInstruction r, auto _then,
+                           auto _else) {
+  return r;
+}
+
+static OperationResult _if(ControlFlowOperationContext &ctx, auto cond,
+                           value::ControlFlowInstruction r, auto _else) {
+  return r;
+}
+
+static OperationResult _if(ControlFlowOperationContext &ctx, auto cond,
+                           auto _then, value::ControlFlowInstruction r) {
   return r;
 }
 

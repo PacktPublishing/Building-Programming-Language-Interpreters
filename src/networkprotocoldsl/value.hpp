@@ -16,6 +16,7 @@ class OpTree;
 // that contain other values.
 namespace value {
 enum class RuntimeError;
+enum class ControlFlowInstruction;
 struct Callable;
 struct DynamicList;
 struct Octets;
@@ -23,11 +24,14 @@ struct Octets;
 
 // variant of all types possible
 using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError,
-                           value::DynamicList, value::Octets>;
+                           value::ControlFlowInstruction, value::DynamicList,
+                           value::Octets>;
 
 namespace value {
 
 enum class RuntimeError { TypeError, NameError, ProtocolMismatchError };
+
+enum class ControlFlowInstruction { InterruptGenerator };
 
 struct Callable {
   std::shared_ptr<const OpTree> tree;

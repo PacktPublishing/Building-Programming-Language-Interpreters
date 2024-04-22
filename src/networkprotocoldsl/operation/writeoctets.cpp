@@ -23,6 +23,16 @@ static OperationResult _execute_operation(InputOutputOperationContext &ctx,
 }
 
 static OperationResult _execute_operation(InputOutputOperationContext &ctx,
+                                          value::RuntimeError v) {
+  return v;
+}
+
+static OperationResult _execute_operation(InputOutputOperationContext &ctx,
+                                          value::ControlFlowInstruction v) {
+  return v;
+}
+
+static OperationResult _execute_operation(InputOutputOperationContext &ctx,
                                           auto unknown) {
   return value::RuntimeError::TypeError;
 }

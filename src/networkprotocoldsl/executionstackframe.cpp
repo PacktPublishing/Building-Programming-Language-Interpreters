@@ -1,4 +1,5 @@
-#include "networkprotocoldsl/operationconcepts.hpp"
+#include <networkprotocoldsl/operationconcepts.hpp>
+#include <networkprotocoldsl/value.hpp>
 #include <memory>
 #include <networkprotocoldsl/executionstackframe.hpp>
 
@@ -59,7 +60,8 @@ static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
   std::shared_ptr<std::vector<Value>> acc = frame->get_accumulator();
   if (acc->size() < frame->get_children_count() &&
       !(acc->size() > 0 &&
-        std::holds_alternative<value::RuntimeError>(acc->back()))) {
+        (std::holds_alternative<value::RuntimeError>(acc->back()) ||
+         std::holds_alternative<value::ControlFlowInstruction>(acc->back())))) {
     assert(acc->size() < frame->get_children_count());
     return false;
   } else {

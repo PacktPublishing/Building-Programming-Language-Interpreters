@@ -1,3 +1,4 @@
+#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/multiply.hpp>
 
 namespace networkprotocoldsl::operation {
@@ -10,6 +11,10 @@ static Value _multiply(int32_t lhs, auto rhs) {
 
 static Value _multiply(int32_t lhs, value::RuntimeError rhs) { return rhs; }
 
+static Value _multiply(int32_t lhs, value::ControlFlowInstruction rhs) {
+  return rhs;
+}
+
 static Value _multiply(int32_t lhs, Value rhs) {
   return std::visit(
       [&lhs](auto rhs_v) -> Value { return _multiply(lhs, rhs_v); }, rhs);
@@ -19,7 +24,11 @@ static Value _multiply(value::Callable lhs, auto rhs) {
   return value::RuntimeError::TypeError;
 }
 
-static Value _multiply(value::RuntimeError lhs, auto rhs) { return rhs; }
+static Value _multiply(value::RuntimeError lhs, auto rhs) { return lhs; }
+
+static Value _multiply(value::ControlFlowInstruction lhs, auto rhs) {
+  return lhs;
+}
 
 template <typename LHS, typename RHS> static Value _multiply(LHS lhs, RHS rhs) {
   return value::RuntimeError::TypeError;

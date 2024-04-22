@@ -1,3 +1,4 @@
+#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/inttoascii.hpp>
 
 #include <memory>
@@ -11,6 +12,10 @@ static Value _inttoascii(int32_t v) {
   return value::Octets{
       std::make_shared<const std::string>(std::string(os.str()))};
 }
+
+static Value _inttoascii(value::RuntimeError v) { return v; }
+
+static Value _inttoascii(value::ControlFlowInstruction v) { return v; }
 
 static Value _inttoascii(auto v) { return value::RuntimeError::TypeError; }
 

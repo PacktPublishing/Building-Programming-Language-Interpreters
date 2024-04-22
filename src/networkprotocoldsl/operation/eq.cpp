@@ -1,3 +1,4 @@
+#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
 
 namespace networkprotocoldsl::operation {
@@ -10,6 +11,8 @@ static Value _eq(int32_t lhs, value::Callable rhs) {
 
 static Value _eq(int32_t lhs, value::RuntimeError rhs) { return rhs; }
 
+static Value _eq(int32_t lhs, value::ControlFlowInstruction rhs) { return rhs; }
+
 static Value _eq(int32_t lhs, Value rhs) {
   return std::visit([&lhs](auto rhs_v) -> Value { return _eq(lhs, rhs_v); },
                     rhs);
@@ -20,6 +23,8 @@ static Value _eq(value::Callable lhs, auto rhs) {
 }
 
 static Value _eq(value::RuntimeError lhs, auto rhs) { return lhs; }
+
+static Value _eq(value::ControlFlowInstruction lhs, auto rhs) { return lhs; }
 
 template <typename LHS, typename RHS> static Value _eq(LHS lhs, RHS rhs) {
   return value::RuntimeError::TypeError;
