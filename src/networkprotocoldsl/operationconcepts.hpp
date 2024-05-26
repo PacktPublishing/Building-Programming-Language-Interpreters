@@ -117,6 +117,7 @@ struct ControlFlowOperationContext {
   std::optional<Value> callable;
   std::optional<Value> value;
   std::shared_ptr<const std::vector<Value>> arglist;
+  std::shared_ptr<std::vector<Value>> accumulator;
   bool callable_invoked = false;
 };
 

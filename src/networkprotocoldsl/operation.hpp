@@ -7,6 +7,7 @@
 #include <networkprotocoldsl/operation/dynamiclist.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
 #include <networkprotocoldsl/operation/functioncall.hpp>
+#include <networkprotocoldsl/operation/generatelist.hpp>
 #include <networkprotocoldsl/operation/if.hpp>
 #include <networkprotocoldsl/operation/int32literal.hpp>
 #include <networkprotocoldsl/operation/inttoascii.hpp>
@@ -40,13 +41,13 @@ namespace networkprotocoldsl {
  */
 using Operation = std::variant<
     operation::Add, operation::DynamicList, operation::Eq,
-    operation::FunctionCall, operation::If, operation::Int32Literal,
-    operation::IntToAscii, operation::LesserEqual, operation::LexicalPadGet,
-    operation::LexicalPadInitialize, operation::LexicalPadInitializeGlobal,
-    operation::LexicalPadSet, operation::Multiply, operation::OpSequence,
-    operation::ReadInt32Native, operation::ReadIntFromAscii,
-    operation::ReadOctetsUntilTerminator, operation::ReadStaticOctets,
-    operation::StaticCallable, operation::Subtract,
+    operation::FunctionCall, operation::GenerateList, operation::If,
+    operation::Int32Literal, operation::IntToAscii, operation::LesserEqual,
+    operation::LexicalPadGet, operation::LexicalPadInitialize,
+    operation::LexicalPadInitializeGlobal, operation::LexicalPadSet,
+    operation::Multiply, operation::OpSequence, operation::ReadInt32Native,
+    operation::ReadIntFromAscii, operation::ReadOctetsUntilTerminator,
+    operation::ReadStaticOctets, operation::StaticCallable, operation::Subtract,
     operation::TerminateListIfReadAhead, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
     operation::WriteStaticOctets>;

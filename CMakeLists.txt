@@ -29,6 +29,8 @@ add_library(
     src/networkprotocoldsl/operation/eq.hpp
     src/networkprotocoldsl/operation/functioncall.cpp
     src/networkprotocoldsl/operation/functioncall.hpp
+    src/networkprotocoldsl/operation/generatelist.cpp
+    src/networkprotocoldsl/operation/generatelist.hpp
     src/networkprotocoldsl/operation/if.cpp
     src/networkprotocoldsl/operation/if.hpp
     src/networkprotocoldsl/operation/int32literal.cpp
