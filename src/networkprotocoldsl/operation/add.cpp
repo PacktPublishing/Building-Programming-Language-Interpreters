@@ -1,5 +1,5 @@
-#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/add.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 namespace networkprotocoldsl::operation {
 

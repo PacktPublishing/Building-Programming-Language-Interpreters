@@ -23,6 +23,7 @@
 #include <networkprotocoldsl/operation/readstaticoctets.hpp>
 #include <networkprotocoldsl/operation/staticcallable.hpp>
 #include <networkprotocoldsl/operation/subtract.hpp>
+#include <networkprotocoldsl/operation/terminatelistifreadahead.hpp>
 #include <networkprotocoldsl/operation/unarycallback.hpp>
 #include <networkprotocoldsl/operation/writeint32native.hpp>
 #include <networkprotocoldsl/operation/writeoctets.hpp>
@@ -45,7 +46,8 @@ using Operation = std::variant<
     operation::LexicalPadSet, operation::Multiply, operation::OpSequence,
     operation::ReadInt32Native, operation::ReadIntFromAscii,
     operation::ReadOctetsUntilTerminator, operation::ReadStaticOctets,
-    operation::StaticCallable, operation::Subtract, operation::UnaryCallback,
+    operation::StaticCallable, operation::Subtract,
+    operation::TerminateListIfReadAhead, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
     operation::WriteStaticOctets>;
 

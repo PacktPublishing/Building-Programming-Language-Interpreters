@@ -1,5 +1,5 @@
-#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/inttoascii.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <memory>
 #include <sstream>

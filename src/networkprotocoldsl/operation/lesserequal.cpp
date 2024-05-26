@@ -1,5 +1,5 @@
-#include <networkprotocoldsl/value.hpp>
 #include <networkprotocoldsl/operation/lesserequal.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 namespace networkprotocoldsl::operation {
 

@@ -61,6 +61,8 @@ add_library(
     src/networkprotocoldsl/operation/staticcallable.hpp
     src/networkprotocoldsl/operation/subtract.cpp
     src/networkprotocoldsl/operation/subtract.hpp
+    src/networkprotocoldsl/operation/terminatelistifreadahead.cpp
+    src/networkprotocoldsl/operation/terminatelistifreadahead.hpp
     src/networkprotocoldsl/operation/unarycallback.cpp
     src/networkprotocoldsl/operation/unarycallback.hpp
     src/networkprotocoldsl/operation/writeint32native.cpp
