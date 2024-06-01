@@ -12,6 +12,7 @@ namespace networkprotocoldsl::operation {
 static OperationResult _generate_list(ControlFlowOperationContext &ctx,
                                       value::Callable callable) {
   ctx.callable = callable;
+  ctx.accumulator = std::make_shared<std::vector<Value>>(std::vector<Value>());
   return ReasonForBlockedOperation::WaitingForCallableInvocation;
 }
 

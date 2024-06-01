@@ -1,9 +1,9 @@
-#include "networkprotocoldsl/operation/opsequence.hpp"
-#include "networkprotocoldsl/operation/readintfromascii.hpp"
-#include "networkprotocoldsl/operation/readoctetsuntilterminator.hpp"
 #include <networkprotocoldsl/interpretedprogram.hpp>
 #include <networkprotocoldsl/operation/int32literal.hpp>
 #include <networkprotocoldsl/operation/inttoascii.hpp>
+#include <networkprotocoldsl/operation/opsequence.hpp>
+#include <networkprotocoldsl/operation/readintfromascii.hpp>
+#include <networkprotocoldsl/operation/readoctetsuntilterminator.hpp>
 #include <networkprotocoldsl/operation/writeoctets.hpp>
 #include <networkprotocoldsl/optree.hpp>
 #include <networkprotocoldsl/value.hpp>

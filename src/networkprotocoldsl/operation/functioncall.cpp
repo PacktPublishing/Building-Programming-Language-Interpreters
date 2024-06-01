@@ -1,6 +1,6 @@
-#include "networkprotocoldsl/operationconcepts.hpp"
-#include "networkprotocoldsl/value.hpp"
 #include <networkprotocoldsl/operation/functioncall.hpp>
+#include <networkprotocoldsl/operationconcepts.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <cassert>
 #include <type_traits>
@@ -8,19 +8,24 @@
 
 namespace networkprotocoldsl::operation {
 
-static OperationResult _function_call(ControlFlowOperationContext &ctx,
-                                      value::Callable callable,
-                                      value::DynamicList arglist) {
+static OperationResult _function_call2(ControlFlowOperationContext &ctx,
+                                       value::Callable callable,
+                                       value::DynamicList arglist) {
   ctx.callable = callable;
   ctx.arglist = arglist.values;
   return ReasonForBlockedOperation::WaitingForCallableInvocation;
+}
+
+static OperationResult _function_call2(ControlFlowOperationContext &ctx, auto a,
+                                       auto b) {
+  return value::RuntimeError::TypeError;
 }
 
 static OperationResult _function_call(ControlFlowOperationContext &ctx,
                                       value::Callable callable, Value arglist) {
   return std::visit(
       [&ctx, &callable](auto arglist_visited) {
-        return _function_call(ctx, callable, arglist_visited);
+        return _function_call2(ctx, callable, arglist_visited);
       },
       arglist);
 }

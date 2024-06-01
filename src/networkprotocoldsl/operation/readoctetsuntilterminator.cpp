@@ -25,7 +25,7 @@ size_t ReadOctetsUntilTerminator::handle_read(InputOutputOperationContext &ctx,
   } else {
     ctx.buffer = std::string(in.begin(), pos);
     ctx.ready = true;
-    return pos + 1;
+    return pos + terminator.size();
   }
 }
 

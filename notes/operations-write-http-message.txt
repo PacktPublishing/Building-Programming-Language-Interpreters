@@ -10,7 +10,7 @@
    (WriteStaticOctets <".">),
    (WriteOctets 
     (IntToAscii(LexicalPadGet <"minor_version">))),
-   (WriteStaticOctets <"\r\l">),
+   (WriteStaticOctets <"\r\n">),
    (FunctionCallForEach
     (LexicalPadGet <"headers">),
     (StaticCallable
@@ -18,7 +18,8 @@
        (WriteOctets (LexicalPadGet <"key">),
        (WriteStaticOctets <":">),
        (WriteOctets (LexicalPadGet <"value">),
-       (WriteStaticOctets <"\r\l">)))),
-      ("key, "value")>))),
+       (WriteStaticOctets <"\r\n">)))),
+      ("key, "value")>)),
+   (WriteStaticOctets <"\r\n">)),
   ( "verb", "request_taget", "major_version",
     "minor_version", "headers" )>)

@@ -1,11 +1,11 @@
-#include "networkprotocoldsl/operation/dynamiclist.hpp"
-#include "networkprotocoldsl/operation/functioncall.hpp"
-#include "networkprotocoldsl/operation/lexicalpadget.hpp"
-#include "networkprotocoldsl/operation/lexicalpadinitializeglobal.hpp"
-#include "networkprotocoldsl/operation/opsequence.hpp"
-#include "networkprotocoldsl/value.hpp"
 #include <networkprotocoldsl/interpretedprogram.hpp>
+#include <networkprotocoldsl/operation/dynamiclist.hpp>
+#include <networkprotocoldsl/operation/functioncall.hpp>
+#include <networkprotocoldsl/operation/lexicalpadget.hpp>
+#include <networkprotocoldsl/operation/lexicalpadinitializeglobal.hpp>
+#include <networkprotocoldsl/operation/opsequence.hpp>
 #include <networkprotocoldsl/optree.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <cstring>
 #include <gtest/gtest.h>

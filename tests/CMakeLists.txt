@@ -14,6 +14,7 @@ foreach(
     010-read-write-static-octets
     011-write-inttoascii
     012-read-int-and-terminator
+    013-parse-and-write-http-message
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

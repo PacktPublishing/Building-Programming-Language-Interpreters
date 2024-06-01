@@ -13,7 +13,7 @@ class TerminateListIfReadAhead {
 
 public:
   using Arguments = std::tuple<>;
-  TerminateListIfReadAhead(std::string &_t) : terminator(_t) {}
+  TerminateListIfReadAhead(const std::string &_t) : terminator(_t) {}
 
   OperationResult operator()(InputOutputOperationContext &ctx,
                              Arguments a) const;

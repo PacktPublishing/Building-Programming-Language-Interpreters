@@ -9,13 +9,13 @@
   (ReadStaticOctets <".">),
   (LexicalPadInitialize <"minor_version">
    (ReadIntegerFromASCII)),
-  (ReadStaticOctets <"\r\l">),
+  (ReadStaticOctets <"\r\n">),
   (LexicalPadInitialize <"headers">
    (GenerateList
     (StaticCallable
       <(OpSequence
-        (TerminateListIfReadAhead <"\r\l">),
+        (TerminateListIfReadAhead <"\r\n">),
         (DynamicList
          (ReadOctetUntilTerminator <":">),
-         (ReadOctetUntilTerminator <"\r\l">)))>))),
+         (ReadOctetUntilTerminator <"\r\n">)))>))),
   (LexicalPadAsDictionary))

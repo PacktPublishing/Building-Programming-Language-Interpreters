@@ -30,13 +30,15 @@ Value LexicalPad::set(const std::string &name, Value v) {
   }
 }
 
-void LexicalPad::initialize(const std::string &name, Value v) { pad[name] = v; }
+void LexicalPad::initialize(const std::string &name, Value v) {
+  pad.insert({name, v});
+}
 
 void LexicalPad::initialize_global(const std::string &name, Value v) {
   if (parent.has_value()) {
     parent.value()->initialize_global(name, v);
   } else {
-    pad[name] = v;
+    pad.insert({name, v});
   }
 }
 

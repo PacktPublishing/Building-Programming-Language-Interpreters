@@ -3,6 +3,7 @@
 #include <networkprotocoldsl/value.hpp>
 
 #include <cassert>
+#include <memory>
 #include <type_traits>
 #include <variant>
 
@@ -13,6 +14,7 @@ static OperationResult _function_call_for_each(ControlFlowOperationContext &ctx,
                                                value::DynamicList arglist) {
   ctx.callable = callable;
   ctx.arglist = arglist.values;
+  ctx.accumulator = std::make_shared<std::vector<Value>>();
   return ReasonForBlockedOperation::WaitingForCallableInvocation;
 }
 

@@ -35,6 +35,10 @@ size_t TerminateListIfReadAhead::handle_read(InputOutputOperationContext &ctx,
   // the read never consumes anything in this operator, just store the data for
   // executing the operation.
   ctx.buffer = in;
+  if (ctx.buffer.length() >= terminator.length() &&
+      ctx.buffer.substr(0, terminator.length()) == terminator) {
+    return terminator.length();
+  }
   return 0;
 }
 

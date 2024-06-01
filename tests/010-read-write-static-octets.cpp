@@ -1,8 +1,8 @@
-#include "networkprotocoldsl/operation/readstaticoctets.hpp"
-#include "networkprotocoldsl/operation/writestaticoctets.hpp"
-#include "networkprotocoldsl/value.hpp"
 #include <networkprotocoldsl/interpretedprogram.hpp>
+#include <networkprotocoldsl/operation/readstaticoctets.hpp>
+#include <networkprotocoldsl/operation/writestaticoctets.hpp>
 #include <networkprotocoldsl/optree.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <cstring>
 #include <gtest/gtest.h>

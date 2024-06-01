@@ -1,8 +1,8 @@
-#include "networkprotocoldsl/operationconcepts.hpp"
-#include <cstdint>
 #include <networkprotocoldsl/operation/readintfromascii.hpp>
+#include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/value.hpp>
 
+#include <cstdint>
 #include <cstring>
 #include <errno.h>
 #include <memory>
