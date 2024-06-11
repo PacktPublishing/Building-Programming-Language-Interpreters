@@ -82,6 +82,12 @@ add_library(
     src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
+    src/networkprotocoldsl/support/mutexlockqueue.cpp
+    src/networkprotocoldsl/support/mutexlockqueue.hpp
+    src/networkprotocoldsl/support/notificationsignal.cpp
+    src/networkprotocoldsl/support/notificationsignal.hpp
+    src/networkprotocoldsl/support/transactionalcontainer.cpp
+    src/networkprotocoldsl/support/transactionalcontainer.hpp
     src/networkprotocoldsl/operationconcepts.cpp
     src/networkprotocoldsl/operationconcepts.hpp
     src/networkprotocoldsl/optree.cpp
