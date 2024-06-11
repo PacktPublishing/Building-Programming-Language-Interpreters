@@ -16,8 +16,14 @@ static OperationResult _function_call2(ControlFlowOperationContext &ctx,
   return ReasonForBlockedOperation::WaitingForCallableInvocation;
 }
 
-static OperationResult _function_call2(ControlFlowOperationContext &ctx, auto a,
-                                       auto b) {
+static OperationResult _function_call2(ControlFlowOperationContext &ctx,
+                                       value::Callable a,
+                                       value::RuntimeError b) {
+  return b;
+}
+
+static OperationResult _function_call2(ControlFlowOperationContext &ctx,
+                                       value::Callable a, auto b) {
   return value::RuntimeError::TypeError;
 }
 
