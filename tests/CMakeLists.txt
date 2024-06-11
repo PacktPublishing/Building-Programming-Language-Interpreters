@@ -23,5 +23,11 @@ foreach(
         networkprotocoldsl
         ${GTEST_BOTH_LIBRARIES}
     )
-    add_test(NAME ${TEST} COMMAND ${TEST}.t)
+    add_test(
+     NAME ${TEST}
+     COMMAND
+       ${CMAKE_COMMAND} -E env
+       TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/tsan_suppressions.txt
+       $<TARGET_FILE:${TEST}.t>
+    )
 endforeach()

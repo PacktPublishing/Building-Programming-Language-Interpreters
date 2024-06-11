@@ -4,6 +4,13 @@ project( networkprotocoldsl CXX )
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# # Enable ThreadSanitizer for Debug builds
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+ message(STATUS "Enabling ThreadSanitizer")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
+ set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=thread")
+endif()
+
 add_library(
     networkprotocoldsl
 

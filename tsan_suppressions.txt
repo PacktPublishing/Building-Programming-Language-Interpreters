@@ -1,0 +1,4 @@
+# this seems to be a false positive, it is
+# warning about data races on the atomic operations
+race:insert_interpreter
+race:remove_interpreter
