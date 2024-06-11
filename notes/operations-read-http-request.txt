@@ -18,4 +18,9 @@
         (DynamicList
          (ReadOctetUntilTerminator <":">),
          (ReadOctetUntilTerminator <"\r\n">)))>))),
-  (LexicalPadAsDictionary))
+  (DynamicList
+   (LexicalPadGet <”verb”>),
+   (LexicalPadGet <”request_target”>),
+   (LexicalPadGet <”major_version”>),
+   (LexicalPadGet <”minor_version”>),
+   (LexicalPadGet <”headers”>)))

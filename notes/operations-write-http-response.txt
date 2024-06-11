@@ -1,0 +1,25 @@
+(StaticCallable
+ <(OpSequence
+   (WriteStaticOctets <"HTTP/">),
+   (WriteOctets 
+    (IntToAscii(LexicalPadGet <"major_version">))),
+   (WriteStaticOctets <".">),
+   (WriteOctets 
+    (IntToAscii(LexicalPadGet <"minor_version">))),
+   (WriteStaticOctets <" ">),
+   (WriteOctets 
+    (IntToAscii(LexicalPadGet <"status_code">))),
+   (WriteOctets 
+    (LexicalPadGet <"reason_phrase">)),
+   (WriteStaticOctets <"\r\n">),
+   (FunctionCallForEach
+    (LexicalPadGet <"headers">),
+    (StaticCallable
+     <(OpSequence
+       (WriteOctets (LexicalPadGet <"key">),
+       (WriteStaticOctets <":">),
+       (WriteOctets (LexicalPadGet <"value">),
+       (WriteStaticOctets <"\r\n">)))),
+      ("key, "value")>)),
+   (WriteStaticOctets <"\r\n">)),
+  ( "major_version", "minor_version", "status_code", "reason_phrase", "headers" )>)

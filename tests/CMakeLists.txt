@@ -1,5 +1,15 @@
 find_package(GTest REQUIRED)
 
+add_library( testlibs
+             testlibs/http_message_optrees.hpp
+             testlibs/http_message_optrees.cpp
+)
+target_link_libraries(
+    testlibs
+    PUBLIC
+    networkprotocoldsl
+)
+
 foreach(
     TEST
     001-empty
@@ -20,6 +30,7 @@ foreach(
     target_link_libraries(
         ${TEST}.t
         PUBLIC
+        testlibs
         networkprotocoldsl
         ${GTEST_BOTH_LIBRARIES}
     )
