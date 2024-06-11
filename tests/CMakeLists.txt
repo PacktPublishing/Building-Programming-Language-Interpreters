@@ -10,6 +10,12 @@ target_link_libraries(
     networkprotocoldsl
 )
 
+find_path(LIBUV_INCLUDE_DIR NAMES uv.h)
+find_library(LIBUV_LIBRARIES NAMES uv libuv)
+add_library( uv INTERFACE )
+target_include_directories( uv INTERFACE ${LIBUV_INCLUDE_DIR} )
+target_link_libraries( uv INTERFACE ${LIBUV_LIBRARIES} )
+
 foreach(
     TEST
     001-empty
@@ -25,6 +31,7 @@ foreach(
     011-write-inttoascii
     012-read-int-and-terminator
     013-parse-and-write-http-message
+    014-using-with-libuv
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(
@@ -32,6 +39,7 @@ foreach(
         PUBLIC
         testlibs
         networkprotocoldsl
+        uv
         ${GTEST_BOTH_LIBRARIES}
     )
     add_test(
