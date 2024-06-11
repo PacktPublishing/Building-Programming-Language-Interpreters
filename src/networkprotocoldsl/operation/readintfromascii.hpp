@@ -25,6 +25,7 @@ public:
                              Arguments a) const;
   size_t handle_read(InputOutputOperationContext &ctx,
                      std::string_view in) const;
+  void handle_eof(InputOutputOperationContext &ctx) const;
 
   std::string_view get_write_buffer(InputOutputOperationContext &ctx) const;
 

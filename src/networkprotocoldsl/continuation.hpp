@@ -63,6 +63,8 @@ public:
   std::string_view get_write_buffer();
 
   size_t handle_write(size_t s);
+
+  void handle_eof();
 };
 
 } // namespace networkprotocoldsl

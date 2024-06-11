@@ -86,6 +86,13 @@ static size_t _handle_read(Continuation *c, const O &o, std::string_view s) {
       std::get<InputOutputOperationContext>(c->top().get_context()), s);
 }
 
+template <typename O> static void _handle_eof(Continuation *c, const O &o) {}
+
+template <InputOutputOperationConcept O>
+static void _handle_eof(Continuation *c, const O &o) {
+  o.handle_eof(std::get<InputOutputOperationContext>(c->top().get_context()));
+}
+
 template <typename O>
 static std::string_view _get_write_buffer(Continuation *c, const O &o) {
   return std::string_view();
@@ -214,6 +221,11 @@ void Continuation::set_callable_invoked() {
 void Continuation::set_callable_return(Value v) {
   result = v;
   std::visit([this, &v](auto &o) { _set_callable_return(this, o, v); },
+             stack.top().get_operation());
+}
+
+void Continuation::handle_eof() {
+  std::visit([this](auto &o) { _handle_eof(this, o); },
              stack.top().get_operation());
 }
 

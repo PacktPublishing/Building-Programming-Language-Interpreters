@@ -28,6 +28,8 @@ OperationResult ReadIntFromAscii::operator()(InputOutputOperationContext &ctx,
         }
       }
     }
+  } else if (ctx.eof) {
+    return value::RuntimeError::ProtocolMismatchError;
   } else {
     return ReasonForBlockedOperation::WaitingForRead;
   }
@@ -47,6 +49,10 @@ size_t ReadIntFromAscii::handle_read(InputOutputOperationContext &ctx,
   } else {
     return 0;
   }
+}
+
+void ReadIntFromAscii::handle_eof(InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 std::string_view

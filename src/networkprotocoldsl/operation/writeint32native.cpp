@@ -17,7 +17,11 @@ OperationResult WriteInt32Native::operator()(InputOutputOperationContext &ctx,
     ctx.it = ctx.buffer.begin();
   }
   if (ctx.it != ctx.buffer.end()) {
-    return ReasonForBlockedOperation::WaitingForWrite;
+    if (ctx.eof) {
+      return value::RuntimeError::ProtocolMismatchError;
+    } else {
+      return ReasonForBlockedOperation::WaitingForWrite;
+    }
   } else {
     return 0;
   }
@@ -31,6 +35,10 @@ size_t WriteInt32Native::handle_read(InputOutputOperationContext &ctx,
 std::string_view
 WriteInt32Native::get_write_buffer(InputOutputOperationContext &ctx) const {
   return std::string_view(ctx.it, ctx.buffer.end());
+}
+
+void WriteInt32Native::handle_eof(InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 size_t WriteInt32Native::handle_write(InputOutputOperationContext &ctx,

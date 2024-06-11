@@ -15,7 +15,11 @@ TerminateListIfReadAhead::operator()(InputOutputOperationContext &ctx,
     // can just finish the operator.
     if (ctx.buffer == terminator.substr(0, ctx.buffer.length())) {
       // we match so far, but we can't be sure yet.
-      return ReasonForBlockedOperation::WaitingForRead;
+      if (ctx.eof) {
+        return value::RuntimeError::ProtocolMismatchError;
+      } else {
+        return ReasonForBlockedOperation::WaitingForRead;
+      }
     } else {
       // we already know it doesn't match. Return a value.
       return false;
@@ -45,6 +49,11 @@ size_t TerminateListIfReadAhead::handle_read(InputOutputOperationContext &ctx,
 std::string_view TerminateListIfReadAhead::get_write_buffer(
     InputOutputOperationContext &ctx) const {
   return ctx.buffer;
+}
+
+void TerminateListIfReadAhead::handle_eof(
+    InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 size_t TerminateListIfReadAhead::handle_write(InputOutputOperationContext &ctx,

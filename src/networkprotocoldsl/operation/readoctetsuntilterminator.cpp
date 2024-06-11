@@ -12,6 +12,8 @@ ReadOctetsUntilTerminator::operator()(InputOutputOperationContext &ctx,
                                       Arguments a) const {
   if (ctx.ready) {
     return value::Octets{std::make_shared<const std::string>(ctx.buffer)};
+  } else if (ctx.eof) {
+    return value::RuntimeError::ProtocolMismatchError;
   } else {
     return ReasonForBlockedOperation::WaitingForRead;
   }
@@ -27,6 +29,11 @@ size_t ReadOctetsUntilTerminator::handle_read(InputOutputOperationContext &ctx,
     ctx.ready = true;
     return pos + terminator.size();
   }
+}
+
+void ReadOctetsUntilTerminator::handle_eof(
+    InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 std::string_view ReadOctetsUntilTerminator::get_write_buffer(

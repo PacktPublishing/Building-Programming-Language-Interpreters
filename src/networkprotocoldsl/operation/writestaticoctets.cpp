@@ -13,7 +13,11 @@ OperationResult WriteStaticOctets::operator()(InputOutputOperationContext &ctx,
     ctx.it = ctx.buffer.begin();
   }
   if (ctx.it != ctx.buffer.end()) {
-    return ReasonForBlockedOperation::WaitingForWrite;
+    if (ctx.eof) {
+      return value::RuntimeError::ProtocolMismatchError;
+    } else {
+      return ReasonForBlockedOperation::WaitingForWrite;
+    }
   } else {
     return 0;
   }
@@ -22,6 +26,10 @@ OperationResult WriteStaticOctets::operator()(InputOutputOperationContext &ctx,
 size_t WriteStaticOctets::handle_read(InputOutputOperationContext &ctx,
                                       std::string_view in) const {
   return 0;
+}
+
+void WriteStaticOctets::handle_eof(InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 std::string_view

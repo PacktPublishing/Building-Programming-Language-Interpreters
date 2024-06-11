@@ -104,6 +104,8 @@ public:
   size_t handle_write(size_t s) {
     return continuation_stack.top().handle_write(s);
   }
+
+  void handle_eof() { return continuation_stack.top().handle_eof(); }
 };
 
 } // namespace networkprotocoldsl

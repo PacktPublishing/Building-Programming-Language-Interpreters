@@ -92,6 +92,7 @@ struct InputOutputOperationContext {
   std::string buffer;
   std::string::iterator it;
   bool ready;
+  bool eof;
 };
 
 /**
@@ -108,6 +109,7 @@ concept InputOutputOperationConcept = requires(OT op,
   { op.handle_read(ctx, sv) } -> std::convertible_to<std::size_t>;
   { op.get_write_buffer(ctx) } -> std::convertible_to<std::string_view>;
   {op.handle_write(ctx, s)};
+  {op.handle_eof(ctx)};
 };
 
 /**

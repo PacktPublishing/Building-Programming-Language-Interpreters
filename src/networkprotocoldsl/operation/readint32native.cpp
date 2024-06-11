@@ -8,6 +8,8 @@ namespace networkprotocoldsl::operation {
 OperationResult ReadInt32Native::operator()(InputOutputOperationContext &ctx,
                                             Arguments a) const {
   if (ctx.buffer.length() < 4) {
+    if (ctx.eof)
+      return value::RuntimeError::ProtocolMismatchError;
     return ReasonForBlockedOperation::WaitingForRead;
   } else {
     int v = 0;
@@ -31,6 +33,10 @@ size_t ReadInt32Native::handle_read(InputOutputOperationContext &ctx,
   } else {
     return 0;
   }
+}
+
+void ReadInt32Native::handle_eof(InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 std::string_view

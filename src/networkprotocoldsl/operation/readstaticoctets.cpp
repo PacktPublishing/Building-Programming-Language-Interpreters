@@ -8,7 +8,11 @@ namespace networkprotocoldsl::operation {
 OperationResult ReadStaticOctets::operator()(InputOutputOperationContext &ctx,
                                              Arguments a) const {
   if (ctx.buffer.length() < contents.length()) {
-    return ReasonForBlockedOperation::WaitingForRead;
+    if (ctx.eof) {
+      return value::RuntimeError::ProtocolMismatchError;
+    } else {
+      return ReasonForBlockedOperation::WaitingForRead;
+    }
   } else {
     if (strncmp(ctx.buffer.c_str(), contents.c_str(), contents.length()) == 0) {
       return true;
@@ -26,6 +30,10 @@ size_t ReadStaticOctets::handle_read(InputOutputOperationContext &ctx,
     ctx.buffer = std::string(in.begin(), contents.length());
     return contents.length();
   }
+}
+
+void ReadStaticOctets::handle_eof(InputOutputOperationContext &ctx) const {
+  ctx.eof = true;
 }
 
 std::string_view
