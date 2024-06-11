@@ -10,7 +10,7 @@
 namespace networkprotocoldsl {
 
 // fwd declaration to avoid cyclic inclusion.
-class OpTree;
+struct OpTree;
 
 // fwd declare complex value types, to allow value types
 // that contain other values.
