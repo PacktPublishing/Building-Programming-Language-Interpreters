@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v3
@@ -18,6 +18,6 @@ jobs:
     - name: configure
       run: mkdir build && cd build && cmake ../
     - name: make
-      run: make -C build/
+      run: make -C build/ VERBOSE=1
     - name: make test
-      run: make -C build/ test
+      run: make -C build/ test VERBOSE=1
