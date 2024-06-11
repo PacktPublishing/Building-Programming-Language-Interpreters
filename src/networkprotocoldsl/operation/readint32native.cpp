@@ -1,4 +1,5 @@
 #include <networkprotocoldsl/operation/readint32native.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <cstring>
 

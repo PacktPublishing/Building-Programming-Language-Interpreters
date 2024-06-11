@@ -1,13 +1,13 @@
 #ifndef NETWORKPROTOCOLDSL_INTERPRETEDPROGRAM_HPP
-#define NETWORKPROTOCOLDSL_INTERPRETERPROGRAM_HPP
-
-#include <memory>
-#include <string>
+#define NETWORKPROTOCOLDSL_INTERPRETEDPROGRAM_HPP
 
 #include <networkprotocoldsl/interpreter.hpp>
 #include <networkprotocoldsl/lexicalpad.hpp>
 #include <networkprotocoldsl/operation.hpp>
 #include <networkprotocoldsl/optree.hpp>
+
+#include <memory>
+#include <string>
 
 namespace networkprotocoldsl {
 

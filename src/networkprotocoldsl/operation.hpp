@@ -1,8 +1,6 @@
 #ifndef NETWORKPROTOCOLDSL_OPERATION_HPP
 #define NETWORKPROTOCOLDSL_OPERATION_HPP
 
-#include <variant>
-
 #include <networkprotocoldsl/operation/add.hpp>
 #include <networkprotocoldsl/operation/dynamiclist.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
@@ -30,6 +28,8 @@
 #include <networkprotocoldsl/operation/writeint32native.hpp>
 #include <networkprotocoldsl/operation/writeoctets.hpp>
 #include <networkprotocoldsl/operation/writestaticoctets.hpp>
+
+#include <variant>
 
 namespace networkprotocoldsl {
 

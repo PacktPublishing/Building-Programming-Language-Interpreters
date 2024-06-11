@@ -1,6 +1,7 @@
 #include <networkprotocoldsl/operation/dynamiclist.hpp>
 #include <networkprotocoldsl/value.hpp>
-#include <new>
+
+#include <memory>
 
 namespace networkprotocoldsl::operation {
 

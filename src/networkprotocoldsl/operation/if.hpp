@@ -1,11 +1,11 @@
 #ifndef NETWORKPROTOCOLDSL_OPERATION_IF_HPP
 #define NETWORKPROTOCOLDSL_OPERATION_IF_HPP
 
-#include <memory>
 #include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>

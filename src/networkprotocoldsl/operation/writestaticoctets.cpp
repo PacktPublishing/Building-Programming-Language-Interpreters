@@ -1,6 +1,6 @@
 #include <networkprotocoldsl/operation/writestaticoctets.hpp>
-
 #include <networkprotocoldsl/operationconcepts.hpp>
+#include <networkprotocoldsl/value.hpp>
 
 #include <cstring>
 

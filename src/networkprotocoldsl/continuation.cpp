@@ -1,5 +1,6 @@
-#include <memory>
 #include <networkprotocoldsl/continuation.hpp>
+
+#include <memory>
 #include <vector>
 
 namespace networkprotocoldsl {

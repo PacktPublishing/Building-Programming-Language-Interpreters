@@ -1,9 +1,9 @@
 #ifndef INCLUDED_NETWORKPROTOCOLDSL_CONTINUATION_HPP
 #define INCLUDED_NETWORKPROTOCOLDSL_CONTINUATION_HPP
 
-#include <memory>
 #include <networkprotocoldsl/executionstackframe.hpp>
 
+#include <memory>
 #include <stack>
 
 namespace networkprotocoldsl {

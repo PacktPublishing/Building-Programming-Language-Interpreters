@@ -1,5 +1,6 @@
 #include <networkprotocoldsl/operation/opsequence.hpp>
-#include <new>
+
+#include <memory>
 
 namespace networkprotocoldsl::operation {
 

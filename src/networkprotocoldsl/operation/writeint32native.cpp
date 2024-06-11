@@ -1,8 +1,8 @@
-#include <cstddef>
 #include <networkprotocoldsl/operation/writeint32native.hpp>
-
 #include <networkprotocoldsl/operationconcepts.hpp>
+#include <networkprotocoldsl/value.hpp>
 
+#include <cstddef>
 #include <cstring>
 
 namespace networkprotocoldsl::operation {

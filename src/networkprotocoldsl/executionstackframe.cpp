@@ -1,9 +1,9 @@
-#include <memory>
 #include <networkprotocoldsl/executionstackframe.hpp>
 #include <networkprotocoldsl/operationconcepts.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <cassert>
+#include <memory>
 
 namespace networkprotocoldsl {
 

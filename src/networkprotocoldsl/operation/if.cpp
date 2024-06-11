@@ -1,8 +1,8 @@
-#include <memory>
 #include <networkprotocoldsl/operation/if.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <cassert>
+#include <memory>
 #include <vector>
 
 namespace networkprotocoldsl::operation {

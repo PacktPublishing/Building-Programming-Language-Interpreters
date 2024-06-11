@@ -1,8 +1,8 @@
-#include <memory>
 #include <networkprotocoldsl/operation/readoctetsuntilterminator.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <cstring>
+#include <memory>
 #include <string_view>
 
 namespace networkprotocoldsl::operation {
