@@ -58,11 +58,11 @@ template <DynamicInputOperationConcept O>
 static bool operation_has_arguments_ready(ExecutionStackFrame *frame,
                                           const O &o) {
   std::shared_ptr<std::vector<Value>> acc = frame->get_accumulator();
-  if (acc->size() < frame->get_children_count() &&
-      !(acc->size() > 0 &&
-        (std::holds_alternative<value::RuntimeError>(acc->back()) ||
-         std::holds_alternative<value::ControlFlowInstruction>(acc->back())))) {
-    assert(acc->size() < frame->get_children_count());
+  if (acc->size() > 0 &&
+      (std::holds_alternative<value::RuntimeError>(acc->back()) ||
+       std::holds_alternative<value::ControlFlowInstruction>(acc->back()))) {
+    return true;
+  } else if (acc->size() < frame->get_children_count()) {
     return false;
   } else {
     return true;
