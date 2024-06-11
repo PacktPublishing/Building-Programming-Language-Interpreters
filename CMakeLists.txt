@@ -24,6 +24,14 @@ add_library(
     src/networkprotocoldsl/interpretedprogram.hpp
     src/networkprotocoldsl/interpreter.cpp
     src/networkprotocoldsl/interpreter.hpp
+    src/networkprotocoldsl/interpretercollection.cpp
+    src/networkprotocoldsl/interpretercollection.hpp
+    src/networkprotocoldsl/interpretercontext.cpp
+    src/networkprotocoldsl/interpretercontext.hpp
+    src/networkprotocoldsl/interpretercollectionmanager.cpp
+    src/networkprotocoldsl/interpretercollectionmanager.hpp
+    src/networkprotocoldsl/interpreterrunner.cpp
+    src/networkprotocoldsl/interpreterrunner.hpp
     src/networkprotocoldsl/lexicalpad.cpp
     src/networkprotocoldsl/lexicalpad.hpp
     src/networkprotocoldsl/operation.cpp
