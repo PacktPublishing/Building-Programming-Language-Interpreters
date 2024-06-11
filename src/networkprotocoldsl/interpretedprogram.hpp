@@ -41,8 +41,13 @@ public:
   /**
    * Obtains an instance of an interpreter for this program.
    */
-  Interpreter get_instance() {
-    return Interpreter(optree, std::make_shared<LexicalPad>(LexicalPad()));
+  Interpreter get_instance(std::optional<Value> arglist = std::nullopt) {
+    std::shared_ptr<LexicalPad> rootpad =
+        std::make_shared<LexicalPad>(LexicalPad());
+    if (arglist.has_value()) {
+      rootpad->initialize_global("argv", arglist.value());
+    }
+    return Interpreter(optree, rootpad);
   };
 };
 
