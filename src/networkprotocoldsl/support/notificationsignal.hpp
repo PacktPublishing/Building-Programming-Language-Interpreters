@@ -30,8 +30,8 @@ public:
     std::unique_lock<std::mutex> lk(mtx);
     if (!notified) {
       cv.wait(lk);
-      notified = false;
     }
+    notified = false;
   }
 };
 
