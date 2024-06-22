@@ -32,6 +32,16 @@ add_library(
     src/networkprotocoldsl/interpretercollectionmanager.hpp
     src/networkprotocoldsl/interpreterrunner.cpp
     src/networkprotocoldsl/interpreterrunner.hpp
+    src/networkprotocoldsl/lexer/token.hpp
+    src/networkprotocoldsl/lexer/token.cpp
+    src/networkprotocoldsl/lexer/token/identifier.hpp
+    src/networkprotocoldsl/lexer/token/identifier.cpp
+    src/networkprotocoldsl/lexer/token/keyword.hpp
+    src/networkprotocoldsl/lexer/token/keyword.cpp
+    src/networkprotocoldsl/lexer/token/literal.hpp
+    src/networkprotocoldsl/lexer/token/literal.cpp
+    src/networkprotocoldsl/lexer/token/punctuation.hpp
+    src/networkprotocoldsl/lexer/token/punctuation.cpp
     src/networkprotocoldsl/lexicalpad.cpp
     src/networkprotocoldsl/lexicalpad.hpp
     src/networkprotocoldsl/operation.cpp

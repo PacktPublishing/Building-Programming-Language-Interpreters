@@ -1,0 +1,99 @@
+message “HTTP Request” { 
+    when: Open; 
+    then: AwaitResponse; 
+    agent: Client; 
+    data: { 
+        method: str<encoding=Ascii7Bit, 
+                    sizing=Dynamic, 
+                    max_length=10>; 
+        request_target: str<encoding=Ascii7Bit, 
+                            sizing=Dynamic, 
+                            max_length=32768>; 
+        major_version: int<encoding=AsciiInt, 
+                           unsigned=True, 
+                           bits=8>; 
+        minor_version: int<encoding=AsciiInt, 
+                           unsigned=True, 
+                           bits=8>; 
+        headers: array< 
+          element_type=tuple<key=str<encoding=Ascii7Bit, 
+                                     sizing=Dynamic, 
+                                     max_length=32768>, 
+                             value=str<encoding=Ascii7Bit, 
+                                       sizing=Dynamic, 
+                                       max_length=32768>>, 
+          sizing=Dynamic, 
+          max_length=100>; 
+        contents: stream; 
+    } 
+    parts { 
+        tokens { verb } 
+        terminator { “ “ } 
+        tokens { request_target } 
+        terminator { “ “ } 
+        tokens { 
+            “HTTP/”, major_version, “.”, minor_version 
+        } 
+        terminator { “\r\n” } 
+        for header in headers { 
+            tokens { header.key } 
+            terminator { “:” } 
+            tokens { header.value } 
+            terminator { “\r\n”} 
+        } 
+        terminator { “\r\n” } 
+    } 
+} 
+ 
+message “HTTP Response” { 
+    when: AwaitResponse; 
+    then: Open; 
+    agent: server; 
+    data: { 
+        major_version: int<encoding=AsciiInt, 
+                           unsigned=True, 
+                           bits=8>; 
+        minor_version: int<encoding=AsciiInt, 
+                           unsigned=True, 
+                           bits=8>; 
+        response_code: int<encoding=AsciiInt, 
+                           unsigned=True, 
+                           bits=16>; 
+        reason_phrase: str<encoding=Ascii7Bit, 
+                           sizing=Dynamic, 
+                           max_length=1024>; 
+        headers: array< 
+          element_type=tuple<key=str<encoding=Ascii7Bit, 
+                                     sizing=Dynamic, 
+                                     max_length=32768>, 
+                             value=str<encoding=Ascii7Bit, 
+                                       sizing=Dynamic, 
+                                       max_length=32768>>, 
+          sizing=Dynamic, 
+          max_length=100>; 
+        contents: stream; 
+    } 
+    parts { 
+        tokens { 
+            “HTTP/”, major_version, “.”, minor_version 
+        } 
+        terminator { “ “ } 
+        tokens { response_code } 
+        terminator { “ “ } 
+        tokens { reason_phrase } 
+        terminator { “\r\n” } 
+        for header in headers { 
+            tokens { header.key } 
+            terminator { “:” } 
+            tokens { header.value } 
+            terminator { “\r\n”} 
+        } 
+        terminator { “\r\n” } 
+    } 
+} 
+ 
+message “Client Closes Connection” { 
+     when: Open; 
+     then: Closed; 
+     agent: Client; 
+} 
