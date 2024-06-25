@@ -32,6 +32,7 @@ foreach(
     012-read-int-and-terminator
     013-parse-and-write-http-message
     014-using-with-libuv
+    015-test-tokenizer
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

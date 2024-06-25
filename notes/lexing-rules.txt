@@ -1,0 +1,18 @@
+KeywordFor for
+KeywordIn in
+KeywordMessage message
+KeywordParts parts
+KeywordTerminator terminator
+KeywordTokens tokens
+LiteralInteger [0-9]+
+LiteralString \"[^"]*\"
+PunctuationAngleBracketClose >
+PunctuationAngleBracketOpen <
+PunctuationComma ,
+PunctuationCurlyBraceClose \}
+PunctuationCurlyBraceOpen \{
+PunctuationEqual =
+PunctuationKeyValueSeparator :
+PunctiationStatementEnd ;
+WhiteSpace  [ \t]+
+Itentifier [a-zA-Z][a-zA-Z0-9]*

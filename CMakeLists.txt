@@ -11,6 +11,14 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
  set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=thread")
 endif()
 
+include(FetchContent)
+FetchContent_Declare(
+  lexertl
+  GIT_REPOSITORY https://github.com/BenHanson/lexertl17.git
+  GIT_TAG        34fa04e5f2dfec551bbe92eae96c882a35238096 # 2024.02.17
+)
+FetchContent_MakeAvailable(lexertl)
+
 add_library(
     networkprotocoldsl
 
@@ -34,6 +42,8 @@ add_library(
     src/networkprotocoldsl/interpreterrunner.hpp
     src/networkprotocoldsl/lexer/token.hpp
     src/networkprotocoldsl/lexer/token.cpp
+    src/networkprotocoldsl/lexer/tokenize.hpp
+    src/networkprotocoldsl/lexer/tokenize.cpp
     src/networkprotocoldsl/lexer/token/identifier.hpp
     src/networkprotocoldsl/lexer/token/identifier.cpp
     src/networkprotocoldsl/lexer/token/keyword.hpp
@@ -113,6 +123,8 @@ add_library(
     src/networkprotocoldsl/value.cpp
     src/networkprotocoldsl/value.hpp
 )
+
+target_link_libraries( networkprotocoldsl PUBLIC lexertl)
 
 target_include_directories(
     networkprotocoldsl
