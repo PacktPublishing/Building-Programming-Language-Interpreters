@@ -1,0 +1,76 @@
+<IdentifierReference> ::= token::Identifier
+<BooleanLiteral> ::= token::literal::Boolean
+<IntegerLiteral> ::= token::literal::Integer
+<StringLiteral> ::= token::literal::String
+<TypeParameterValue> ::=
+   <BooleanLiteral> |
+   <IntegerLiteral> |
+   <IdentifierReference> |
+   <Type>
+<TypeParameterValues> ::= <TypeParameterValue>
+   (token::punctuation::Comma <TypeParameterValue>)*
+<Type> ::= token::Identifier
+   [ token::punctuation::AngleBracketOpen
+     <TypeParameterValues>
+     token::punctuation::AngleBracketClose ]
+
+<MessageDataField> ::=
+   token::Identifier
+   token::punctuation::KeyValueSeparator
+   <Type>
+   token::punctuation::StatementEnd
+<MessageData> ::=
+   token::Identifier // identifier name must be "data"
+   token::punctuation::KeyValueSeparator
+   token::punctuation::CurlyBraceOpen
+   <MessageDataField>*
+   token::punctuation::CurlyBraceClose
+
+<TokenPart> ::=
+   <IdentifierReference> |
+   <StringLiteral>
+<TokenSequence> ::=
+   <IdentifierReference> // identifier name must be "tokens"
+   token::punctuation::CurlyBraceOpen
+   <TokenPart>*
+   token::punctuation::CurlyBraceClose
+<Terminator> ::=
+   <IdentifierReference> // identifier name must be "terminator"
+   token::punctuation::CurlyBraceOpen
+   <StringLiteral>
+   token::punctuation::CurlyBraceClose // Added missing closing curly brace
+<MessageForLoop> ::=
+   token::keyword::For
+   <IdentifierReference>
+   token::keyword::In
+   <IdentifierReference>
+   token::punctuation::CurlyBraceOpen
+   <MessagePart>*
+   token::punctuation::CurlyBraceClose
+<MessagePart> ::=
+   <TokenSequence> |
+   <Terminator> |
+   <MessageForLoop>
+<MessageSequence> ::= <MessagePart>*
+<MessageParts> ::=
+   token::Identifier // identifier name must be "parts"
+   token::punctuation::CurlyBraceOpen
+   <MessagePart>*
+   token::punctuation::CurlyBraceClose
+
+<MessageAttribute> ::=
+   <IdentifierReference> // identifier name must be "when" or "then" or "agent"
+   token::punctuation::KeyValueSeparator
+   <IdentifierReference>
+   token::punctuation::StatementEnd
+
+<Message> ::=
+   token::keyword::Message
+   token::literal::String
+   token::punctuation::CurlyBraceOpen
+   <MessageAttribute>*
+   <MessageData>
+   <MessageParts>
+   token::punctuation::CurlyBraceClose
+
+<ProtocolDescription> ::= <Message>*
