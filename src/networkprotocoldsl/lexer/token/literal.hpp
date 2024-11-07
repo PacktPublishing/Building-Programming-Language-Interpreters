@@ -11,6 +11,9 @@ struct Integer {
 struct String {
   std::string value;
 };
+struct Boolean {
+  bool value;
+};
 
 } // namespace networkprotocoldsl::lexer::token::literal
 

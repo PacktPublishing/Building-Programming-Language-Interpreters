@@ -22,6 +22,10 @@ struct TokenRule {
 
 #define TP_ARGS std::vector<Token> &tokens, const std::string_view &str
 const std::vector<TokenRule> token_rules = {
+    {"True",
+     [](TP_ARGS) { tokens.push_back(token::literal::Boolean{true}); }},
+    {"False",
+     [](TP_ARGS) { tokens.push_back(token::literal::Boolean{false}); }},
     {"for", [](TP_ARGS) { tokens.push_back(token::keyword::For()); }},
     {"in", [](TP_ARGS) { tokens.push_back(token::keyword::In()); }},
     {"message", [](TP_ARGS) { tokens.push_back(token::keyword::Message()); }},

@@ -110,38 +110,38 @@ add_library(
     src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
-    src/networkprotocoldsl/parser/booleanliteral.cpp
-    src/networkprotocoldsl/parser/booleanliteral.hpp
-    src/networkprotocoldsl/parser/identifierreference.cpp
-    src/networkprotocoldsl/parser/identifierreference.hpp
-    src/networkprotocoldsl/parser/integerliteral.cpp
-    src/networkprotocoldsl/parser/integerliteral.hpp
-    src/networkprotocoldsl/parser/message.cpp
-    src/networkprotocoldsl/parser/messagedata.cpp
-    src/networkprotocoldsl/parser/messagedata.hpp
-    src/networkprotocoldsl/parser/messageforloop.cpp
-    src/networkprotocoldsl/parser/messageforloop.hpp
-    src/networkprotocoldsl/parser/message.hpp
-    src/networkprotocoldsl/parser/messagepart.cpp
-    src/networkprotocoldsl/parser/messagepart.hpp
-    src/networkprotocoldsl/parser/messagesequence.cpp
-    src/networkprotocoldsl/parser/messagesequence.hpp
-    src/networkprotocoldsl/parser/protocoldescription.cpp
-    src/networkprotocoldsl/parser/protocoldescription.hpp
-    src/networkprotocoldsl/parser/stringliteral.cpp
-    src/networkprotocoldsl/parser/stringliteral.hpp
-    src/networkprotocoldsl/parser/terminator.cpp
-    src/networkprotocoldsl/parser/terminator.hpp
-    src/networkprotocoldsl/parser/tokenpart.cpp
-    src/networkprotocoldsl/parser/tokenpart.hpp
-    src/networkprotocoldsl/parser/tokensequence.cpp
-    src/networkprotocoldsl/parser/tokensequence.hpp
-    src/networkprotocoldsl/parser/type.cpp
-    src/networkprotocoldsl/parser/type.hpp
-    src/networkprotocoldsl/parser/typeparametermap.cpp
-    src/networkprotocoldsl/parser/typeparametermap.hpp
-    src/networkprotocoldsl/parser/typeparametervalue.cpp
-    src/networkprotocoldsl/parser/typeparametervalue.hpp
+    src/networkprotocoldsl/parser/tree/booleanliteral.cpp
+    src/networkprotocoldsl/parser/tree/booleanliteral.hpp
+    src/networkprotocoldsl/parser/tree/identifierreference.cpp
+    src/networkprotocoldsl/parser/tree/identifierreference.hpp
+    src/networkprotocoldsl/parser/tree/integerliteral.cpp
+    src/networkprotocoldsl/parser/tree/integerliteral.hpp
+    src/networkprotocoldsl/parser/tree/message.cpp
+    src/networkprotocoldsl/parser/tree/messagedata.cpp
+    src/networkprotocoldsl/parser/tree/messagedata.hpp
+    src/networkprotocoldsl/parser/tree/messageforloop.cpp
+    src/networkprotocoldsl/parser/tree/messageforloop.hpp
+    src/networkprotocoldsl/parser/tree/message.hpp
+    src/networkprotocoldsl/parser/tree/messagepart.cpp
+    src/networkprotocoldsl/parser/tree/messagepart.hpp
+    src/networkprotocoldsl/parser/tree/messagesequence.cpp
+    src/networkprotocoldsl/parser/tree/messagesequence.hpp
+    src/networkprotocoldsl/parser/tree/protocoldescription.cpp
+    src/networkprotocoldsl/parser/tree/protocoldescription.hpp
+    src/networkprotocoldsl/parser/tree/stringliteral.cpp
+    src/networkprotocoldsl/parser/tree/stringliteral.hpp
+    src/networkprotocoldsl/parser/tree/terminator.cpp
+    src/networkprotocoldsl/parser/tree/terminator.hpp
+    src/networkprotocoldsl/parser/tree/tokenpart.cpp
+    src/networkprotocoldsl/parser/tree/tokenpart.hpp
+    src/networkprotocoldsl/parser/tree/tokensequence.cpp
+    src/networkprotocoldsl/parser/tree/tokensequence.hpp
+    src/networkprotocoldsl/parser/tree/type.cpp
+    src/networkprotocoldsl/parser/tree/type.hpp
+    src/networkprotocoldsl/parser/tree/typeparametermap.cpp
+    src/networkprotocoldsl/parser/tree/typeparametermap.hpp
+    src/networkprotocoldsl/parser/tree/typeparametervalue.cpp
+    src/networkprotocoldsl/parser/tree/typeparametervalue.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
     src/networkprotocoldsl/support/mutexlockqueue.hpp
     src/networkprotocoldsl/support/notificationsignal.cpp
