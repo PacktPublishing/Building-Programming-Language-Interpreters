@@ -23,7 +23,7 @@ struct ParseStateTraits {
 
 template <typename ParseStateTraits, typename T, typename... Args>
 concept has_conditional_partial_match = requires(Args... args) {
-  { T::contitional_partial_match(args...) } -> std::convertible_to<bool>;
+  { T::conditional_partial_match(args...) } -> std::convertible_to<bool>;
 };
 
 template <typename ParseStateTraits, typename T, typename... Args>

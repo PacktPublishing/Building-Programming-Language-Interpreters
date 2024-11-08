@@ -44,6 +44,7 @@ using NodeVariant =
                  std::shared_ptr<const tree::MessageSequence>,
                  std::shared_ptr<const tree::MessagePart>,
                  std::shared_ptr<const tree::MessageForLoop>,
+                 std::shared_ptr<const tree::MessageDataPair>,
                  std::shared_ptr<const tree::MessageData>,
                  std::shared_ptr<const tree::Message>>;
 
