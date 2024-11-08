@@ -110,6 +110,16 @@ add_library(
     src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
+    src/networkprotocoldsl/parser/grammar/identifier.hpp
+    src/networkprotocoldsl/parser/grammar/identifier.cpp
+    src/networkprotocoldsl/parser/grammar/literals.hpp
+    src/networkprotocoldsl/parser/grammar/literals.cpp
+    src/networkprotocoldsl/parser/grammar/traits.hpp
+    src/networkprotocoldsl/parser/grammar/traits.cpp
+    src/networkprotocoldsl/parser/grammar/typeparameter.hpp
+    src/networkprotocoldsl/parser/grammar/typeparameter.cpp
+    src/networkprotocoldsl/parser/support/recursiveparser.cpp
+    src/networkprotocoldsl/parser/support/recursiveparser.hpp
     src/networkprotocoldsl/parser/tree/booleanliteral.cpp
     src/networkprotocoldsl/parser/tree/booleanliteral.hpp
     src/networkprotocoldsl/parser/tree/identifierreference.cpp

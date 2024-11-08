@@ -7,8 +7,11 @@
    <IntegerLiteral> |
    <IdentifierReference> |
    <Type>
-<TypeParameterValues> ::= <TypeParameterValue>
-   (token::punctuation::Comma <TypeParameterValue>)*
+<TypeParameter> ::=
+   token::Identifier token::punctuation::Equals
+   <TypeParameterValue>
+<TypeParameters> ::= <TypeParameter>
+   (token::punctuation::Comma <TypeParameter>)*
 <Type> ::= token::Identifier
    [ token::punctuation::AngleBracketOpen
      <TypeParameterValues>

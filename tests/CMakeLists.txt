@@ -33,6 +33,9 @@ foreach(
     013-parse-and-write-http-message
     014-using-with-libuv
     015-test-tokenizer
+    016-grammar-literals
+    017-grammar-identifier
+    018-grammar-typeparameter
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(
