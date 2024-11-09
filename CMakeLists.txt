@@ -116,6 +116,8 @@ add_library(
     src/networkprotocoldsl/parser/grammar/literals.cpp
     src/networkprotocoldsl/parser/grammar/messagedata.hpp
     src/networkprotocoldsl/parser/grammar/messagedata.cpp
+    src/networkprotocoldsl/parser/grammar/tokenparts.hpp
+    src/networkprotocoldsl/parser/grammar/tokenparts.cpp
     src/networkprotocoldsl/parser/grammar/traits.hpp
     src/networkprotocoldsl/parser/grammar/traits.cpp
     src/networkprotocoldsl/parser/grammar/typeparameter.hpp
