@@ -22,8 +22,7 @@ struct TokenRule {
 
 #define TP_ARGS std::vector<Token> &tokens, const std::string_view &str
 const std::vector<TokenRule> token_rules = {
-    {"True",
-     [](TP_ARGS) { tokens.push_back(token::literal::Boolean{true}); }},
+    {"True", [](TP_ARGS) { tokens.push_back(token::literal::Boolean{true}); }},
     {"False",
      [](TP_ARGS) { tokens.push_back(token::literal::Boolean{false}); }},
     {"for", [](TP_ARGS) { tokens.push_back(token::keyword::For()); }},
@@ -60,8 +59,9 @@ const std::vector<TokenRule> token_rules = {
      }},
     {";",
      [](TP_ARGS) { tokens.push_back(token::punctuation::StatementEnd()); }},
+    {"\\.", [](TP_ARGS) { tokens.push_back(token::punctuation::Dot()); }},
     {"[ \\t\\n]+", [](TP_ARGS) {}}, // No action for whitespace
-    {"[a-zA-Z][a-zA-Z0-9]*",
+    {"[a-zA-Z][a-zA-Z0-9_]*",
      [](TP_ARGS) { tokens.push_back(token::Identifier{std::string(str)}); }}};
 #undef TP_ARGS
 

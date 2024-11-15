@@ -11,6 +11,7 @@ struct CurlyBraceOpen {};
 struct Equal {};
 struct KeyValueSeparator {};
 struct StatementEnd {};
+struct Dot {};
 
 } // namespace networkprotocoldsl::lexer::token::punctuation
 
