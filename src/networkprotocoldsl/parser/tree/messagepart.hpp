@@ -10,7 +10,9 @@
 namespace networkprotocoldsl::parser::tree {
 
 struct MessageForLoop;
-using MessagePart = std::variant<TokenSequence, Terminator, MessageForLoop>;
+using MessagePart = std::variant<std::shared_ptr<const TokenSequence>,
+                                 std::shared_ptr<const Terminator>,
+                                 std::shared_ptr<const MessageForLoop>>;
 
 } // namespace networkprotocoldsl::parser::tree
 

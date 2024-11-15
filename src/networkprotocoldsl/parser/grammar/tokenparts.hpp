@@ -13,8 +13,10 @@
 
 namespace networkprotocoldsl::parser::grammar {
 
-class TokenPart : public support::RecursiveParser<TokenPart, ParseTraits> {
+class TokenPart : public support::RecursiveParser<TokenPart, ParseTraits,
+                                                  Tracer<TokenPart>> {
 public:
+  static constexpr const char *name = "TokenPart";
   static std::tuple<StringLiteral, IdentifierReference> *recurse_any() {
     return nullptr;
   }
@@ -25,8 +27,10 @@ public:
 };
 
 class TokenSequence
-    : public support::RecursiveParser<TokenSequence, ParseTraits> {
+    : public support::RecursiveParser<TokenSequence, ParseTraits,
+                                      Tracer<TokenSequence>> {
 public:
+  static constexpr const char *name = "TokenSequence";
   static void partial_match() {}
   static void partial_match(lexer::token::keyword::Tokens) {}
   static TokenPart *recurse_many(lexer::token::keyword::Tokens,
@@ -46,8 +50,10 @@ public:
   }
 };
 
-class Terminator : public support::RecursiveParser<Terminator, ParseTraits> {
+class Terminator : public support::RecursiveParser<Terminator, ParseTraits,
+                                                   Tracer<Terminator>> {
 public:
+  static constexpr const char *name = "Terminator";
   static void partial_match() {}
   static void partial_match(lexer::token::keyword::Terminator) {}
   static StringLiteral *recurse_one(lexer::token::keyword::Terminator,

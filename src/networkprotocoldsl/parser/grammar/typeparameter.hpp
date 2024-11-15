@@ -16,8 +16,10 @@ namespace networkprotocoldsl::parser::grammar {
 class Type; // Forward declaration
 
 class TypeParameterValue
-    : public support::RecursiveParser<TypeParameterValue, ParseTraits> {
+    : public support::RecursiveParser<TypeParameterValue, ParseTraits,
+                                      Tracer<TypeParameterValue>> {
 public:
+  static constexpr const char *name = "TypeParameterValue";
   static std::tuple<Type, BooleanLiteral, StringLiteral, IntegerLiteral> *
   recurse_any() {
     return nullptr;
@@ -33,8 +35,10 @@ public:
 };
 
 class TypeParameter
-    : public support::RecursiveParser<TypeParameter, ParseTraits> {
+    : public support::RecursiveParser<TypeParameter, ParseTraits,
+                                      Tracer<TypeParameter>> {
 public:
+  static constexpr const char *name = "TypeParameter";
   static void partial_match() {}
   static void partial_match(lexer::token::Identifier) {}
   static TypeParameterValue *recurse_one(lexer::token::Identifier,
@@ -56,8 +60,10 @@ public:
 };
 
 class TypeParameters
-    : public support::RecursiveParser<TypeParameters, ParseTraits> {
+    : public support::RecursiveParser<TypeParameters, ParseTraits,
+                                      Tracer<TypeParameters>> {
 public:
+  static constexpr const char *name = "TypeParameters";
   static void partial_match() {}
   static TypeParameter *
   recurse_many(lexer::token::punctuation::AngleBracketOpen) {
@@ -84,8 +90,9 @@ public:
   }
 };
 
-class Type : public support::RecursiveParser<Type, ParseTraits> {
+class Type : public support::RecursiveParser<Type, ParseTraits, Tracer<Type>> {
 public:
+  static constexpr const char *name = "Type";
   static void partial_match() {}
   static TypeParameters *recurse_maybe(lexer::token::Identifier) {
     return nullptr;

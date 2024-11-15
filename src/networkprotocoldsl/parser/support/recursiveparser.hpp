@@ -2,8 +2,10 @@
 #define INCLUDED_NETWORKPROTOCOLDSL_PARSER_SUPPORT_RECURSIVEPARSER_HPP
 
 #include <any>
+#include <concepts>
 #include <iostream>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -197,7 +199,22 @@ get_common_variant_index(const std::vector<Variant> &variants) {
   return common_index;
 }
 
-template <class ParserContext, typename ParseStateTraits>
+template <typename ParseStateTraits> class NoOpTracer {
+public:
+  using TokenIterator = ParseStateTraits::TokenIterator;
+  template <typename... Args>
+  static void trace_start(const char *attempt_type, const TokenIterator &begin,
+                          const TokenIterator &end, Args... args) {}
+  template <typename... Args>
+  static void trace_success(const TokenIterator &begin,
+                            const TokenIterator &end, Args... args) {}
+  template <typename... Args>
+  static void trace_fail(const TokenIterator &begin, const TokenIterator &end,
+                         Args... args) {}
+};
+
+template <class ParserContext, typename ParseStateTraits,
+          typename Tracer = NoOpTracer<ParseStateTraits>>
 class RecursiveParser {
 public:
   using ParseStateReturn = typename ParseStateTraits::ParseStateReturn;
@@ -205,72 +222,100 @@ public:
   using ParseNode = typename ParseStateTraits::ParseNode;
 
   template <typename... Args>
+  static ParseStateReturn wrap_parse_with_trace(const TokenIterator begin,
+                                                const TokenIterator end,
+                                                Args... args) {
+    ParseStateReturn r = ParserContext::parse(begin, end, args...);
+    if (!r.node.has_value()) {
+      Tracer::trace_fail(begin, end, args...);
+    } else {
+      Tracer::trace_success(begin, end, args...);
+    }
+    return r;
+  }
+
+  template <typename... Args>
   static ParseStateReturn parse(TokenIterator begin, TokenIterator end,
                                 Args... args) {
     if constexpr (is_partial_match<ParseStateTraits, ParserContext,
                                    Args...>::value) {
-      if (begin == end)
+      Tracer::trace_start("partial_match", begin, end, args...);
+      if (begin == end) {
+        Tracer::trace_fail(begin, end, args...);
         return {std::nullopt, begin, end};
+      }
       auto token = *begin++;
       return std::visit(
-          [=](auto t) { return ParserContext::parse(begin, end, args..., t); },
+          [=](auto t) { return wrap_parse_with_trace(begin, end, args..., t); },
           token);
     } else if constexpr (is_conditional_partial_match<
                              ParseStateTraits, ParserContext, Args...>::value) {
-      if (begin == end)
+      Tracer::trace_start("conditional_match", begin, end, args...);
+      if (begin == end) {
+        Tracer::trace_fail(begin, end, args...);
         return {std::nullopt, begin, end};
+      }
       if (ParserContext::conditional_partial_match(args...)) {
         auto token = *begin++;
         return std::visit(
             [=](auto t) {
-              return ParserContext::parse(begin, end, args..., t);
+              return wrap_parse_with_trace(begin, end, args..., t);
             },
             token);
       } else {
+        Tracer::trace_fail(begin, end, args...);
         return {std::nullopt, begin, end};
       }
     } else if constexpr (is_recurse_one<ParseStateTraits, ParserContext,
                                         Args...>::value) {
+      Tracer::trace_start("recurse_one", begin, end, args...);
       ParseStateReturn r =
           recurse_one<ParseStateTraits, ParserContext, Args...>::type::parse(
               begin, end);
-      if (!r.node.has_value())
+      if (!r.node.has_value()) {
+        Tracer::trace_fail(begin, end, args...);
         return r;
+      }
       return std::visit(
           [=](auto t) {
-            return ParserContext::parse(r.begin, end, args..., t);
+            return wrap_parse_with_trace(r.begin, end, args..., t);
           },
           r.node.value());
     } else if constexpr (is_recurse_maybe<ParseStateTraits, ParserContext,
                                           Args...>::value) {
+      Tracer::trace_start("recurse_maybe", begin, end, args...);
       ParseStateReturn r =
           recurse_maybe<ParseStateTraits, ParserContext, Args...>::type::parse(
               begin, end);
       if (!r.node.has_value()) {
+        Tracer::trace_fail(begin, end, args...);
         return ParserContext::parse(begin, end, args..., std::nullopt);
       } else {
         return std::visit(
             [=](auto t) {
-              return ParserContext::parse(r.begin, end, args..., t);
+              return wrap_parse_with_trace(r.begin, end, args..., t);
             },
             r.node.value());
       }
     } else if constexpr (is_recurse_any<ParseStateTraits, ParserContext,
                                         Args...>::value) {
+      Tracer::trace_start("recurse_any", begin, end, args...);
       ParseStateReturn r =
           recurse_any<ParseStateTraits, ParserContext, Args...>::parse_any(
               begin, end);
       if (!r.node.has_value()) {
+        Tracer::trace_fail(begin, end, args...);
         return r;
       } else {
         return std::visit(
             [=](auto t) {
-              return ParserContext::parse(r.begin, end, args..., t);
+              return wrap_parse_with_trace(r.begin, end, args..., t);
             },
             r.node.value());
       }
     } else if constexpr (is_recurse_many<ParseStateTraits, ParserContext,
                                          Args...>::value) {
+      Tracer::trace_start("recurse_many", begin, end, args...);
       std::vector<ParseNode> nodes;
       while (true) {
         ParseStateReturn r =
@@ -312,16 +357,37 @@ public:
                 for (auto v : nodes) {
                   output.push_back(std::get<decltype(arg)>(v));
                 }
-                return ParserContext::parse(begin, end, args..., output);
+                auto r = ParserContext::parse(begin, end, args..., output);
+                if (!r.node.has_value()) {
+                  Tracer::trace_fail(begin, end, args..., output);
+                } else {
+                  Tracer::trace_success(begin, end, args..., output);
+                }
+                return r;
               },
               nodes.at(0));
         }
       }
-      return ParserContext::parse(begin, end, args..., nodes);
+      auto r = ParserContext::parse(begin, end, args..., nodes);
+      if (!r.node.has_value()) {
+        Tracer::trace_fail(begin, end, args...);
+      } else {
+        Tracer::trace_success(begin, end, args...);
+      }
+      return r;
     } else if constexpr (is_match<ParseStateTraits, ParserContext,
                                   Args...>::value) {
-      return ParserContext::match(begin, end, args...);
+      Tracer::trace_start("match", begin, end, args...);
+      auto r = ParserContext::match(begin, end, args...);
+      if (!r.node.has_value()) {
+        Tracer::trace_fail(begin, end, args...);
+      } else {
+        Tracer::trace_success(begin, end, args...);
+      }
+      return r;
     } else {
+      Tracer::trace_start("unknown", begin, end, args...);
+      Tracer::trace_fail(begin, end, args...);
       return {std::nullopt, begin, end};
     }
   }

@@ -10,8 +10,10 @@
 namespace networkprotocoldsl::parser::grammar {
 
 class BooleanLiteral
-    : public support::RecursiveParser<BooleanLiteral, ParseTraits> {
+    : public support::RecursiveParser<BooleanLiteral, ParseTraits,
+                                      Tracer<BooleanLiteral>> {
 public:
+  static constexpr const char *name = "BooleanLiteral";
   static void partial_match() {}
   static ParseStateReturn match(TokenIterator begin, TokenIterator end,
                                 lexer::token::literal::Boolean b) {
@@ -20,8 +22,10 @@ public:
 };
 
 class IntegerLiteral
-    : public support::RecursiveParser<IntegerLiteral, ParseTraits> {
+    : public support::RecursiveParser<IntegerLiteral, ParseTraits,
+                                      Tracer<IntegerLiteral>> {
 public:
+  static constexpr const char *name = "IntegerLiteral";
   static void partial_match() {}
   static ParseStateReturn match(TokenIterator begin, TokenIterator end,
                                 lexer::token::literal::Integer i) {
@@ -30,8 +34,10 @@ public:
 };
 
 class StringLiteral
-    : public support::RecursiveParser<StringLiteral, ParseTraits> {
+    : public support::RecursiveParser<StringLiteral, ParseTraits,
+                                      Tracer<StringLiteral>> {
 public:
+  static constexpr const char *name = "StringLiteral";
   static void partial_match() {}
   static ParseStateReturn match(TokenIterator begin, TokenIterator end,
                                 lexer::token::literal::String s) {

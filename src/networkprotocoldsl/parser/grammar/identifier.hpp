@@ -13,8 +13,10 @@ namespace networkprotocoldsl::parser::grammar {
 class IdentifierReference; // Forward declaration
 
 class IdentifierMemberAccess
-    : public support::RecursiveParser<IdentifierMemberAccess, ParseTraits> {
+    : public support::RecursiveParser<IdentifierMemberAccess, ParseTraits,
+                                      Tracer<IdentifierMemberAccess>> {
 public:
+  static constexpr const char *name = "IdentiferMemberAccess";
   static void partial_match() {}
   static IdentifierReference *recurse_one(lexer::token::punctuation::Dot) {
     return nullptr;
@@ -27,8 +29,10 @@ public:
 };
 
 class IdentifierReference
-    : public support::RecursiveParser<IdentifierReference, ParseTraits> {
+    : public support::RecursiveParser<IdentifierReference, ParseTraits,
+                                      Tracer<IdentifierReference>> {
 public:
+  static constexpr const char *name = "IdentiferReference";
   static void partial_match() {}
   static IdentifierMemberAccess *recurse_maybe(lexer::token::Identifier) {
     return nullptr;

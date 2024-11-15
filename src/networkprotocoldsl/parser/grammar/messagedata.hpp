@@ -13,8 +13,10 @@
 namespace networkprotocoldsl::parser::grammar {
 
 class MessageDataPair
-    : public support::RecursiveParser<MessageDataPair, ParseTraits> {
+    : public support::RecursiveParser<MessageDataPair, ParseTraits,
+                                      Tracer<MessageDataPair>> {
 public:
+  static constexpr const char *name = "MessageDataPair";
   static void partial_match() {}
   static void partial_match(lexer::token::Identifier) {}
   static Type *recurse_one(lexer::token::Identifier,
@@ -35,8 +37,10 @@ public:
   }
 };
 
-class MessageData : public support::RecursiveParser<MessageData, ParseTraits> {
+class MessageData : public support::RecursiveParser<MessageData, ParseTraits,
+                                                    Tracer<MessageData>> {
 public:
+  static constexpr const char *name = "MessageData";
   static void partial_match() {}
   static bool conditional_partial_match(lexer::token::Identifier id) {
     if (id.name == "data") {

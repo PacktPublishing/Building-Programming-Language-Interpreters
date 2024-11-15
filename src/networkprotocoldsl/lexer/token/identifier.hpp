@@ -7,6 +7,7 @@ namespace networkprotocoldsl::lexer::token {
 
 struct Identifier {
   std::string name;
+  std::string stringify() const { return name; }
 };
 
 } // namespace networkprotocoldsl::lexer::token

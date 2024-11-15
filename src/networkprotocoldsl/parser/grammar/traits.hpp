@@ -50,7 +50,72 @@ using NodeVariant =
 
 using TokenIterator = std::vector<lexer::Token>::const_iterator;
 
+static int indent_level(int modify) {
+  static int indent = 0;
+  indent += modify;
+  for (int i = 0; i < indent; ++i) {
+    std::cerr << ' ';
+  }
+  std::cerr << '(' << indent << ") ";
+  return indent;
+}
+
+static bool trace_enabled() {
+  static bool r = getenv("GRAMMAR_TRACER") != nullptr;
+  return r;
+}
+
 } // namespace
+
+template <typename ParserContext> class Tracer {
+public:
+  static void output_tokens(const TokenIterator begin,
+                            const TokenIterator end) {
+    int max = 10;
+    TokenIterator b = begin;
+    while (max > 0 && b != end) {
+      std::cerr << " " << std::visit([&](auto t) { return t.stringify(); }, *b);
+      b++;
+      max--;
+    }
+    if (b != end) {
+      std::cerr << "...";
+    }
+  }
+
+  using TokenIterator = ParserContext::TokenIterator;
+  template <typename... Args>
+  static void trace_start(const char *attempt_type, const TokenIterator &begin,
+                          const TokenIterator &end, Args... args) {
+    if (!trace_enabled())
+      return;
+    indent_level(1);
+    std::cerr << "> " << attempt_type << " " << ParserContext::name << " ("
+              << sizeof...(args) << "):";
+    output_tokens(begin, end);
+    std::cerr << std::endl;
+  }
+  template <typename... Args>
+  static void trace_success(const TokenIterator &begin,
+                            const TokenIterator &end, Args... args) {
+    if (!trace_enabled())
+      return;
+    indent_level(-1);
+    std::cerr << "< " << ParserContext::name << " [SUCCESS]";
+    output_tokens(begin, end);
+    std::cerr << std::endl;
+  }
+  template <typename... Args>
+  static void trace_fail(const TokenIterator &begin, const TokenIterator &end,
+                         Args... args) {
+    if (!trace_enabled())
+      return;
+    indent_level(-1);
+    std::cerr << "< " << ParserContext::name << " [FAIL]";
+    output_tokens(begin, end);
+    std::cerr << std::endl;
+  }
+};
 
 using ParseTraits = support::ParseStateTraits<TokenIterator, NodeVariant>;
 
