@@ -126,6 +126,8 @@ add_library(
     src/networkprotocoldsl/parser/grammar/traits.cpp
     src/networkprotocoldsl/parser/grammar/typeparameter.hpp
     src/networkprotocoldsl/parser/grammar/typeparameter.cpp
+    src/networkprotocoldsl/parser/parse.hpp
+    src/networkprotocoldsl/parser/parse.cpp
     src/networkprotocoldsl/parser/support/recursiveparser.cpp
     src/networkprotocoldsl/parser/support/recursiveparser.hpp
     src/networkprotocoldsl/parser/tree/booleanliteral.cpp

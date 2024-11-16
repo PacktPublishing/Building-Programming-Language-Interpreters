@@ -31,12 +31,52 @@ public:
     return nullptr;
   }
   static MessageData *
-  recurse_one(lexer::token::keyword::Message,
-              std::shared_ptr<const tree::StringLiteral>,
-              lexer::token::punctuation::CurlyBraceOpen,
-              std::vector<std::shared_ptr<const tree::MessageDataPair>>) {
+  recurse_maybe(lexer::token::keyword::Message,
+                std::shared_ptr<const tree::StringLiteral>,
+                lexer::token::punctuation::CurlyBraceOpen,
+                std::vector<std::shared_ptr<const tree::MessageDataPair>>) {
     return nullptr;
   }
+  static void
+  partial_match(lexer::token::keyword::Message,
+                std::shared_ptr<const tree::StringLiteral>,
+                lexer::token::punctuation::CurlyBraceOpen,
+                std::vector<std::shared_ptr<const tree::MessageDataPair>>,
+                std::nullopt_t) {}
+
+  static ParseStateReturn
+  match(TokenIterator begin, TokenIterator end, lexer::token::keyword::Message,
+        std::shared_ptr<const tree::StringLiteral> messagename,
+        lexer::token::punctuation::CurlyBraceOpen,
+        std::vector<std::shared_ptr<const tree::MessageDataPair>> attributes,
+        std::nullopt_t, lexer::token::punctuation::CurlyBraceClose) {
+    auto message = std::make_shared<tree::Message>();
+    message->name = messagename;
+    message->data = std::make_shared<const tree::MessageData>();
+    message->parts = std::make_shared<const tree::MessageSequence>();
+    bool seen_when = false;
+    bool seen_then = false;
+    bool seen_agent = false;
+    for (auto &attr : attributes) {
+      if (attr->first == "when") {
+        message->when = attr->second->name;
+        seen_when = true;
+      } else if (attr->first == "then") {
+        message->then = attr->second->name;
+        seen_then = true;
+      } else if (attr->first == "agent") {
+        message->agent = attr->second->name;
+        seen_agent = true;
+      }
+    }
+    if (!(seen_when && seen_then && seen_agent)) {
+      return {std::nullopt, begin, end};
+    } else {
+      return {std::const_pointer_cast<const tree::Message>(message), begin,
+              end};
+    }
+  }
+
   static MessageParts *
   recurse_one(lexer::token::keyword::Message,
               std::shared_ptr<const tree::StringLiteral>,

@@ -40,8 +40,10 @@ foreach(
     020-grammar-tokenpart
     021-grammar-messagesequence
     022-grammar-message
+    023-grammar-complete
 )
     add_executable(${TEST}.t ${TEST}.cpp)
+    target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
     target_link_libraries(
         ${TEST}.t
         PUBLIC
