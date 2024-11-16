@@ -1,4 +1,4 @@
-message “HTTP Request” { 
+message "HTTP Request" { 
     when: Open; 
     then: AwaitResponse; 
     agent: Client; 
@@ -28,24 +28,24 @@ message “HTTP Request” {
     } 
     parts { 
         tokens { verb } 
-        terminator { “ “ } 
+        terminator { " " } 
         tokens { request_target } 
-        terminator { “ “ } 
+        terminator { " " } 
         tokens { 
-            “HTTP/”, major_version, “.”, minor_version 
+            "HTTP/" major_version "." minor_version 
         } 
-        terminator { “\r\n” } 
+        terminator { "\r\n" } 
         for header in headers { 
             tokens { header.key } 
-            terminator { “:” } 
+            terminator { ":" } 
             tokens { header.value } 
-            terminator { “\r\n”} 
+            terminator { "\r\n"} 
         } 
-        terminator { “\r\n” } 
+        terminator { "\r\n" } 
     } 
 } 
  
-message “HTTP Response” { 
+message "HTTP Response" { 
     when: AwaitResponse; 
     then: Open; 
     agent: server; 
@@ -75,24 +75,24 @@ message “HTTP Response” {
     } 
     parts { 
         tokens { 
-            “HTTP/”, major_version, “.”, minor_version 
+            "HTTP/", major_version, ".", minor_version 
         } 
-        terminator { “ “ } 
+        terminator { " " } 
         tokens { response_code } 
-        terminator { “ “ } 
+        terminator { " " } 
         tokens { reason_phrase } 
-        terminator { “\r\n” } 
+        terminator { "\r\n" } 
         for header in headers { 
             tokens { header.key } 
-            terminator { “:” } 
+            terminator { ":" } 
             tokens { header.value } 
-            terminator { “\r\n”} 
+            terminator { "\r\n"} 
         } 
-        terminator { “\r\n” } 
+        terminator { "\r\n" } 
     } 
 } 
  
-message “Client Closes Connection” { 
+message "Client Closes Connection" { 
      when: Open; 
      then: Closed; 
      agent: Client; 

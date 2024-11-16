@@ -39,6 +39,7 @@ foreach(
     019-grammar-message-data
     020-grammar-tokenpart
     021-grammar-messagesequence
+    022-grammar-message
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_link_libraries(

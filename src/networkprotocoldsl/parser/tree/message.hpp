@@ -5,11 +5,12 @@
 #include <networkprotocoldsl/parser/tree/identifierreference.hpp>
 #include <networkprotocoldsl/parser/tree/messagedata.hpp>
 #include <networkprotocoldsl/parser/tree/messagesequence.hpp>
+#include <networkprotocoldsl/parser/tree/stringliteral.hpp>
 
 namespace networkprotocoldsl::parser::tree {
 
 struct Message {
-  std::shared_ptr<const IdentifierReference> name;
+  std::shared_ptr<const StringLiteral> name;
   std::shared_ptr<const IdentifierReference> when;
   std::shared_ptr<const IdentifierReference> then;
   std::shared_ptr<const IdentifierReference> agent;
