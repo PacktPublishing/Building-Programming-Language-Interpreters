@@ -14,6 +14,9 @@ using MessagePart = std::variant<std::shared_ptr<const TokenSequence>,
                                  std::shared_ptr<const Terminator>,
                                  std::shared_ptr<const MessageForLoop>>;
 
+
+
+
 } // namespace networkprotocoldsl::parser::tree
 
 #endif // INCLUDED_NETWORKPROTOCOLDSL_PARSER_TREE_MESSAGEPART_HPP

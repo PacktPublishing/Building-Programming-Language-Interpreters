@@ -69,3 +69,26 @@ TEST(MessageSequenceTest, LongMessageSequenceMatch) {
       result.node.value());
   ASSERT_EQ(6, seq->size());
 }
+
+TEST(MessageSequenceTest, MessageParts) {
+  auto maybe_tokens =
+      lexer::tokenize("parts {"
+                      "    tokens { verb } "
+                      "    terminator { \" \" } "
+                      "    tokens { request_target } "
+                      "    terminator { \" \" } "
+                      "    tokens { "
+                      "        \"HTTP/\" major_version \".\" minor_version "
+                      "    } "
+                      "    terminator { \"\\r\\n\" }"
+                      "} ");
+  ASSERT_TRUE(maybe_tokens.has_value());
+  std::vector<lexer::Token> &tokens = maybe_tokens.value();
+  auto result =
+      parser::grammar::MessageParts::parse(tokens.cbegin(), tokens.cend());
+  ASSERT_EQ(result.begin, tokens.cend());
+  ASSERT_TRUE(result.node.has_value());
+  auto seq = std::get<std::shared_ptr<const parser::tree::MessageSequence>>(
+      result.node.value());
+  ASSERT_EQ(6, seq->size());
+}

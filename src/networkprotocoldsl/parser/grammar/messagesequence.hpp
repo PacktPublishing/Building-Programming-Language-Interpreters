@@ -90,6 +90,29 @@ public:
   }
 };
 
+class MessageParts
+    : public support::RecursiveParser<MessageParts, ParseTraits,
+                                      Tracer<MessageParts>> {
+public:
+  static constexpr const char *name = "MesageParts";
+  static void partial_match() {}
+  static void partial_match(lexer::token::keyword::Parts) {}
+  static MessageSequence* recurse_one(lexer::token::keyword::Parts,
+                                   lexer::token::punctuation::CurlyBraceOpen) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::keyword::Parts,
+                            lexer::token::punctuation::CurlyBraceOpen,
+                            std::shared_ptr<const tree::MessageSequence>) {}
+  static ParseStateReturn match(TokenIterator begin, TokenIterator end,
+                                lexer::token::keyword::Parts,
+                                lexer::token::punctuation::CurlyBraceOpen,
+                                std::shared_ptr<const tree::MessageSequence> parts,
+                                lexer::token::punctuation::CurlyBraceClose) {
+    return { parts, begin, end};
+  }
+};                                      
+
 } // namespace networkprotocoldsl::parser::grammar
 
 #endif // INCLUDED_NETWORKPROTOCOLDSL_PARSER_GRAMMAR_MESSAGEFORLOOP_HPP
