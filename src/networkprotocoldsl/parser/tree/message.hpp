@@ -17,6 +17,6 @@ struct Message {
   std::shared_ptr<const MessageSequence> parts;
 };
 
-} // namespace networkprotocoldsl::parser
+} // namespace networkprotocoldsl::parser::tree
 
 #endif

@@ -7,6 +7,6 @@ struct IntegerLiteral {
   int value;
 };
 
-}
+} // namespace networkprotocoldsl::parser::tree
 
 #endif

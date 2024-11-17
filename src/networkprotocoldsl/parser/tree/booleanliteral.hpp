@@ -7,6 +7,6 @@ struct BooleanLiteral {
   bool value;
 };
 
-} // namespace networkprotocoldsl::tree
+} // namespace networkprotocoldsl::parser::tree
 
 #endif

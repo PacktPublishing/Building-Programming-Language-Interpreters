@@ -9,6 +9,6 @@ struct IdentifierReference {
   std::string name;
 };
 
-} // namespace networkprotocoldsl::tree
+} // namespace networkprotocoldsl::parser::tree
 
 #endif

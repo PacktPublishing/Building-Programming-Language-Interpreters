@@ -9,9 +9,10 @@
 
 namespace networkprotocoldsl::parser::tree {
 
-using TypeParameterMap =
-    std::map<std::string, std::shared_ptr<const TypeParameterValue>>;
+using TypeParameterPair = std::pair<std::string, TypeParameterValue>;
 
-}
+using TypeParameterMap = std::map<std::string, TypeParameterValue>;
+
+} // namespace networkprotocoldsl::parser::tree
 
 #endif // INCLUDED_NETWORKPROTOCOLDSL_PARSER_TREE_TYPEPARAMETERMAP_HPP

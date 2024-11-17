@@ -9,7 +9,8 @@
 
 namespace networkprotocoldsl::parser::tree {
 
-using ProtocolDescription = std::map<std::string, std::shared_ptr<const Message>>;
+using ProtocolDescription =
+    std::map<std::string, std::shared_ptr<const Message>>;
 
 }
 
