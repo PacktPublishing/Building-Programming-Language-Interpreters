@@ -162,6 +162,23 @@ add_library(
     src/networkprotocoldsl/parser/tree/typeparametermap.hpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.cpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.hpp
+    src/networkprotocoldsl/sema/ast/action.cpp
+    src/networkprotocoldsl/sema/ast/action.hpp
+    src/networkprotocoldsl/sema/ast/action/loop.cpp
+    src/networkprotocoldsl/sema/ast/action/loop.hpp
+    src/networkprotocoldsl/sema/ast/action/read.cpp
+    src/networkprotocoldsl/sema/ast/action/read.hpp
+    src/networkprotocoldsl/sema/ast/action/write.cpp
+    src/networkprotocoldsl/sema/ast/action/write.hpp
+    src/networkprotocoldsl/sema/ast/agent.cpp
+    src/networkprotocoldsl/sema/ast/agent.hpp
+    src/networkprotocoldsl/sema/ast/message.cpp
+    src/networkprotocoldsl/sema/ast/message.hpp
+    src/networkprotocoldsl/sema/ast/protocol.hpp
+    src/networkprotocoldsl/sema/ast/state.cpp
+    src/networkprotocoldsl/sema/ast/state.hpp
+    src/networkprotocoldsl/sema/ast/transition.cpp
+    src/networkprotocoldsl/sema/ast/transition.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
     src/networkprotocoldsl/support/mutexlockqueue.hpp
     src/networkprotocoldsl/support/notificationsignal.cpp
