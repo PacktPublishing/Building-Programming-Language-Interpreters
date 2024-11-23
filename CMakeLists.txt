@@ -162,6 +162,8 @@ add_library(
     src/networkprotocoldsl/parser/tree/typeparametermap.hpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.cpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.hpp
+    src/networkprotocoldsl/sema/analyze.cpp
+    src/networkprotocoldsl/sema/analyze.hpp
     src/networkprotocoldsl/sema/ast/action.cpp
     src/networkprotocoldsl/sema/ast/action.hpp
     src/networkprotocoldsl/sema/ast/action/loop.cpp

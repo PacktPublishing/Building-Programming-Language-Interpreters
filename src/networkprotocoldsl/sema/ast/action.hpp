@@ -21,4 +21,8 @@ using Action =
 
 } // namespace networkprotocoldsl::sema::ast
 
+// Include the rest of the action headers here because they are needed for the
+// definition of the Action variant.
+#include <networkprotocoldsl/sema/ast/action/loop.hpp>
+
 #endif
