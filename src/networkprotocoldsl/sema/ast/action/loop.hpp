@@ -11,10 +11,10 @@
 namespace networkprotocoldsl::sema::ast::action {
 
 struct Loop {
-  std::shared_ptr<const parser::tree::IdentifierReference> list;
-  std::shared_ptr<const parser::tree::IdentifierReference> item;
+  std::shared_ptr<const parser::tree::IdentifierReference> variable;
+  std::shared_ptr<const parser::tree::IdentifierReference> collection;
   std::string terminator;
-  std::vector<std::shared_ptr<const Action>> actions;
+  std::vector<Action> actions;
 };
 
 } // namespace networkprotocoldsl::sema::ast::action

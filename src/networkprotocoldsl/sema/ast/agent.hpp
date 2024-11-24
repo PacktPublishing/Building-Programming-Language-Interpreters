@@ -8,7 +8,7 @@
 namespace networkprotocoldsl::sema::ast {
 
 struct Agent {
-  std::shared_ptr<const State> initial_state;
+  std::map<std::string, std::shared_ptr<const State>> states;
 };
 
 } // namespace networkprotocoldsl::sema::ast

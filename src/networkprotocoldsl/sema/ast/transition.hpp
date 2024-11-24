@@ -7,12 +7,16 @@
 
 namespace networkprotocoldsl::sema::ast {
 
-struct State; // Forward declaration
-
-struct Transition {
-  std::shared_ptr<const Message> message;
-  std::shared_ptr<const State> next_state;
+struct AbstractTransition {
+  std::shared_ptr<const parser::tree::MessageData> data;
+  std::vector<Action> actions;
 };
+
+struct ReadTransition : public AbstractTransition {};
+struct WriteTransition : public AbstractTransition {};
+
+using Transition = std::variant<std::shared_ptr<const ReadTransition>,
+                                std::shared_ptr<const WriteTransition>>;
 
 } // namespace networkprotocoldsl::sema::ast
 

@@ -7,6 +7,7 @@ namespace networkprotocoldsl::parser::tree {
 
 struct StringLiteral {
   std::string value;
+  std::string stringify() const { return "\"" + value + "\""; }
 };
 
 } // namespace networkprotocoldsl::parser::tree

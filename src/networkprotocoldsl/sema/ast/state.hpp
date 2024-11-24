@@ -9,7 +9,8 @@
 namespace networkprotocoldsl::sema::ast {
 
 struct State {
-  std::map<std::string, std::shared_ptr<const Transition>> transitions;
+  std::string name;
+  std::map<std::string, std::pair<Transition, std::string>> transitions;
 };
 
 } // namespace networkprotocoldsl::sema::ast

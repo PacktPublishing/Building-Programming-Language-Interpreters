@@ -50,14 +50,30 @@ using NodeVariant =
 
 using TokenIterator = std::vector<lexer::Token>::const_iterator;
 
+// Trait to check for the presence of the stringify method
+template <typename T, typename = void>
+struct has_stringify : std::false_type {};
+
+template <typename T>
+struct has_stringify<T, std::void_t<decltype(std::declval<T>().stringify())>>
+    : std::true_type {};
+
+// Placeholder value
+constexpr const char *placeholder = "<no stringify>";
+
 static int indent_level(int modify) {
   static int indent = 0;
   indent += modify;
-  for (int i = 0; i < indent; ++i) {
-    std::cerr << ' ';
-  }
-  std::cerr << '(' << indent << ") ";
   return indent;
+}
+
+static std::string indent_str() {
+  std::stringstream r;
+  for (int i = 0; i < indent_level(0); ++i) {
+    r << ' ';
+  }
+  r << "(" << indent_level(0) << ")";
+  return r.str();
 }
 
 static bool trace_enabled() {
@@ -69,12 +85,22 @@ static bool trace_enabled() {
 
 template <typename ParserContext> class Tracer {
 public:
-  static void output_tokens(const TokenIterator begin,
-                            const TokenIterator end) {
+  using TokenIterator = ParserContext::TokenIterator;
+  static void output_tokens(TokenIterator begin, TokenIterator end) {
     int max = 10;
+    std::cerr << " (" << &begin << "-" << &end << ")";
     TokenIterator b = begin;
     while (max > 0 && b != end) {
-      std::cerr << " " << std::visit([&](auto t) { return t.stringify(); }, *b);
+      std::cerr << " "
+                << std::visit(
+                       [&](auto t) {
+                         if constexpr (has_stringify<decltype(t)>::value) {
+                           return t.stringify();
+                         } else {
+                           return placeholder;
+                         }
+                       },
+                       *b);
       b++;
       max--;
     }
@@ -83,37 +109,39 @@ public:
     }
   }
 
-  using TokenIterator = ParserContext::TokenIterator;
   template <typename... Args>
-  static void trace_start(const char *attempt_type, const TokenIterator &begin,
-                          const TokenIterator &end, Args... args) {
+  static void trace_start(const char *attempt_type, TokenIterator begin,
+                          TokenIterator end, Args... args) {
     if (!trace_enabled())
       return;
+    std::cerr << indent_str() << "> " << attempt_type << " "
+              << ParserContext::name << " (" << sizeof...(args) << "):";
+    output_tokens(begin, end);
+    std::cerr << std::endl << std::flush;
     indent_level(1);
-    std::cerr << "> " << attempt_type << " " << ParserContext::name << " ("
-              << sizeof...(args) << "):";
-    output_tokens(begin, end);
-    std::cerr << std::endl;
   }
   template <typename... Args>
-  static void trace_success(const TokenIterator &begin,
-                            const TokenIterator &end, Args... args) {
+  static void trace_success(const char *attempt_type, TokenIterator begin,
+                            TokenIterator end, Args... args) {
     if (!trace_enabled())
       return;
     indent_level(-1);
-    std::cerr << "< " << ParserContext::name << " [SUCCESS]";
+    std::cerr << indent_str() << "< " << attempt_type << " "
+              << ParserContext::name << " [SUCCESS]";
     output_tokens(begin, end);
-    std::cerr << std::endl;
+    std::cerr << std::endl << std::flush;
+    ;
   }
   template <typename... Args>
-  static void trace_fail(const TokenIterator &begin, const TokenIterator &end,
-                         Args... args) {
+  static void trace_fail(const char *attempt_type, TokenIterator begin,
+                         TokenIterator end, Args... args) {
     if (!trace_enabled())
       return;
     indent_level(-1);
-    std::cerr << "< " << ParserContext::name << " [FAIL]";
+    std::cerr << indent_str() << "< " << attempt_type << " "
+              << ParserContext::name << " [FAIL]";
     output_tokens(begin, end);
-    std::cerr << std::endl;
+    std::cerr << std::endl << std::flush;
   }
 };
 

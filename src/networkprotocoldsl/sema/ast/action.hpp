@@ -15,9 +15,11 @@ struct Loop; // this is recursive. we need to forward declare it here because
 }
 
 using Action =
-    std::variant<action::ReadStaticOctets, action::ReadOctetsUntilTerminator,
-                 action::WriteFromIdentifier, action::WriteStaticOctets,
-                 action::Loop>;
+    std::variant<std::shared_ptr<const action::ReadStaticOctets>,
+                 std::shared_ptr<const action::ReadOctetsUntilTerminator>,
+                 std::shared_ptr<const action::WriteFromIdentifier>,
+                 std::shared_ptr<const action::WriteStaticOctets>,
+                 std::shared_ptr<const action::Loop>>;
 
 } // namespace networkprotocoldsl::sema::ast
 
