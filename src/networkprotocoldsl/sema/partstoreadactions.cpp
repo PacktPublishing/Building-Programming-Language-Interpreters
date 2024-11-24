@@ -7,6 +7,7 @@
 #include <networkprotocoldsl/parser/tree/stringliteral.hpp>
 #include <networkprotocoldsl/parser/tree/tokensequence.hpp>
 #include <networkprotocoldsl/sema/ast/action.hpp>
+#include <networkprotocoldsl/sema/support.hpp>
 
 #include <memory>
 #include <vector>
@@ -14,30 +15,6 @@
 namespace networkprotocoldsl::sema {
 
 namespace {
-
-using ParseStateTraits = parser::support::ParseStateTraits<
-    std::vector<parser::grammar::ParseTraits::ParseNode>::const_iterator,
-    std::variant<std::vector<ast::Action>, ast::Action>>;
-
-template <typename V>
-static std::vector<ParseStateTraits::TokenIterator::value_type>
-unroll_variant(const V &v) {
-  auto r = std::vector<ParseStateTraits::TokenIterator::value_type>();
-  for (const auto &part : v) {
-    std::visit([&](auto &&arg) { r.push_back(arg); }, *part);
-  }
-  return r;
-}
-
-static void append_actions(std::vector<ast::Action> &actions,
-                           const std::vector<ast::Action> &new_actions) {
-  actions.insert(actions.end(), new_actions.cbegin(), new_actions.cend());
-}
-
-static void append_actions(std::vector<ast::Action> &actions,
-                           ast::Action new_action) {
-  actions.push_back(new_action);
-}
 
 class IndividualTokenAction
     : public parser::support::RecursiveParser<

@@ -168,6 +168,8 @@ add_library(
     src/networkprotocoldsl/sema/partstoreadactions.hpp
     src/networkprotocoldsl/sema/partstowriteactions.cpp
     src/networkprotocoldsl/sema/partstowriteactions.hpp
+    src/networkprotocoldsl/sema/support.cpp
+    src/networkprotocoldsl/sema/support.hpp
     src/networkprotocoldsl/sema/ast/action.cpp
     src/networkprotocoldsl/sema/ast/action.hpp
     src/networkprotocoldsl/sema/ast/action/loop.cpp
