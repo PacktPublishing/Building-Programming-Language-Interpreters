@@ -88,7 +88,8 @@ public:
   using TokenIterator = ParserContext::TokenIterator;
   static void output_tokens(TokenIterator begin, TokenIterator end) {
     int max = 10;
-    std::cerr << " (" << &begin << "-" << &end << ")";
+    std::cerr << " (" << &begin << "-" << &end << ") ";
+    std::cerr << " [" << std::distance(begin, end) << "]:";
     TokenIterator b = begin;
     while (max > 0 && b != end) {
       std::cerr << " "
