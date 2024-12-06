@@ -69,7 +69,6 @@ static std::optional<std::shared_ptr<const ast::Agent>> analyze_agent(
     for (const auto &state_name : {when_state, then_state}) {
       if (states.find(state_name) == states.end()) {
         states[state_name] = std::make_shared<ast::State>();
-        states[state_name]->name = state_name;
       }
     }
     // we need to add the transition of this message from the when_state to the
