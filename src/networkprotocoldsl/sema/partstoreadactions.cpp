@@ -126,7 +126,9 @@ public:
     auto r = PartSequenceToReadActions::parse(full_sequence.cbegin(),
                                               full_sequence.cend());
     if (r.node.has_value()) {
-      return {flatten_actions(r.node.value()), begin, end};
+      std::visit([&](auto &&t) { append_actions(l->actions, t); },
+                 r.node.value());
+      return {l, begin, end};
     } else {
       return {std::nullopt, begin, end};
     }
