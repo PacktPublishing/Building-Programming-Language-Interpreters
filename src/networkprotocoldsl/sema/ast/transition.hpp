@@ -3,7 +3,8 @@
 
 #include <memory>
 
-#include <networkprotocoldsl/sema/ast/message.hpp>
+#include <networkprotocoldsl/parser/tree/message.hpp>
+#include <networkprotocoldsl/sema/ast/action.hpp>
 
 namespace networkprotocoldsl::sema::ast {
 

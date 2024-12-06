@@ -180,8 +180,6 @@ add_library(
     src/networkprotocoldsl/sema/ast/action/write.hpp
     src/networkprotocoldsl/sema/ast/agent.cpp
     src/networkprotocoldsl/sema/ast/agent.hpp
-    src/networkprotocoldsl/sema/ast/message.cpp
-    src/networkprotocoldsl/sema/ast/message.hpp
     src/networkprotocoldsl/sema/ast/protocol.hpp
     src/networkprotocoldsl/sema/ast/state.cpp
     src/networkprotocoldsl/sema/ast/state.hpp
