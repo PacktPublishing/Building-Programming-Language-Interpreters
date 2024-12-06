@@ -10,6 +10,13 @@ namespace networkprotocoldsl::parser::tree {
 struct IdentifierReference {
   std::string name;
   std::optional<std::shared_ptr<const IdentifierReference>> member;
+  std::string stringify() const {
+    std::string result = name;
+    if (member.has_value()) {
+      result += "." + member.value()->stringify();
+    }
+    return result;
+  }
 };
 
 } // namespace networkprotocoldsl::parser::tree

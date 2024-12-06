@@ -12,6 +12,10 @@ struct MessageForLoop {
   std::shared_ptr<const IdentifierReference> variable;
   std::shared_ptr<const IdentifierReference> collection;
   std::shared_ptr<const MessageSequence> block;
+  std::string stringigy() const {
+    return "for " + variable->stringify() + " in " + collection->stringify() +
+           " {...}";
+  }
 };
 
 } // namespace networkprotocoldsl::parser::tree

@@ -4,11 +4,11 @@ project( networkprotocoldsl CXX )
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# # Enable ThreadSanitizer for Debug builds
+# # Enable sanitizers for Debug builds
 if(CMAKE_BUILD_TYPE MATCHES Debug)
- message(STATUS "Enabling ThreadSanitizer")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
- set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=thread")
+ message(STATUS "Enabling Sanitizers")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined")
+ set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address -fsanitize=undefined")
 endif()
 
 include(FetchContent)
@@ -162,6 +162,29 @@ add_library(
     src/networkprotocoldsl/parser/tree/typeparametermap.hpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.cpp
     src/networkprotocoldsl/parser/tree/typeparametervalue.hpp
+    src/networkprotocoldsl/sema/analyze.cpp
+    src/networkprotocoldsl/sema/analyze.hpp
+    src/networkprotocoldsl/sema/partstoreadactions.cpp
+    src/networkprotocoldsl/sema/partstoreadactions.hpp
+    src/networkprotocoldsl/sema/partstowriteactions.cpp
+    src/networkprotocoldsl/sema/partstowriteactions.hpp
+    src/networkprotocoldsl/sema/support.cpp
+    src/networkprotocoldsl/sema/support.hpp
+    src/networkprotocoldsl/sema/ast/action.cpp
+    src/networkprotocoldsl/sema/ast/action.hpp
+    src/networkprotocoldsl/sema/ast/action/loop.cpp
+    src/networkprotocoldsl/sema/ast/action/loop.hpp
+    src/networkprotocoldsl/sema/ast/action/read.cpp
+    src/networkprotocoldsl/sema/ast/action/read.hpp
+    src/networkprotocoldsl/sema/ast/action/write.cpp
+    src/networkprotocoldsl/sema/ast/action/write.hpp
+    src/networkprotocoldsl/sema/ast/agent.cpp
+    src/networkprotocoldsl/sema/ast/agent.hpp
+    src/networkprotocoldsl/sema/ast/protocol.hpp
+    src/networkprotocoldsl/sema/ast/state.cpp
+    src/networkprotocoldsl/sema/ast/state.hpp
+    src/networkprotocoldsl/sema/ast/transition.cpp
+    src/networkprotocoldsl/sema/ast/transition.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
     src/networkprotocoldsl/support/mutexlockqueue.hpp
     src/networkprotocoldsl/support/notificationsignal.cpp

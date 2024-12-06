@@ -9,6 +9,9 @@ namespace networkprotocoldsl::parser::tree {
 
 struct Terminator {
   std::shared_ptr<const StringLiteral> value;
+  std::string stringify() const {
+    return "terminator {" + value->stringify() + "}";
+  }
 };
 
 } // namespace networkprotocoldsl::parser::tree
