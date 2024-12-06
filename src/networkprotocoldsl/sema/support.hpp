@@ -34,6 +34,23 @@ inline void append_actions(std::vector<ast::Action> &actions,
   actions.push_back(new_action);
 }
 
+inline std::vector<ast::Action>
+flatten_actions(ParseStateTraits::ParseNode node) {
+  std::vector<ast::Action> actions;
+  std::visit([&](auto &&t) { append_actions(actions, t); }, node);
+  return actions;
+}
+
+inline std::vector<ast::Action>
+flatten_actions(std::vector<ParseStateTraits::ParseNode> nodes) {
+  std::vector<ast::Action> actions;
+  for (auto &node : nodes) {
+    auto flattened = flatten_actions(node);
+    actions.insert(actions.end(), flattened.cbegin(), flattened.cend());
+  }
+  return actions;
+}
+
 } // namespace networkprotocoldsl::sema
 
 #endif

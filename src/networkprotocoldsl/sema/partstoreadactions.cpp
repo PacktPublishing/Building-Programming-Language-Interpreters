@@ -82,11 +82,7 @@ public:
   static ParseStateReturn match(TokenIterator begin, TokenIterator end,
                                 std::vector<ParseNode> others, EndOfInput) {
 
-    std::vector<ast::Action> actions;
-    for (auto &other : others) {
-      std::visit([&](auto &&t) { append_actions(actions, t); }, other);
-    }
-    return {actions, begin, end};
+    return {flatten_actions(others), begin, end};
   }
 };
 
@@ -130,9 +126,7 @@ public:
     auto r = PartSequenceToReadActions::parse(full_sequence.cbegin(),
                                               full_sequence.cend());
     if (r.node.has_value()) {
-      std::visit([&](auto &&t) { append_actions(l->actions, t); },
-                 r.node.value());
-      return {l, begin, end};
+      return {flatten_actions(r.node.value()), begin, end};
     } else {
       return {std::nullopt, begin, end};
     }
@@ -147,9 +141,7 @@ std::optional<std::vector<ast::Action>> parts_to_read_actions(
   auto r = PartSequenceToReadActions::parse(full_sequence.cbegin(),
                                             full_sequence.cend());
   if (r.node.has_value()) {
-    std::vector<ast::Action> actions;
-    std::visit([&](auto &&t) { append_actions(actions, t); }, r.node.value());
-    return actions;
+    return flatten_actions(r.node.value());
   } else {
     return std::nullopt;
   }
