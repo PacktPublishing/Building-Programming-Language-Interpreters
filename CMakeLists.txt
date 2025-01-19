@@ -113,6 +113,8 @@ add_library(
     src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
+    src/networkprotocoldsl/operation/lexicalpadasdict.cpp
+    src/networkprotocoldsl/operation/lexicalpadasdict.hpp
     src/networkprotocoldsl/parser/grammar/identifier.hpp
     src/networkprotocoldsl/parser/grammar/identifier.cpp
     src/networkprotocoldsl/parser/grammar/literals.hpp

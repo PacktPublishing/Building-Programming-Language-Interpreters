@@ -14,6 +14,7 @@
 #include <networkprotocoldsl/operation/int32literal.hpp>
 #include <networkprotocoldsl/operation/inttoascii.hpp>
 #include <networkprotocoldsl/operation/lesserequal.hpp>
+#include <networkprotocoldsl/operation/lexicalpadasdict.hpp>
 #include <networkprotocoldsl/operation/lexicalpadget.hpp>
 #include <networkprotocoldsl/operation/lexicalpadinitialize.hpp>
 #include <networkprotocoldsl/operation/lexicalpadinitializeglobal.hpp>
@@ -56,7 +57,8 @@ using Operation = std::variant<
     operation::TerminateListIfReadAhead, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
     operation::WriteStaticOctets, operation::DictionaryInitialize,
-    operation::DictionarySet, operation::DictionaryGet>;
+    operation::DictionarySet, operation::DictionaryGet,
+    operation::LexicalPadAsDict>;
 
 } // namespace networkprotocoldsl
 
