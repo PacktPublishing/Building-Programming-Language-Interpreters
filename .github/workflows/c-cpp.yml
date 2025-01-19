@@ -14,10 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: build-depends
-      run: sudo apt-get -y install libgtest-dev build-essential cmake libgtest-dev libuv1-dev
+      run: sudo apt update && sudo apt -y install libgtest-dev build-essential cmake libgtest-dev libuv1-dev && sudo apt clean
     - name: configure
-      run: mkdir build && cd build && cmake ../
+      run: mkdir build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Debug
     - name: make
-      run: make -C build/ VERBOSE=1
+      run: make -j8 -C build/ VERBOSE=1
     - name: make test
-      run: make -C build/ test VERBOSE=1
+      run:  ctest --test-dir build/ --output-on-failure
