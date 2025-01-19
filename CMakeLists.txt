@@ -101,6 +101,8 @@ add_library(
     src/networkprotocoldsl/operation/readstaticoctets.hpp
     src/networkprotocoldsl/operation/staticcallable.cpp
     src/networkprotocoldsl/operation/staticcallable.hpp
+    src/networkprotocoldsl/operation/statemachineoperation.cpp
+    src/networkprotocoldsl/operation/statemachineoperation.hpp
     src/networkprotocoldsl/operation/subtract.cpp
     src/networkprotocoldsl/operation/subtract.hpp
     src/networkprotocoldsl/operation/terminatelistifreadahead.cpp

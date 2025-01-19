@@ -4,6 +4,7 @@
 #include <networkprotocoldsl/lexicalpad.hpp>
 #include <networkprotocoldsl/value.hpp>
 
+#include <any>
 #include <optional>
 #include <tuple>
 #include <variant>
@@ -121,6 +122,7 @@ struct ControlFlowOperationContext {
   std::shared_ptr<const std::vector<Value>> arglist;
   std::shared_ptr<std::vector<Value>> accumulator;
   bool callable_invoked = false;
+  std::any additional_info; // Add this line to store additional information
 };
 
 /**

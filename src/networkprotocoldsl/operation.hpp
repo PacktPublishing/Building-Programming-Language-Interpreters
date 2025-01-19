@@ -25,6 +25,7 @@
 #include <networkprotocoldsl/operation/readintfromascii.hpp>
 #include <networkprotocoldsl/operation/readoctetsuntilterminator.hpp>
 #include <networkprotocoldsl/operation/readstaticoctets.hpp>
+#include <networkprotocoldsl/operation/statemachineoperation.hpp>
 #include <networkprotocoldsl/operation/staticcallable.hpp>
 #include <networkprotocoldsl/operation/subtract.hpp>
 #include <networkprotocoldsl/operation/terminatelistifreadahead.hpp>
@@ -59,7 +60,8 @@ using Operation = std::variant<
     operation::WriteInt32Native, operation::WriteOctets,
     operation::WriteStaticOctets, operation::DictionaryInitialize,
     operation::DictionarySet, operation::DictionaryGet,
-    operation::LexicalPadAsDict, operation::TransitionLookahead>;
+    operation::LexicalPadAsDict, operation::TransitionLookahead,
+    operation::StateMachineOperation>;
 
 } // namespace networkprotocoldsl
 
