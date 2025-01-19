@@ -21,6 +21,7 @@ class Eq {
 public:
   using Arguments = std::tuple<Value, Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "Eq{}"; }
 };
 static_assert(InterpretedOperationConcept<Eq>);
 

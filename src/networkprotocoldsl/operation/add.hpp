@@ -21,6 +21,7 @@ class Add {
 public:
   using Arguments = std::tuple<Value, Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "Add{}"; }
 };
 static_assert(InterpretedOperationConcept<Add>);
 

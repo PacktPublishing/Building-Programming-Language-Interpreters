@@ -16,6 +16,9 @@ public:
   Value operator()(Arguments args, std::shared_ptr<LexicalPad> pad) const {
     return pad->get(name);
   }
+  std::string stringify() const {
+    return "LexicalPadGet{name: \"" + name + "\"}";
+  }
 };
 static_assert(LexicalPadOperationConcept<LexicalPadGet>);
 

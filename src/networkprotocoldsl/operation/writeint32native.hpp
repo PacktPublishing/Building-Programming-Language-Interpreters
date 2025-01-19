@@ -29,6 +29,8 @@ public:
   void handle_eof(InputOutputOperationContext &ctx) const;
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
+
+  std::string stringify() const { return "WriteInt32Native{}"; }
 };
 static_assert(InputOutputOperationConcept<WriteInt32Native>);
 

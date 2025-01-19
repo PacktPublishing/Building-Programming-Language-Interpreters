@@ -21,6 +21,7 @@ class Multiply {
 public:
   using Arguments = std::tuple<Value, Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "Multiply{}"; }
 };
 static_assert(InterpretedOperationConcept<Multiply>);
 
@@ -28,4 +29,4 @@ static_assert(InterpretedOperationConcept<Multiply>);
 
 } // namespace networkprotocoldsl
 
-#endif // NETWORKPROTOCOLDSL_OPERATION_HPP
+#endif // NETWORKPROTOCOLDSL_OPERATION_MULTIPLY_HPP

@@ -24,6 +24,10 @@ public:
   void handle_eof(InputOutputOperationContext &ctx) const;
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
+
+  std::string stringify() const {
+    return "TerminateListIfReadAhead{terminator: \"" + terminator + "\"}";
+  }
 };
 static_assert(InputOutputOperationConcept<TerminateListIfReadAhead>);
 

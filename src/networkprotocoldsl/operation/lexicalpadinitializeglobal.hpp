@@ -17,6 +17,9 @@ public:
     pad->initialize_global(name, std::get<0>(args));
     return std::get<0>(args);
   }
+  std::string stringify() const {
+    return "LexicalPadInitializeGlobal{name: \"" + name + "\"}";
+  }
 };
 static_assert(LexicalPadOperationConcept<LexicalPadInitializeGlobal>);
 

@@ -27,6 +27,7 @@ public:
       : optree(o), argument_names(n), inherits_lexical_pad(i) {}
   using Arguments = std::tuple<>;
   Value operator()(Arguments a) const;
+  std::string stringify() const;
 };
 static_assert(InterpretedOperationConcept<StaticCallable>);
 

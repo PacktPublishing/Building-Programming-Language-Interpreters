@@ -195,6 +195,8 @@ add_library(
     src/networkprotocoldsl/operationconcepts.hpp
     src/networkprotocoldsl/optree.cpp
     src/networkprotocoldsl/optree.hpp
+    src/networkprotocoldsl/print_optreenode.cpp
+    src/networkprotocoldsl/print_optreenode.hpp
     src/networkprotocoldsl/value.cpp
     src/networkprotocoldsl/value.hpp
 )

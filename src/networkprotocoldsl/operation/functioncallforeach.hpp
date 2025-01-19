@@ -16,6 +16,13 @@ public:
   get_argument_list(ControlFlowOperationContext &ctx) const;
   void set_callable_invoked(ControlFlowOperationContext &ctx) const;
   void set_callable_return(ControlFlowOperationContext &ctx, Value v) const;
+  std::string stringify() const {
+    if (element_is_single_argument) {
+      return "FunctionCallForEach{element_is_single_argument: true}";
+    } else {
+      return "FunctionCallForEach{element_is_single_argument: false}";
+    }
+  }
 };
 static_assert(ControlFlowOperationConcept<FunctionCallForEach>);
 
