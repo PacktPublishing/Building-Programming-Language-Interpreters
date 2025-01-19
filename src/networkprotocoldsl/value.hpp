@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -20,12 +21,13 @@ enum class ControlFlowInstruction;
 struct Callable;
 struct DynamicList;
 struct Octets;
+struct Dictionary;
 } // namespace value
 
 // variant of all types possible
-using Value = std::variant<bool, int32_t, value::Callable, value::RuntimeError,
-                           value::ControlFlowInstruction, value::DynamicList,
-                           value::Octets>;
+using Value = std::variant<bool, int32_t, value::Dictionary, value::Callable,
+                           value::RuntimeError, value::ControlFlowInstruction,
+                           value::DynamicList, value::Octets>;
 
 namespace value {
 
@@ -69,6 +71,21 @@ struct Octets {
   explicit Octets(const std::string &d)
       : data(std::make_shared<const std::string>(d)) {}
   explicit Octets(std::shared_ptr<const std::string> d) : data(d) {}
+};
+
+struct Dictionary {
+  using Type = std::unordered_map<std::string, Value>;
+  std::shared_ptr<const Type> members;
+  Dictionary() = default;
+  explicit Dictionary(Type &&m)
+      : members(std::make_shared<const Type>(std::move(m))) {}
+  explicit Dictionary(std::initializer_list<Type::value_type> init)
+      : members(std::make_shared<const Type>(init)) {}
+  explicit Dictionary(const Type &m)
+      : members(std::make_shared<const Type>(m)) {}
+  explicit Dictionary(std::shared_ptr<const Type> m) : members(m) {}
+  explicit Dictionary(std::shared_ptr<Type> m)
+      : members(std::const_pointer_cast<const Type>(m)) {}
 };
 
 } // namespace value

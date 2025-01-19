@@ -58,6 +58,9 @@ add_library(
     src/networkprotocoldsl/operation.hpp
     src/networkprotocoldsl/operation/add.cpp
     src/networkprotocoldsl/operation/add.hpp
+    src/networkprotocoldsl/operation/dictionaryget.cpp
+    src/networkprotocoldsl/operation/dictionaryinitialize.cpp
+    src/networkprotocoldsl/operation/dictionaryset.cpp
     src/networkprotocoldsl/operation/dynamiclist.cpp
     src/networkprotocoldsl/operation/dynamiclist.hpp
     src/networkprotocoldsl/operation/eq.cpp

@@ -2,6 +2,9 @@
 #define NETWORKPROTOCOLDSL_OPERATION_HPP
 
 #include <networkprotocoldsl/operation/add.hpp>
+#include <networkprotocoldsl/operation/dictionaryget.hpp>
+#include <networkprotocoldsl/operation/dictionaryinitialize.hpp>
+#include <networkprotocoldsl/operation/dictionaryset.hpp>
 #include <networkprotocoldsl/operation/dynamiclist.hpp>
 #include <networkprotocoldsl/operation/eq.hpp>
 #include <networkprotocoldsl/operation/functioncall.hpp>
@@ -52,7 +55,8 @@ using Operation = std::variant<
     operation::StaticCallable, operation::Subtract,
     operation::TerminateListIfReadAhead, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
-    operation::WriteStaticOctets>;
+    operation::WriteStaticOctets, operation::DictionaryInitialize,
+    operation::DictionarySet, operation::DictionaryGet>;
 
 } // namespace networkprotocoldsl
 
