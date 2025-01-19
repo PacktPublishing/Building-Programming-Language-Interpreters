@@ -32,11 +32,11 @@ static std::optional<ast::Transition> analyze_read_message(
       ast::ReadTransition{message->data, maybe_actions.value()});
 }
 
-static std::optional<std::map<std::string, ast::Transition>>
+static std::optional<std::unordered_map<std::string, ast::Transition>>
 analyze_transitions(
     std::shared_ptr<const parser::tree::ProtocolDescription> &protocol,
     const std::string &agent_name) {
-  auto transitions = std::map<std::string, ast::Transition>();
+  auto transitions = std::unordered_map<std::string, ast::Transition>();
   for (auto &message : *protocol) {
     auto maybe_transition = message.second->agent->name == agent_name
                                 ? analyze_write_message(message.second)
@@ -61,7 +61,7 @@ static std::optional<std::shared_ptr<const ast::Agent>> analyze_agent(
   auto &transitions = maybe_transitions.value();
 
   // assemble the states and transitions together
-  std::map<std::string, std::shared_ptr<ast::State>> states;
+  std::unordered_map<std::string, std::shared_ptr<ast::State>> states;
   for (auto &message : *protocol) {
     auto when_state = message.second->when->name;
     auto then_state = message.second->then->name;
@@ -77,7 +77,8 @@ static std::optional<std::shared_ptr<const ast::Agent>> analyze_agent(
         std::make_pair(transitions[message.first], then_state);
   }
   // assemble a map to const states, now that we have the data complete.
-  std::map<std::string, std::shared_ptr<const ast::State>> const_states;
+  std::unordered_map<std::string, std::shared_ptr<const ast::State>>
+      const_states;
   for (const auto &state : states) {
     const_states[state.first] = state.second;
   }
