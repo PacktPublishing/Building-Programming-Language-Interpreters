@@ -45,6 +45,7 @@ foreach(
     022-grammar-message
     023-grammar-complete
     024-sema-analyze
+    025-transitionlookahead
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
