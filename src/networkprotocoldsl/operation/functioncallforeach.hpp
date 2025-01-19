@@ -7,6 +7,7 @@ namespace networkprotocoldsl::operation {
 
 class FunctionCallForEach {
 public:
+  bool element_is_single_argument = false;
   using Arguments = std::tuple<Value, Value>;
   OperationResult operator()(ControlFlowOperationContext &ctx,
                              Arguments a) const;

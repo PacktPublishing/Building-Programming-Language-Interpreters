@@ -8,36 +8,22 @@
 
 namespace networkprotocoldsl::operation {
 
-static OperationResult _function_call2(ControlFlowOperationContext &ctx,
-                                       value::Callable callable,
-                                       value::DynamicList arglist) {
+static OperationResult _function_call(ControlFlowOperationContext &ctx,
+                                      value::Callable callable,
+                                      value::DynamicList arglist) {
   ctx.callable = callable;
   ctx.arglist = arglist.values;
   return ReasonForBlockedOperation::WaitingForCallableInvocation;
 }
 
-static OperationResult _function_call2(ControlFlowOperationContext &ctx,
-                                       value::Callable a,
-                                       value::RuntimeError b) {
+static OperationResult _function_call(ControlFlowOperationContext &ctx,
+                                      value::Callable a,
+                                      value::RuntimeError b) {
   return b;
 }
 
-static OperationResult _function_call2(ControlFlowOperationContext &ctx,
-                                       value::Callable a, auto b) {
-  return value::RuntimeError::TypeError;
-}
-
-static OperationResult _function_call(ControlFlowOperationContext &ctx,
-                                      value::Callable callable, Value arglist) {
-  return std::visit(
-      [&ctx, &callable](auto arglist_visited) {
-        return _function_call2(ctx, callable, arglist_visited);
-      },
-      arglist);
-}
-
-static OperationResult _function_call(ControlFlowOperationContext &ctx, auto a,
-                                      auto b) {
+static OperationResult _function_call(ControlFlowOperationContext &ctx, auto &,
+                                      auto &) {
   return value::RuntimeError::TypeError;
 }
 
@@ -55,10 +41,10 @@ OperationResult FunctionCall::operator()(ControlFlowOperationContext &ctx,
     }
   } else {
     return std::visit(
-        [&ctx, &a](auto &callable) {
-          return _function_call(ctx, callable, std::get<1>(a));
+        [&ctx](auto &callable, auto &arglist) {
+          return _function_call(ctx, callable, arglist);
         },
-        std::get<0>(a));
+        std::get<0>(a), std::get<1>(a));
   }
 }
 
