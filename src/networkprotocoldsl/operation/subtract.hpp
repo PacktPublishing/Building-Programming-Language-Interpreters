@@ -21,6 +21,7 @@ class Subtract {
 public:
   using Arguments = std::tuple<Value, Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "Subtract{}"; }
 };
 static_assert(InterpretedOperationConcept<Subtract>);
 

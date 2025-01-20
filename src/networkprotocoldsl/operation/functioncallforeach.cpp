@@ -78,10 +78,16 @@ void FunctionCallForEach::set_callable_return(ControlFlowOperationContext &ctx,
 
 std::shared_ptr<const std::vector<Value>>
 FunctionCallForEach::get_argument_list(ControlFlowOperationContext &ctx) const {
-  // This presumes that this is a list of lists. A different operation would be
-  // needed in order to support cases where that's not going to be true.
-  return std::get<value::DynamicList>(ctx.arglist->at(ctx.accumulator->size()))
-      .values;
+  if (element_is_single_argument) {
+    return std::make_shared<std::vector<Value>>(
+        std::vector<Value>{ctx.arglist->at(ctx.accumulator->size())});
+  } else {
+    // This presumes that this is a list of lists. A different operation would
+    // be needed in order to support cases where that's not going to be true.
+    return std::get<value::DynamicList>(
+               ctx.arglist->at(ctx.accumulator->size()))
+        .values;
+  }
 }
 
 } // namespace networkprotocoldsl::operation

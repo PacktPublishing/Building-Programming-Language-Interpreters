@@ -15,6 +15,7 @@ public:
   get_argument_list(ControlFlowOperationContext &ctx) const;
   void set_callable_invoked(ControlFlowOperationContext &ctx) const;
   void set_callable_return(ControlFlowOperationContext &ctx, Value v) const;
+  std::string stringify() const { return "GenerateList{}"; }
 };
 static_assert(ControlFlowOperationConcept<GenerateList>);
 

@@ -15,6 +15,7 @@ class IntToAscii {
 public:
   using Arguments = std::tuple<Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "IntToAscii{}"; }
 };
 static_assert(InterpretedOperationConcept<IntToAscii>);
 

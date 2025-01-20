@@ -21,6 +21,7 @@ class LesserEqual {
 public:
   using Arguments = std::tuple<Value, Value>;
   Value operator()(Arguments a) const;
+  std::string stringify() const { return "LesserEqual{}"; }
 };
 static_assert(InterpretedOperationConcept<LesserEqual>);
 

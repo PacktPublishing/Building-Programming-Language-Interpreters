@@ -5,7 +5,11 @@
 namespace networkprotocoldsl::operation {
 
 Value OpSequence::operator()(std::shared_ptr<std::vector<Value>> args) const {
-  return args->back();
+  if (args->empty()) {
+    return false;
+  } else {
+    return args->back();
+  }
 }
 
 } // namespace networkprotocoldsl::operation

@@ -6,7 +6,9 @@
 #include <cstdlib>
 #include <functional>
 #include <optional>
+#include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include <lexertl/generator.hpp>
@@ -14,6 +16,40 @@
 
 namespace networkprotocoldsl::lexer {
 namespace {
+
+// Function to unescape string literals
+std::string unescape_string(const std::string &str) {
+  std::string result;
+  result.reserve(str.size());
+  for (size_t i = 0; i < str.size(); ++i) {
+    if (str[i] == '\\' && i + 1 < str.size()) {
+      switch (str[i + 1]) {
+      case 'n':
+        result += '\n';
+        break;
+      case 't':
+        result += '\t';
+        break;
+      case 'r':
+        result += '\r';
+        break;
+      case '\\':
+        result += '\\';
+        break;
+      case '\"':
+        result += '\"';
+        break;
+      default:
+        result += str[i + 1];
+        break;
+      }
+      ++i;
+    } else {
+      result += str[i];
+    }
+  }
+  return result;
+}
 
 struct TokenRule {
   std::string_view pattern;
@@ -36,10 +72,10 @@ const std::vector<TokenRule> token_rules = {
      [](TP_ARGS) {
        tokens.push_back(token::literal::Integer{std::atoi(str.data())});
      }},
-    {"\\\"[^\"]*\\\"",
+    {"\\\"([^\"\\\\]|\\\\.)*\\\"",
      [](TP_ARGS) {
        tokens.push_back(token::literal::String{
-           std::string(str.substr(1, str.length() - 2))});
+           unescape_string(std::string(str.substr(1, str.length() - 2)))});
      }},
     {">",
      [](TP_ARGS) {

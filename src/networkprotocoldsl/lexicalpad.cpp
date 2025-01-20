@@ -42,4 +42,9 @@ void LexicalPad::initialize_global(const std::string &name, Value v) {
   }
 }
 
+Value LexicalPad::as_dict() const {
+  return value::Dictionary{
+      std::make_shared<std::unordered_map<std::string, Value>>(pad)};
+}
+
 } // namespace networkprotocoldsl

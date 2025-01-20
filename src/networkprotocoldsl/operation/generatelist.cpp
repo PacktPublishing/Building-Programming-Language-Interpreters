@@ -35,6 +35,10 @@ OperationResult GenerateList::operator()(ControlFlowOperationContext &ctx,
             return value::DynamicList{ctx.accumulator};
           }
         }
+        // if it's a runtime error, we should also finish the list.
+        if (std::holds_alternative<value::RuntimeError>(ctx.value.value())) {
+          return ctx.value.value();
+        }
         // if it's not the control flow instruction, we reset the context.
         ctx.accumulator->push_back(ctx.value.value());
         ctx.callable_invoked = false;

@@ -17,6 +17,9 @@ public:
     pad->initialize(name, std::get<0>(args));
     return std::get<0>(args);
   }
+  std::string stringify() const {
+    return "LexicalPadInitialize{name: \"" + name + "\"}";
+  }
 };
 static_assert(LexicalPadOperationConcept<LexicalPadInitialize>);
 

@@ -9,6 +9,9 @@ TerminateListIfReadAhead::operator()(InputOutputOperationContext &ctx,
                                      Arguments a) const {
   if (ctx.buffer.length() == 0) {
     // nothing to compare yet.
+    if (ctx.eof) {
+      return value::RuntimeError::ProtocolMismatchError;
+    }
     return ReasonForBlockedOperation::WaitingForRead;
   } else if (ctx.buffer.length() < terminator.length()) {
     // we don't have the complete thing yet, but if it already mismatches we

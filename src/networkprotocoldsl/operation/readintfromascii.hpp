@@ -30,6 +30,8 @@ public:
   std::string_view get_write_buffer(InputOutputOperationContext &ctx) const;
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
+
+  std::string stringify() const { return "ReadIntFromAscii{}"; }
 };
 static_assert(InputOutputOperationConcept<ReadIntFromAscii>);
 

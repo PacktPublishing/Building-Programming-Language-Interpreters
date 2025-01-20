@@ -24,6 +24,9 @@ public:
   using Arguments = std::tuple<>;
   Int32Literal(int32_t v) : int32_v(v) {}
   Value operator()(Arguments a) const { return int32_v; }
+  std::string stringify() const {
+    return "Int32Literal{int32_v: " + std::to_string(int32_v) + "}";
+  }
 };
 static_assert(InterpretedOperationConcept<Int32Literal>);
 

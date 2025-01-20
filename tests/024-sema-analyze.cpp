@@ -129,7 +129,7 @@ TEST(MessageTest, Message) {
   auto write_static_octets_8 =
       std::get<std::shared_ptr<const sema::ast::action::WriteStaticOctets>>(
           client_send_request_actions[8]);
-  ASSERT_EQ(write_static_octets_8->octets, "\\r\\n");
+  ASSERT_EQ(write_static_octets_8->octets, "\r\n");
 
   ASSERT_TRUE(
       std::holds_alternative<std::shared_ptr<const sema::ast::action::Loop>>(
@@ -138,7 +138,7 @@ TEST(MessageTest, Message) {
       client_send_request_actions[9]);
   ASSERT_EQ(client_loop_9->variable->name, "header");
   ASSERT_EQ(client_loop_9->collection->name, "headers");
-  ASSERT_EQ(client_loop_9->terminator, "\\r\\n");
+  ASSERT_EQ(client_loop_9->terminator, "\r\n");
   ASSERT_EQ(client_loop_9->actions.size(), 4);
   ASSERT_TRUE(std::holds_alternative<
               std::shared_ptr<const sema::ast::action::WriteFromIdentifier>>(
@@ -174,7 +174,7 @@ TEST(MessageTest, Message) {
   auto client_loop_action_3 =
       std::get<std::shared_ptr<const sema::ast::action::WriteStaticOctets>>(
           client_loop_9->actions[3]);
-  ASSERT_EQ(client_loop_action_3->octets, "\\r\\n");
+  ASSERT_EQ(client_loop_action_3->octets, "\r\n");
 
   auto &client_closes_transition_pair =
       client_open_transitions.at("Client Closes Connection");
@@ -236,7 +236,7 @@ TEST(MessageTest, Message) {
   auto read_octets_until_terminator_4 = std::get<
       std::shared_ptr<const sema::ast::action::ReadOctetsUntilTerminator>>(
       server_receive_request_actions[4]);
-  ASSERT_EQ(read_octets_until_terminator_4->terminator, "\\r\\n");
+  ASSERT_EQ(read_octets_until_terminator_4->terminator, "\r\n");
   ASSERT_EQ(read_octets_until_terminator_4->identifier->name, "minor_version");
 
   ASSERT_TRUE(
@@ -246,7 +246,7 @@ TEST(MessageTest, Message) {
       server_receive_request_actions[5]);
   ASSERT_EQ(server_loop_5->variable->name, "header");
   ASSERT_EQ(server_loop_5->collection->name, "headers");
-  ASSERT_EQ(server_loop_5->terminator, "\\r\\n");
+  ASSERT_EQ(server_loop_5->terminator, "\r\n");
   ASSERT_EQ(server_loop_5->actions.size(), 2);
   ASSERT_TRUE(
       std::holds_alternative<
@@ -267,7 +267,7 @@ TEST(MessageTest, Message) {
   auto server_loop_action_1 = std::get<
       std::shared_ptr<const sema::ast::action::ReadOctetsUntilTerminator>>(
       server_loop_5->actions[1]);
-  ASSERT_EQ(server_loop_action_1->terminator, "\\r\\n");
+  ASSERT_EQ(server_loop_action_1->terminator, "\r\n");
   ASSERT_EQ(server_loop_action_1->identifier->name, "header");
   ASSERT_TRUE(server_loop_action_1->identifier->member.has_value());
   ASSERT_EQ(server_loop_action_1->identifier->member.value()->name, "value");
@@ -418,7 +418,7 @@ TEST(MessageTest, Message) {
   auto server_write_static_octets_8 =
       std::get<std::shared_ptr<const sema::ast::action::WriteStaticOctets>>(
           server_send_response_actions[8]);
-  ASSERT_EQ(server_write_static_octets_8->octets, "\\r\\n");
+  ASSERT_EQ(server_write_static_octets_8->octets, "\r\n");
 
   ASSERT_TRUE(
       std::holds_alternative<std::shared_ptr<const sema::ast::action::Loop>>(
@@ -427,7 +427,7 @@ TEST(MessageTest, Message) {
       server_send_response_actions[9]);
   ASSERT_EQ(server_loop_9->variable->name, "header");
   ASSERT_EQ(server_loop_9->collection->name, "headers");
-  ASSERT_EQ(server_loop_9->terminator, "\\r\\n");
+  ASSERT_EQ(server_loop_9->terminator, "\r\n");
   ASSERT_EQ(server_loop_9->actions.size(), 4);
   ASSERT_TRUE(std::holds_alternative<
               std::shared_ptr<const sema::ast::action::WriteFromIdentifier>>(
@@ -465,5 +465,5 @@ TEST(MessageTest, Message) {
   auto server_write_loop_action_3 =
       std::get<std::shared_ptr<const sema::ast::action::WriteStaticOctets>>(
           server_loop_9->actions[3]);
-  ASSERT_EQ(server_write_loop_action_3->octets, "\\r\\n");
+  ASSERT_EQ(server_write_loop_action_3->octets, "\r\n");
 }

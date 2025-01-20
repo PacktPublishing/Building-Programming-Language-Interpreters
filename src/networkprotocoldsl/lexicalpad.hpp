@@ -22,6 +22,7 @@ public:
   Value set(const std::string &name, Value v);
   void initialize(const std::string &name, Value v);
   void initialize_global(const std::string &name, Value v);
+  Value as_dict() const;
 };
 
 } // namespace networkprotocoldsl

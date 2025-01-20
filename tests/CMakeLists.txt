@@ -16,6 +16,9 @@ add_library( uv INTERFACE )
 target_include_directories( uv INTERFACE ${LIBUV_INCLUDE_DIR} )
 target_link_libraries( uv INTERFACE ${LIBUV_LIBRARIES} )
 
+include(CTest)
+enable_testing()
+
 foreach(
     TEST
     001-empty
@@ -53,11 +56,8 @@ foreach(
         uv
         ${GTEST_BOTH_LIBRARIES}
     )
-    add_test(
-     NAME ${TEST}
-     COMMAND
-       ${CMAKE_COMMAND} -E env
-       TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/tsan_suppressions.txt
-       $<TARGET_FILE:${TEST}.t>
+    gtest_discover_tests(${TEST}.t
+        PROPERTIES
+        ENVIRONMENT "TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/tsan_suppressions.txt"
     )
 endforeach()

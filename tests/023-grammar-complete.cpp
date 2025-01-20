@@ -28,7 +28,7 @@ TEST(MessageTest, Message) {
 
   auto req = protocol_description->at("HTTP Request");
   ASSERT_EQ(8, req->parts->size());
-  ASSERT_EQ(6, req->data->size());
+  ASSERT_EQ(5, req->data->size());
   ASSERT_EQ("HTTP Request", req->name->value);
   ASSERT_EQ("Open", req->when->name);
   ASSERT_EQ("AwaitResponse", req->then->name);
@@ -36,7 +36,7 @@ TEST(MessageTest, Message) {
 
   auto res = protocol_description->at("HTTP Response");
   ASSERT_EQ(8, res->parts->size());
-  ASSERT_EQ(6, res->data->size());
+  ASSERT_EQ(5, res->data->size());
   ASSERT_EQ("HTTP Response", res->name->value);
   ASSERT_EQ("AwaitResponse", res->when->name);
   ASSERT_EQ("Open", res->then->name);

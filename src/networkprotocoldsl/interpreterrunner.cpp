@@ -42,6 +42,10 @@ static bool handle_read(InterpreterContext &context,
   } else {
     if (context.eof.load()) {
       context.interpreter.handle_eof();
+      signals.wake_up_for_output.notify();
+      signals.wake_up_interpreter.notify();
+      signals.wake_up_for_input.notify();
+      signals.wake_up_for_callback.notify();
     } else {
       signals.wake_up_for_input.notify();
     }
@@ -52,6 +56,10 @@ static bool handle_read(InterpreterContext &context,
 bool handle_write(InterpreterContext &context, InterpreterSignals &signals) {
   if (context.eof.load()) {
     context.interpreter.handle_eof();
+    signals.wake_up_for_output.notify();
+    signals.wake_up_interpreter.notify();
+    signals.wake_up_for_input.notify();
+    signals.wake_up_for_callback.notify();
     return true;
   } else {
     auto buffer = context.interpreter.get_write_buffer();

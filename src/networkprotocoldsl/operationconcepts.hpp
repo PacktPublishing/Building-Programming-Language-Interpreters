@@ -153,6 +153,15 @@ concept LexicalPadOperationConcept = requires(OT op,
   { op(args, pad) } -> std::convertible_to<Value>;
 };
 
+/**
+ * The Stringification operation concept offers an interface for
+ * converting the operation to a string representation.
+ */
+template <typename OT>
+concept StringifiableOperationConcept = requires(OT op) {
+  { op.stringify() } -> std::convertible_to<std::string>;
+};
+
 } // namespace networkprotocoldsl
 
 #endif

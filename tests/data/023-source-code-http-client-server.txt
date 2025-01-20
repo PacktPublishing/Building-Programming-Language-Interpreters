@@ -3,7 +3,7 @@ message "HTTP Request" {
     then: AwaitResponse; 
     agent: Client; 
     data: { 
-        method: str<encoding=Ascii7Bit, 
+        verb: str<encoding=Ascii7Bit, 
                     sizing=Dynamic, 
                     max_length=10>; 
         request_target: str<encoding=Ascii7Bit, 
@@ -24,7 +24,6 @@ message "HTTP Request" {
                                        max_length=32768>>, 
           sizing=Dynamic, 
           max_length=100>; 
-        contents: stream; 
     } 
     parts { 
         tokens { verb } 
@@ -71,7 +70,6 @@ message "HTTP Response" {
                                        max_length=32768>>, 
           sizing=Dynamic, 
           max_length=100>; 
-        contents: stream; 
     } 
     parts { 
         tokens { 

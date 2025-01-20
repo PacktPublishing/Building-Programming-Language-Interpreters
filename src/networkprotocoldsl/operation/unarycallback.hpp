@@ -24,6 +24,10 @@ public:
   std::string callback_key(CallbackOperationContext &ctx) const;
   void set_callback_return(CallbackOperationContext &ctx, Value v) const;
   void set_callback_called(CallbackOperationContext &ctx) const;
+
+  std::string stringify() const {
+    return "UnaryCallback{key: \"" + key + "\"}";
+  }
 };
 static_assert(CallbackOperationConcept<UnaryCallback>);
 

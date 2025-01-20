@@ -31,6 +31,10 @@ public:
   void handle_eof(InputOutputOperationContext &ctx) const;
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
+
+  std::string stringify() const {
+    return "WriteStaticOctets{contents: \"" + contents + "\"}";
+  }
 };
 static_assert(InputOutputOperationConcept<WriteStaticOctets>);
 

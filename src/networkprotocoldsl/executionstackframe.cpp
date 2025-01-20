@@ -1,9 +1,13 @@
 #include <networkprotocoldsl/executionstackframe.hpp>
 #include <networkprotocoldsl/operationconcepts.hpp>
+#include <networkprotocoldsl/print_optreenode.hpp>
 #include <networkprotocoldsl/value.hpp>
 
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <memory>
+#include <thread>
 
 namespace networkprotocoldsl {
 
@@ -141,8 +145,25 @@ bool ExecutionStackFrame::has_arguments_ready() {
 
 std::shared_ptr<LexicalPad> ExecutionStackFrame::get_pad() { return pad; }
 
+static std::string get_debug_stream_file_name() {
+  std::thread::id this_id = std::this_thread::get_id();
+  std::ostringstream ss;
+  ss << "/tmp/thread_";
+  ss << this_id;
+  ss << "_debug.log";
+  return ss.str();
+}
+
+static void do_debug(ExecutionStackFrame *frame) {
+  thread_local static std::ofstream debug_file(get_debug_stream_file_name(),
+                                               std::ios_base::app);
+  print_optreenode(frame->optreenode, debug_file, ">  ", "| ");
+}
+
 OperationResult ExecutionStackFrame::execute() {
   assert(has_arguments_ready());
+
+  do_debug(this);
   return std::visit(
       [this](auto &o) { return execute_specific_operation(this, o); },
       optreenode.operation);

@@ -22,7 +22,10 @@ using OperationContextVariant =
  * only happen when the right number of inputs has been provided.
  */
 class ExecutionStackFrame {
+public:
   const OpTreeNode &optreenode;
+
+private:
   std::shared_ptr<std::vector<Value>> accumulator;
   OperationContextVariant ctx;
   std::shared_ptr<LexicalPad> pad;

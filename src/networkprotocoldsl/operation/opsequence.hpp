@@ -21,6 +21,7 @@ namespace operation {
 class OpSequence {
 public:
   Value operator()(std::shared_ptr<std::vector<Value>> args) const;
+  std::string stringify() const { return "OpSequence{}"; }
 };
 static_assert(DynamicInputOperationConcept<OpSequence>);
 

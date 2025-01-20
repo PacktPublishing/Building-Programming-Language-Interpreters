@@ -58,6 +58,9 @@ add_library(
     src/networkprotocoldsl/operation.hpp
     src/networkprotocoldsl/operation/add.cpp
     src/networkprotocoldsl/operation/add.hpp
+    src/networkprotocoldsl/operation/dictionaryget.cpp
+    src/networkprotocoldsl/operation/dictionaryinitialize.cpp
+    src/networkprotocoldsl/operation/dictionaryset.cpp
     src/networkprotocoldsl/operation/dynamiclist.cpp
     src/networkprotocoldsl/operation/dynamiclist.hpp
     src/networkprotocoldsl/operation/eq.cpp
@@ -110,6 +113,8 @@ add_library(
     src/networkprotocoldsl/operation/writeoctets.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
+    src/networkprotocoldsl/operation/lexicalpadasdict.cpp
+    src/networkprotocoldsl/operation/lexicalpadasdict.hpp
     src/networkprotocoldsl/parser/grammar/identifier.hpp
     src/networkprotocoldsl/parser/grammar/identifier.cpp
     src/networkprotocoldsl/parser/grammar/literals.hpp
@@ -195,6 +200,8 @@ add_library(
     src/networkprotocoldsl/operationconcepts.hpp
     src/networkprotocoldsl/optree.cpp
     src/networkprotocoldsl/optree.hpp
+    src/networkprotocoldsl/print_optreenode.cpp
+    src/networkprotocoldsl/print_optreenode.hpp
     src/networkprotocoldsl/value.cpp
     src/networkprotocoldsl/value.hpp
 )
