@@ -208,6 +208,8 @@ add_library(
     src/networkprotocoldsl/print_optreenode.hpp
     src/networkprotocoldsl/value.cpp
     src/networkprotocoldsl/value.hpp
+    src/networkprotocoldsl/generate.cpp
+    src/networkprotocoldsl/generate.hpp
 )
 
 target_link_libraries( networkprotocoldsl PUBLIC lexertl)
