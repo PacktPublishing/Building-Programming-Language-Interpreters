@@ -24,13 +24,10 @@ class InterpretedProgram {
   std::shared_ptr<const OpTree> optree;
 
 public:
-  /**
-   * Parses source code and creates the object that can be used to
-   * instantiate interpreters for this specific code.
-   */
-  InterpretedProgram(std::string sf)
-      : source_file(sf), optree(std::make_shared<const OpTree>(
-                             OpTree({operation::Int32Literal(0), {}}))) {}
+  static std::optional<InterpretedProgram>
+  generate_client(const std::string &sf);
+  static std::optional<InterpretedProgram>
+  generate_server(const std::string &sf);
 
   /**
    * Skips the parsing and receives an optree instead.

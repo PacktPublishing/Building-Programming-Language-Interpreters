@@ -21,36 +21,11 @@ static Value _o(const std::string &in) {
 TEST(TranslateASTToOptree, Translation) {
   std::string test_file =
       std::string(TEST_DATA_DIR) + "/023-source-code-http-client-server.txt";
-  std::ifstream file(test_file);
-  ASSERT_TRUE(file.is_open());
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
-  file.close();
-  auto maybe_tokens = lexer::tokenize(content);
-  ASSERT_TRUE(maybe_tokens.has_value());
-  std::vector<lexer::Token> &tokens = maybe_tokens.value();
-  auto result = parser::parse(tokens);
-  ASSERT_TRUE(result.has_value());
-  auto protocol_description = result.value();
-
-  auto maybe_protocol = sema::analyze(protocol_description);
-  ASSERT_TRUE(maybe_protocol.has_value());
-  auto protocol = maybe_protocol.value();
-  ASSERT_TRUE(protocol->client);
-  ASSERT_TRUE(protocol->server);
-
-  auto maybe_client = generate::client(protocol);
-  ASSERT_TRUE(maybe_client.has_value());
-  auto client = maybe_client.value();
-  auto maybe_server = generate::server(protocol);
-  ASSERT_TRUE(maybe_server.has_value());
-  auto server = maybe_server.value();
-
-  print_optreenode(client->root, std::cerr, "client: ", "  |     ");
-  print_optreenode(server->root, std::cerr, "server: ", "  |     ");
 
   // Initialize an interpreter for both the client and server optrees
-  InterpretedProgram client_program(client);
+  auto maybe_client_program = InterpretedProgram::generate_client(test_file);
+  ASSERT_TRUE(maybe_client_program.has_value());
+  auto client_program = maybe_client_program.value();
   InterpreterRunner client_runner{
       .callbacks =
           {
@@ -91,7 +66,9 @@ TEST(TranslateASTToOptree, Translation) {
   InterpreterCollectionManager client_mgr;
   client_mgr.insert_interpreter(0, client_program);
 
-  InterpretedProgram server_program(server);
+  auto maybe_server_program = InterpretedProgram::generate_server(test_file);
+  ASSERT_TRUE(maybe_server_program.has_value());
+  auto server_program = maybe_server_program.value();
   InterpreterRunner server_runner{
       .callbacks =
           {
