@@ -18,16 +18,22 @@ std::future<Value> InterpreterCollectionManager::insert_interpreter(
   std::shared_ptr<InterpreterContext> ctx =
       std::make_shared<InterpreterContext>(program.get_instance(arglist));
   ctx->additional_data = additional_data;
-
   _collection.do_transaction(
       [&fd, &ctx](std::shared_ptr<const InterpreterCollection> current)
           -> std::shared_ptr<const InterpreterCollection> {
         auto new_interpreters = current->interpreters;
+        auto old_interpreter_it = new_interpreters.find(fd);
+        if (old_interpreter_it != new_interpreters.end()) {
+          if (old_interpreter_it->second->exited.load()) {
+            new_interpreters.erase(fd);
+          } else {
+            throw std::runtime_error("Interpreter already exists for fd");
+          }
+        }
         new_interpreters.insert({fd, ctx});
         return std::make_shared<InterpreterCollection>(
             std::move(new_interpreters), current->signals);
       });
-
   _collection.current()->signals->wake_up_interpreter.notify();
 
   return ctx->interpreter_result.get_future();

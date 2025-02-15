@@ -10,7 +10,8 @@ namespace networkprotocoldsl {
 
 struct InterpreterRunner {
   using callback_function = Value (*)(const std::vector<Value> &);
-  std::unordered_map<std::string, callback_function> callbacks;
+  using callback_map = std::unordered_map<std::string, callback_function>;
+  callback_map callbacks;
   std::atomic<bool> exit_when_done = false;
   void interpreter_loop(InterpreterCollectionManager &mgr);
   void callback_loop(InterpreterCollectionManager &mgr);

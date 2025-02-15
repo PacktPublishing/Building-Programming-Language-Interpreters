@@ -4,6 +4,16 @@ project( networkprotocoldsl CXX )
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Detect libuv for the UV adapter target only.
+find_path(LIBUV_INCLUDE_DIR NAMES uv.h)
+find_library(LIBUV_LIBRARIES NAMES uv libuv)
+if(NOT LIBUV_INCLUDE_DIR)
+  message(FATAL_ERROR "Libuv include directory not found")
+endif()
+if(NOT LIBUV_LIBRARIES)
+  message(FATAL_ERROR "Libuv libraries not found")
+endif()
+
 # # Enable sanitizers for Debug builds
 if(CMAKE_BUILD_TYPE MATCHES Debug)
  message(STATUS "Enabling Sanitizers")
@@ -212,7 +222,7 @@ add_library(
     src/networkprotocoldsl/generate.hpp
 )
 
-target_link_libraries( networkprotocoldsl PUBLIC lexertl)
+target_link_libraries( networkprotocoldsl PUBLIC lexertl )
 
 target_include_directories(
     networkprotocoldsl
@@ -220,12 +230,24 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/
 )
 
-target_compile_options(
-    networkprotocoldsl
-    PUBLIC
-    -Wall
-#    -fconcepts-diagnostics-depth=10
+# Create a separate target for the libuv adapter so users are not forced to use it.
+add_library( networkprotocoldsl_uv
+    src/networkprotocoldsl_uv/libuvserverrunner.cpp
+    src/networkprotocoldsl_uv/libuvserverrunner.hpp
+    src/networkprotocoldsl_uv/libuvserverwrapper.cpp   # new file added
+    src/networkprotocoldsl_uv/libuvserverwrapper.hpp    # new file added
+    src/networkprotocoldsl_uv/libuvclientrunner.cpp
+    src/networkprotocoldsl_uv/libuvclientrunner.hpp
+    src/networkprotocoldsl_uv/libuvclientwrapper.cpp    # new file added
+    src/networkprotocoldsl_uv/libuvclientwrapper.hpp     # new file added
+    src/networkprotocoldsl_uv/asyncworkqueue.cpp
+    src/networkprotocoldsl_uv/asyncworkqueue.hpp
 )
+target_include_directories( networkprotocoldsl_uv PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/
+    ${LIBUV_INCLUDE_DIR}
+)
+target_link_libraries( networkprotocoldsl_uv PUBLIC networkprotocoldsl ${LIBUV_LIBRARIES} )
 
 enable_testing()
 add_subdirectory(tests)

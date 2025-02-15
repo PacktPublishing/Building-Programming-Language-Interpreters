@@ -15,10 +15,10 @@ struct InterpreterSignals {
   support::NotificationSignal wake_up_for_input;
   support::NotificationSignal wake_up_for_callback;
   InterpreterSignals()
-      : wake_up_interpreter(support::NotificationSignal()),
-        wake_up_for_output(support::NotificationSignal()),
-        wake_up_for_input(support::NotificationSignal()),
-        wake_up_for_callback(support::NotificationSignal()) {}
+      : wake_up_interpreter(support::NotificationSignal("interpreter")),
+        wake_up_for_output(support::NotificationSignal("output")),
+        wake_up_for_input(support::NotificationSignal("input")),
+        wake_up_for_callback(support::NotificationSignal("callback")) {}
 };
 
 struct InterpreterCollection {

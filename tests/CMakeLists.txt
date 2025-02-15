@@ -10,15 +10,11 @@ target_link_libraries(
     networkprotocoldsl
 )
 
-find_path(LIBUV_INCLUDE_DIR NAMES uv.h)
-find_library(LIBUV_LIBRARIES NAMES uv libuv)
-add_library( uv INTERFACE )
-target_include_directories( uv INTERFACE ${LIBUV_INCLUDE_DIR} )
-target_link_libraries( uv INTERFACE ${LIBUV_LIBRARIES} )
-
 include(CTest)
 enable_testing()
 
+set(028-libuv-io-runner_EXTRA_LIBS networkprotocoldsl_uv)
+set(014-using-with-libuv_EXTRA_LIBS uv)
 foreach(
     TEST
     001-empty
@@ -48,6 +44,7 @@ foreach(
     025-transitionlookahead
     026-statemachineoperator
     027-translate-ast-to-optree
+    028-libuv-io-runner
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
@@ -56,7 +53,7 @@ foreach(
         PUBLIC
         testlibs
         networkprotocoldsl
-        uv
+        ${${TEST}_EXTRA_LIBS}
         ${GTEST_BOTH_LIBRARIES}
     )
     gtest_discover_tests(${TEST}.t

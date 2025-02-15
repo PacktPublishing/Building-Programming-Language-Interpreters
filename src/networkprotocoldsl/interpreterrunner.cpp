@@ -7,7 +7,13 @@
 #include <networkprotocoldsl/operationconcepts.hpp>
 
 #include <exception>
+#include <iostream>
+#include <thread>
 #include <variant>
+
+#define INTERPRETERRUNNER_DEBUG(x)
+//#define INTERPRETERRUNNER_DEBUG(x) std::cerr << "InterpreterRunner[" <<
+//std::this_thread::get_id() << "] " << __func__ << ": " << x << std::endl
 
 namespace networkprotocoldsl {
 
@@ -142,7 +148,6 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
         break;
       case ContinuationState::Exited:
         context->exited.store(true);
-        collection->signals->wake_up_for_output.notify();
         OperationResult r = context->interpreter.get_result();
         if (std::holds_alternative<Value>(r)) {
           Value v = std::get<Value>(r);
@@ -152,6 +157,10 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
           context->interpreter_result.set_exception(
               std::make_exception_ptr(InterpreterResultIsNotValue(r)));
         }
+        collection->signals->wake_up_for_output.notify();
+        collection->signals->wake_up_for_input.notify();
+        collection->signals->wake_up_for_callback.notify();
+        collection->signals->wake_up_interpreter.notify();
         break;
       };
     }
@@ -164,11 +173,15 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
           collection->signals->wake_up_for_output.notify();
           break;
         } else {
+          INTERPRETERRUNNER_DEBUG("Waiting, no active interpreter");
           collection->signals->wake_up_interpreter.wait();
+          INTERPRETERRUNNER_DEBUG("Woken up...");
         }
       } else {
         if (ready_interpreters == 0) {
+          INTERPRETERRUNNER_DEBUG("Waiting, no ready interpreter");
           collection->signals->wake_up_interpreter.wait();
+          INTERPRETERRUNNER_DEBUG("Woken up...");
         }
       }
     }
@@ -209,11 +222,15 @@ void InterpreterRunner::callback_loop(InterpreterCollectionManager &mgr) {
           collection->signals->wake_up_for_output.notify();
           break;
         } else {
+          INTERPRETERRUNNER_DEBUG("Waiting, no active interpreter");
           collection->signals->wake_up_for_callback.wait();
+          INTERPRETERRUNNER_DEBUG("Woken up...");
         }
       } else {
         if (callbacks_count == 0) {
+          INTERPRETERRUNNER_DEBUG("Waiting, no callbacks to process");
           collection->signals->wake_up_for_callback.wait();
+          INTERPRETERRUNNER_DEBUG("Woken up...");
         }
       }
     }

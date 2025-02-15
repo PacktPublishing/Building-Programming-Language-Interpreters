@@ -10,9 +10,9 @@
 
 #include <cassert>
 
-//#define DEBUG(x)
-#define DEBUG(x)                                                               \
-  std::cerr << std::this_thread::get_id() << ": " << x << std::endl;
+#define DEBUG(x)
+//#define DEBUG(x)                                                               \
+//  std::cerr << std::this_thread::get_id() << ": " << x << std::endl;
 
 namespace {
 
