@@ -13,7 +13,7 @@
 
 #define INTERPRETERRUNNER_DEBUG(x)
 //#define INTERPRETERRUNNER_DEBUG(x) std::cerr << "InterpreterRunner[" <<
-//std::this_thread::get_id() << "] " << __func__ << ": " << x << std::endl
+// std::this_thread::get_id() << "] " << __func__ << ": " << x << std::endl
 
 namespace networkprotocoldsl {
 

@@ -76,7 +76,7 @@ struct Octets {
 struct Dictionary {
   using Type = std::unordered_map<std::string, Value>;
   std::shared_ptr<const Type> members;
-  Dictionary() = default;
+  Dictionary() : members(std::make_shared<const Type>()){};
   explicit Dictionary(Type &&m)
       : members(std::make_shared<const Type>(std::move(m))) {}
   explicit Dictionary(std::initializer_list<Type::value_type> init)

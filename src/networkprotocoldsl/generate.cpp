@@ -446,7 +446,7 @@ generate_read_state_callback(
   return std::make_shared<OpTree>(
       OpTreeNode{operation::DynamicList{},
                  {{operation::TransitionLookahead{conditions}, {}},
-                  {operation::DictionaryInitialize{}, {}}}});
+                  {operation::LexicalPadGet{"dictionary"}, {}}}});
 }
 
 static std::optional<StateMachineOperation::StateMap> construct_state_map(

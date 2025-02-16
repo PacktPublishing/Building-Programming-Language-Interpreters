@@ -251,3 +251,4 @@ target_link_libraries( networkprotocoldsl_uv PUBLIC networkprotocoldsl ${LIBUV_L
 
 enable_testing()
 add_subdirectory(tests)
+add_subdirectory(examples)

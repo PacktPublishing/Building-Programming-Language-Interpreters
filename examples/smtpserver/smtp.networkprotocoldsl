@@ -1,0 +1,365 @@
+message "SMTP Server Greeting" { 
+    when: Open; 
+    then: ClientSendEHLO; 
+    agent: Server; 
+    data: {
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens " " msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP EHLO Command" { 
+    when: ClientSendEHLO; 
+    then: AwaitServerEHLOResponse; 
+    agent: Client; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+    } 
+    parts { 
+        tokens { "EHLO " client_domain } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP EHLO Success Response" { 
+    when: AwaitServerEHLOResponse; 
+    then: ClientSendCommand; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP EHLO Failure Response" { 
+    when: AwaitServerEHLOResponse; 
+    then: ClientSendEHLO; 
+    agent: Server; 
+    data: { 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "5" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP MAIL FROM Command" { 
+    when: ClientSendCommand; 
+    then: AwaitServerMAILFROMResponse; 
+    agent: Client; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+    } 
+    parts { 
+        tokens { "MAIL FROM:<" sender ">" }
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP MAIL FROM Success Response" { 
+    when: AwaitServerMAILFROMResponse; 
+    then: ClientSendFirstRCPTTO; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP MAIL FROM Failure Response" { 
+    when: AwaitServerMAILFROMResponse; 
+    then: ClientSendCommand; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "5" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP RCPT TO Command" { 
+    when: ClientSendFirstRCPTTO; 
+    then: AwaitServerRCPTTOResponse; 
+    agent: Client; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        rcpt_to_params: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>;
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+    }
+    parts { 
+        tokens { "RCPT TO:<" recipient ">" }
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP RCPT TO Success Response" { 
+    when: AwaitServerRCPTTOResponse; 
+    then: ClientSendMoreRCPTTOorDATA; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        mail_from_params: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>;
+        recipient_list: array< 
+          element_type=tuple<recipient=str<encoding=Ascii7Bit, 
+                                     sizing=Dynamic, 
+                                     max_length=32768>, 
+                             parameters=str<encoding=Ascii7Bit, 
+                                       sizing=Dynamic, 
+                                       max_length=32768>>, 
+          sizing=Dynamic, 
+          max_length=100>;
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "Additional SMTP RCPT TO Command" { 
+    when: ClientSendMoreRCPTTOorDATA; 
+    then: AwaitServerRCPTTOResponse; 
+    agent: Client; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        mail_from_params: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>;
+        recipient: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        rcpt_to_params: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>;
+        recipient_list: array< 
+          element_type=tuple<recipient=str<encoding=Ascii7Bit, 
+                                     sizing=Dynamic, 
+                                     max_length=32768>, 
+                             parameters=str<encoding=Ascii7Bit, 
+                                       sizing=Dynamic, 
+                                       max_length=32768>>, 
+          sizing=Dynamic, 
+          max_length=100>;
+    } 
+    parts { 
+        tokens { "RCPT TO:<" recipient ">" rcpt_to_params }
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP RCPT TO Failure Response" { 
+    when: AwaitServerRCPTTOResponse; 
+    then: ClientSendMoreRCPTTOorDATA; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "5" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP DATA Command" { 
+    when: ClientSendMoreRCPTTOorDATA; 
+    then: AwaitServerDATAResponse; 
+    agent: Client;
+    data: {
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+    }
+    parts { 
+        tokens { "DATA" } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP DATA Response" { 
+    when: AwaitServerDATAResponse; 
+    then: ClientSendDATAContent; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "3" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+
+message "SMTP DATA Failure Response" { 
+    when: AwaitServerDATAResponse; 
+    then: ClientSendMoreRCPTTOorDATA; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "3" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP DATA Content" { 
+    when: ClientSendDATAContent; 
+    then: AwaitServerDATAContentResponse; 
+    agent: Client; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        sender: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=320>; 
+        recipient_list: array<element_type=str<encoding=Ascii7Bit, 
+                                               sizing=Dynamic, 
+                                               max_length=32768>>;
+        content: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=65536>; 
+    } 
+    parts { 
+        tokens { content } 
+        terminator { "\r\n.\r\n" }  
+    } 
+}
+
+message "SMTP DATA Written" { 
+    when: AwaitServerDATAContentResponse; 
+    then: ClientSendCommand; 
+    agent: Server; 
+    data: { 
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP QUIT Command from EHLO" { 
+    when: ClientSendEHLO; 
+    then: AwaitServerQUITResponse; 
+    agent: Client;
+    data: {
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+    }
+    parts { 
+        tokens { "QUIT" } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP QUIT Command" { 
+    when: ClientSendCommand; 
+    then: AwaitServerQUITResponse; 
+    agent: Client;
+    data: {
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+    }
+    parts { 
+        tokens { "QUIT" } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP QUIT Command from First RCPTTO" { 
+    when: ClientSendFirstRCPTTO; 
+    then: AwaitServerQUITResponse; 
+    agent: Client;
+    data: {
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+    }
+    parts { 
+        tokens { "QUIT" } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP QUIT Command from RCPTTO or DATA" { 
+    when: ClientSendMoreRCPTTOorDATA; 
+    then: AwaitServerQUITResponse; 
+    agent: Client;
+    data: {
+        client_domain: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>; 
+    }
+    parts { 
+        tokens { "QUIT" } 
+        terminator { "\r\n" } 
+    } 
+}
+
+message "SMTP QUIT Response" { 
+    when: AwaitServerQUITResponse; 
+    then: Closed; 
+    agent: Server; 
+    data: { 
+        code_tens: int<encoding=AsciiInt, unsigned=True, bits=8>; 
+        msg: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>; 
+    } 
+    parts { 
+        tokens { "2" code_tens } 
+        terminator { " " } 
+        tokens { msg } 
+        terminator { "\r\n" } 
+    } 
+}
