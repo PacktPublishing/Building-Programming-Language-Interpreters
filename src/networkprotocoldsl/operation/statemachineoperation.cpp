@@ -47,7 +47,7 @@ _extract_arguments(const std::vector<std::string> &names,
   for (const auto &arg_name : names) {
     auto it = d.members->find(arg_name);
     if (it == d.members->end()) {
-      return std::nullopt;
+      args->push_back(false);
     } else {
       args->push_back(it->second);
     }

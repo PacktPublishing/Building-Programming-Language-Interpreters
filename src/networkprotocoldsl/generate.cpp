@@ -311,8 +311,9 @@ actions_to_optreenodes(const TRANSITION &transition,
   return operations;
 }
 
-static std::optional<std::shared_ptr<const OpTree>> generate_transition_optree(
-    const std::shared_ptr<const sema::ast::WriteTransition> &transition) {
+template <typename TRANSITION>
+static std::optional<std::shared_ptr<const OpTree>>
+generate_transition_optree(TRANSITION &transition) {
   if (!transition)
     return std::nullopt;
   auto get_type = [&](const std::string &name) {
@@ -328,41 +329,10 @@ static std::optional<std::shared_ptr<const OpTree>> generate_transition_optree(
                          {DynamicList{}, {{LexicalPadAsDict{}, {}}}}}}));
 }
 
-static std::optional<std::shared_ptr<const OpTree>> generate_transition_optree(
-    const std::shared_ptr<const sema::ast::ReadTransition> &transition) {
-  if (!transition)
-    return std::nullopt;
-  auto get_type = [&](const std::string &name) {
-    return extract_type(transition->data, name);
-  };
-  auto maybe_ops =
-      actions_to_optreenodes(transition, transition->actions, get_type);
-  if (!maybe_ops)
-    return std::nullopt;
-
-  std::vector<OpTreeNode> init_ops;
-  auto argument_names = extract_argument_names(transition->data);
-  if (argument_names) {
-    for (const auto &arg : *argument_names) {
-      auto maybe_type = get_type(arg);
-      if (!maybe_type)
-        return std::nullopt;
-      init_ops.push_back(OpTreeNode{LexicalPadInitialize(arg),
-                                    {OpTreeNode{Int32Literal{0}, {}}}});
-    }
-  }
-
-  return std::make_shared<OpTree>(
-      OpTree(OpTreeNode{OpSequence{},
-                        {{OpSequence{}, init_ops},
-                         {OpSequence{}, *maybe_ops},
-                         {DynamicList{}, {{LexicalPadAsDict{}, {}}}}}}));
-}
-
+template <typename TRANSITION>
 static std::optional<StateMachineOperation::TransitionInfo>
-generate_transition_info(
-    const std::shared_ptr<const sema::ast::WriteTransition> &transition,
-    const std::string &target_state) {
+generate_transition_info(TRANSITION &transition,
+                         const std::string &target_state) {
   auto optree = generate_transition_optree(transition);
   if (!optree)
     return std::nullopt;
@@ -371,16 +341,6 @@ generate_transition_info(
     return std::nullopt;
   return StateMachineOperation::TransitionInfo{*optree, *argument_names,
                                                target_state};
-}
-
-static std::optional<StateMachineOperation::TransitionInfo>
-generate_transition_info(
-    const std::shared_ptr<const sema::ast::ReadTransition> &transition,
-    const std::string &target_state) {
-  auto optree = generate_transition_optree(transition);
-  if (!optree)
-    return std::nullopt;
-  return StateMachineOperation::TransitionInfo{*optree, {}, target_state};
 }
 
 static std::optional<

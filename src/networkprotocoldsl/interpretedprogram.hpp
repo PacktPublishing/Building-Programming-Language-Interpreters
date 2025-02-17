@@ -29,6 +29,12 @@ public:
   static std::optional<InterpretedProgram>
   generate_server(const std::string &sf);
 
+  // New interfaces accepting source code contents directly.
+  static std::optional<InterpretedProgram>
+  generate_client_from_source(const std::string &source);
+  static std::optional<InterpretedProgram>
+  generate_server_from_source(const std::string &source);
+
   /**
    * Skips the parsing and receives an optree instead.
    */
