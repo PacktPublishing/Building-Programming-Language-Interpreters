@@ -6,6 +6,9 @@ RUN apt-get -y update && apt-get -y dist-upgrade && apt-get install -y \
         build-essential \
         g++ \
         libgtest-dev \
+        libuv1-dev \
+        git     \
+        libcli11-dev \
         && apt-get clean
 
 COPY . src/

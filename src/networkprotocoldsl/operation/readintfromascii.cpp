@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <memory>
 #include <stdlib.h>
+#include <climits>
 #include <string_view>
 
 namespace networkprotocoldsl::operation {
