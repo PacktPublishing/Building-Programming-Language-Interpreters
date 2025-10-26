@@ -72,7 +72,7 @@ const std::vector<TokenRule> token_rules = {
      [](TP_ARGS) {
        tokens.push_back(token::literal::Integer{std::atoi(str.data())});
      }},
-    {"\\\"([^\"\\\\]|\\\\.)*\\\"",
+    {"\\\"(\\\\[\"\\\\ntr]|[^\"\\\\])*\\\"",
      [](TP_ARGS) {
        tokens.push_back(token::literal::String{
            unescape_string(std::string(str.substr(1, str.length() - 2)))});
