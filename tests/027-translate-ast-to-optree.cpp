@@ -112,7 +112,7 @@ TEST(TranslateASTToOptree, Translation) {
   std::stringstream server_writes;
   // create a thread that will transfer the data written by the client to the
   // server and vice-versa.
-  auto io_thread_code = [](auto &this_mgr, auto &other_mgr, auto &this_writes) {
+  auto io_thread_code = [](auto &this_mgr, auto &other_mgr, auto &this_writes, const char* name) {
     while (true) {
       bool all_exited = true;
       auto collection = this_mgr.get_collection();
@@ -124,7 +124,7 @@ TEST(TranslateASTToOptree, Translation) {
           auto other_col = other_mgr.get_collection();
           auto other_iter = other_col->interpreters.find(0);
           if (other_iter != other_col->interpreters.end()) {
-            std::cerr << "Pushing data to other interpreter: " << cbdata.value()
+            std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing data to other interpreter: " << cbdata.value()
                       << std::endl;
             other_iter->second->input_buffer.push_back(cbdata.value());
             other_col->signals->wake_up_for_input.notify();
@@ -138,7 +138,7 @@ TEST(TranslateASTToOptree, Translation) {
             if (other_iter != other_col->interpreters.end()) {
               auto other_iter = other_col->interpreters.find(0);
               if (other_iter != other_col->interpreters.end()) {
-                std::cerr << "Pushing EOF" << std::endl;
+                std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing EOF" << std::endl;
                 other_iter->second->eof.store(true);
                 other_col->signals->wake_up_for_input.notify();
                 other_col->signals->wake_up_for_output.notify();
@@ -152,26 +152,29 @@ TEST(TranslateASTToOptree, Translation) {
             collection->signals->wake_up_for_output.notify();
           }
         }
-        collection->signals->wake_up_for_output.wait();
       }
       if (all_exited) {
         std::cerr << "All exited" << std::endl;
         break;
+      } else {
+        collection->signals->wake_up_for_output.wait();
       }
     }
   };
 
   std::thread client_io_thread(
-      [&]() { io_thread_code(client_mgr, server_mgr, client_writes); });
-
+      [&]() { io_thread_code(client_mgr, server_mgr, client_writes, "client"); });
+    
   std::thread server_io_thread(
-      [&]() { io_thread_code(server_mgr, client_mgr, server_writes); });
+      [&]() { io_thread_code(server_mgr, client_mgr, server_writes, "server"); });
 
   std::thread client_interpreter_thread([&client_runner, &client_mgr] {
+    std::cerr << "Starting client interpreter thread " << std::this_thread::get_id() << std::endl;
     client_runner.interpreter_loop(client_mgr);
   });
 
   std::thread server_interpreter_thread([&server_runner, &server_mgr] {
+    std::cerr << "Starting server interpreter thread " << std::this_thread::get_id() << std::endl;
     server_runner.interpreter_loop(server_mgr);
   });
 
