@@ -11,7 +11,7 @@
 
 TEST(tokenizer, match) {
   using namespace networkprotocoldsl;
-  std::string input("message \"HTTP Request\" { when: Open; }");
+  std::string input("message \"HTTP \\\"Request\\\"\" { when: Open; }");
   auto output = lexer::tokenize(input);
   ASSERT_TRUE(output.has_value());
   ASSERT_EQ(8, output->size());
@@ -20,7 +20,7 @@ TEST(tokenizer, match) {
       std::holds_alternative<lexer::token::keyword::Message>(output->at(0)));
   ASSERT_TRUE(
       std::holds_alternative<lexer::token::literal::String>(output->at(1)));
-  ASSERT_EQ("HTTP Request",
+  ASSERT_EQ("HTTP \"Request\"",
             std::get<lexer::token::literal::String>(output->at(1)).value);
   ASSERT_TRUE(std::holds_alternative<lexer::token::punctuation::CurlyBraceOpen>(
       output->at(2)));
