@@ -26,9 +26,7 @@ public:
     for (auto &message : messages) {
       protocol_description->emplace(message->name->value, message);
     }
-    return {std::const_pointer_cast<const tree::ProtocolDescription>(
-                protocol_description),
-            begin, end};
+    return {protocol_description, begin, end};
   };
 };
 

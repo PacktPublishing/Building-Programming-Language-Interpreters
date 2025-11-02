@@ -57,8 +57,6 @@ struct DynamicList {
       : values(std::make_shared<const std::vector<Value>>(vals)) {}
   explicit DynamicList(std::shared_ptr<const std::vector<Value>> vals)
       : values(vals) {}
-  explicit DynamicList(std::shared_ptr<std::vector<Value>> vals)
-      : values(std::const_pointer_cast<const std::vector<Value>>(vals)) {}
 };
 
 struct Octets {
@@ -84,8 +82,6 @@ struct Dictionary {
   explicit Dictionary(const Type &m)
       : members(std::make_shared<const Type>(m)) {}
   explicit Dictionary(std::shared_ptr<const Type> m) : members(m) {}
-  explicit Dictionary(std::shared_ptr<Type> m)
-      : members(std::const_pointer_cast<const Type>(m)) {}
 };
 
 } // namespace value

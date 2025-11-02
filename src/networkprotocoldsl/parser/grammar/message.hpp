@@ -72,8 +72,7 @@ public:
     if (!(seen_when && seen_then && seen_agent)) {
       return {std::nullopt, begin, end};
     } else {
-      return {std::const_pointer_cast<const tree::Message>(message), begin,
-              end};
+      return {message, begin, end};
     }
   }
 
@@ -122,8 +121,7 @@ public:
     if (!(seen_when && seen_then && seen_agent)) {
       return {std::nullopt, begin, end};
     } else {
-      return {std::const_pointer_cast<const tree::Message>(message), begin,
-              end};
+      return {message, begin, end};
     }
   };
 };

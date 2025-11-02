@@ -72,7 +72,7 @@ public:
     for (auto &pair : fields) {
       map->emplace(pair->first, pair->second);
     }
-    return {std::const_pointer_cast<const tree::MessageData>(map), begin, end};
+    return {map, begin, end};
   }
 };
 
