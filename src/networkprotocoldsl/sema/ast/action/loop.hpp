@@ -15,6 +15,14 @@ struct Loop {
   std::shared_ptr<const parser::tree::IdentifierReference> collection;
   std::string terminator;
   std::vector<Action> actions;
+  Loop(const std::shared_ptr<const parser::tree::IdentifierReference> &var,
+       const std::shared_ptr<const parser::tree::IdentifierReference> &col,
+       const std::string &term, const std::vector<Action> &acts)
+      : variable(var), collection(col), terminator(term), actions(acts) {}
+  Loop(const std::shared_ptr<const parser::tree::IdentifierReference> &var,
+       const std::shared_ptr<const parser::tree::IdentifierReference> &col,
+       const std::string &term)
+      : variable(var), collection(col), terminator(term) {}
 };
 
 } // namespace networkprotocoldsl::sema::ast::action
