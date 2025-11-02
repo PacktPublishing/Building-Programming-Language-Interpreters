@@ -18,8 +18,7 @@ static std::optional<ast::Transition> analyze_write_message(
   if (!maybe_actions.has_value()) {
     return std::nullopt;
   }
-  return std::make_shared<const ast::WriteTransition>(
-      ast::WriteTransition{message->data, maybe_actions.value()});
+  return std::make_shared<const ast::WriteTransition>(message->data, maybe_actions.value());
 }
 
 static std::optional<ast::Transition> analyze_read_message(
@@ -28,8 +27,7 @@ static std::optional<ast::Transition> analyze_read_message(
   if (!maybe_actions.has_value()) {
     return std::nullopt;
   }
-  return std::make_shared<const ast::ReadTransition>(
-      ast::ReadTransition{message->data, maybe_actions.value()});
+  return std::make_shared<const ast::ReadTransition>(message->data, maybe_actions.value());
 }
 
 static std::optional<std::unordered_map<std::string, ast::Transition>>
@@ -37,7 +35,7 @@ analyze_transitions(
     std::shared_ptr<const parser::tree::ProtocolDescription> &protocol,
     const std::string &agent_name) {
   auto transitions = std::unordered_map<std::string, ast::Transition>();
-  for (auto &message : *protocol) {
+  for (const auto &message : *protocol) {
     auto maybe_transition = message.second->agent->name == agent_name
                                 ? analyze_write_message(message.second)
                                 : analyze_read_message(message.second);
@@ -62,7 +60,7 @@ static std::optional<std::shared_ptr<const ast::Agent>> analyze_agent(
 
   // assemble the states and transitions together
   std::unordered_map<std::string, std::shared_ptr<ast::State>> states;
-  for (auto &message : *protocol) {
+  for (const auto &message : *protocol) {
     auto when_state = message.second->when->name;
     auto then_state = message.second->then->name;
     // make sure the states are created

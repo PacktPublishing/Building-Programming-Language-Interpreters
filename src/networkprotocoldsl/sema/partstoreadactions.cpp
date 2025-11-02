@@ -120,8 +120,8 @@ public:
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::MessageForLoop> loop,
         std::shared_ptr<const parser::tree::Terminator> terminator) {
-    auto l = std::make_shared<ast::action::Loop>(ast::action::Loop{
-        loop->variable, loop->collection, terminator->value->value, {}});
+    auto l = std::make_shared<ast::action::Loop>(
+        loop->variable, loop->collection, terminator->value->value);
     auto full_sequence = unroll_variant(*(loop->block));
     auto r = PartSequenceToReadActions::parse(full_sequence.cbegin(),
                                               full_sequence.cend());
