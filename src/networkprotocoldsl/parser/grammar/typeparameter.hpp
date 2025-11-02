@@ -85,8 +85,7 @@ public:
     for (auto &pair : m) {
       map->emplace(pair->first, pair->second);
     }
-    return {std::const_pointer_cast<const tree::TypeParameterMap>(map), begin,
-            end};
+    return {map, begin, end};
   }
 };
 
