@@ -49,6 +49,7 @@ foreach(
     030-codegen-typemapping
     031-codegen-protocolinfo
     032-codegen-generate-data-types
+    033-codegen-generate-states
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")

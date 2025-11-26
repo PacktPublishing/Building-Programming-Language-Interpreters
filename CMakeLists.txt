@@ -206,6 +206,8 @@ add_library(
     src/networkprotocoldsl/sema/ast/transition.hpp
     src/networkprotocoldsl/codegen/generate_data_types.cpp
     src/networkprotocoldsl/codegen/generate_data_types.hpp
+    src/networkprotocoldsl/codegen/generate_states.cpp
+    src/networkprotocoldsl/codegen/generate_states.hpp
     src/networkprotocoldsl/codegen/outputcontext.cpp
     src/networkprotocoldsl/codegen/outputcontext.hpp
     src/networkprotocoldsl/codegen/protocolinfo.cpp
