@@ -52,6 +52,7 @@ foreach(
     033-codegen-generate-states
     034-codegen-generate-parser
     035-codegen-generate-serializer
+    036-codegen-generate-state-machine
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
