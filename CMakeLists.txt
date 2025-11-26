@@ -204,6 +204,8 @@ add_library(
     src/networkprotocoldsl/sema/ast/state.hpp
     src/networkprotocoldsl/sema/ast/transition.cpp
     src/networkprotocoldsl/sema/ast/transition.hpp
+    src/networkprotocoldsl/codegen/outputcontext.cpp
+    src/networkprotocoldsl/codegen/outputcontext.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
     src/networkprotocoldsl/support/mutexlockqueue.hpp
     src/networkprotocoldsl/support/notificationsignal.cpp
