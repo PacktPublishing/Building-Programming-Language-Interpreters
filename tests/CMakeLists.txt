@@ -46,6 +46,7 @@ foreach(
     027-translate-ast-to-optree
     028-libuv-io-runner
     029-codegen-outputcontext
+    030-codegen-typemapping
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
