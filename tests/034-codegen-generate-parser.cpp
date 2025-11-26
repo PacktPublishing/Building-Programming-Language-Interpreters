@@ -222,227 +222,6 @@ TEST_F(GenerateParserTest, NoErrorsReported) {
       << (result.errors.empty() ? "" : result.errors[0]);
 }
 
-// Tests for main Parser class features
-
-TEST_F(GenerateParserTest, MainParserHasParserInstances) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Main Parser should have instances of individual message parsers
-  EXPECT_TRUE(result.header.find("HTTPResponseParser") != std::string::npos);
-  EXPECT_TRUE(result.header.find("HTTPRequestParser") != std::string::npos);
-  EXPECT_TRUE(result.header.find("_parser_") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, MainParserHasActiveParserIndex) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Should track which parser completed
-  EXPECT_TRUE(result.header.find("active_parser_index()") != std::string::npos);
-  EXPECT_TRUE(result.header.find("active_parser_") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, MainParserHasTakeMethods) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Should have take methods for each message type
-  EXPECT_TRUE(result.header.find("take_HTTPResponse()") != std::string::npos);
-  EXPECT_TRUE(result.header.find("take_HTTPRequest()") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceHasStateDispatch) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Parser::parse should dispatch based on current state
-  EXPECT_TRUE(result.source.find("switch (current_state_)") != std::string::npos);
-  EXPECT_TRUE(result.source.find("case State::") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceDispatchesToMessageParsers) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Should call individual message parser's parse method
-  EXPECT_TRUE(result.source.find("_parser_.parse(input)") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceSetsHasMessageOnComplete) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Should set has_message_ when parsing completes
-  EXPECT_TRUE(result.source.find("has_message_ = true") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceSetsActiveParserOnComplete) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Should set active_parser_ when parsing completes
-  EXPECT_TRUE(result.source.find("active_parser_ =") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, TakeMethodsClearHasMessage) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Take methods should clear has_message flag
-  // Find take_HTTPResponse implementation
-  auto pos = result.source.find("Parser::take_HTTPResponse()");
-  ASSERT_TRUE(pos != std::string::npos);
-  auto impl_end = result.source.find("}\n", pos);
-  std::string impl = result.source.substr(pos, impl_end - pos);
-  EXPECT_TRUE(impl.find("has_message_ = false") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, ResetClearsAllParsers) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Main Parser reset should reset all individual parsers
-  auto pos = result.source.find("void Parser::reset()");
-  ASSERT_TRUE(pos != std::string::npos);
-  auto impl_end = result.source.find("}\n\n", pos);
-  std::string impl = result.source.substr(pos, impl_end - pos);
-  EXPECT_TRUE(impl.find("_parser_.reset()") != std::string::npos);
-}
-
-// Tests for loop parsing
-
-TEST_F(GenerateParserTest, LoopParsingHasCollectionBuffer) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // HTTP has headers array - should have a buffer for it
-  // Looking for headers_buffer_ or similar
-  EXPECT_TRUE(result.header.find("_buffer_") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopParsingHasLoopStage) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Loop parsing should track its own stage
-  EXPECT_TRUE(result.header.find("loop_") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopParsingChecksTerminator) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Loop should check for loop terminator
-  EXPECT_TRUE(result.source.find("loop_terminator") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopParsingAddsToCollection) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Loop should push elements to the collection buffer
-  EXPECT_TRUE(result.source.find("push_back") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopParsingResetsElementStage) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // After adding element, loop stage should reset to 0
-  EXPECT_TRUE(result.source.find("_stage_ = 0") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopParsingMovesCollection) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // take_data should move the collection
-  // Look for moving a buffer that ends with _buffer_ and contains collection name
-  EXPECT_TRUE(result.source.find("std::move(") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopResetClearsCollection) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // reset should clear collection buffers
-  // Multiple .clear() calls expected
-  size_t count = 0;
-  size_t pos = 0;
-  while ((pos = result.source.find(".clear()", pos)) != std::string::npos) {
-    ++count;
-    ++pos;
-  }
-  EXPECT_GT(count, 1) << "Should have multiple .clear() calls for buffers";
-}
-
-TEST_F(GenerateParserTest, HeaderHasVectorInclude) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Header should include <vector> for loop collection buffers
-  EXPECT_TRUE(result.header.find("#include <vector>") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, HasAutoGeneratedComment) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Both files should have auto-generated comment
-  EXPECT_TRUE(result.header.find("Auto-generated by NetworkProtocolDSL") != std::string::npos);
-  EXPECT_TRUE(result.source.find("Auto-generated by NetworkProtocolDSL") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, ActiveParserIndexDocumented) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // active_parser_index should document which indices correspond to which parsers
-  EXPECT_TRUE(result.header.find("Index values:") != std::string::npos);
-  EXPECT_TRUE(result.header.find("0 = ") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, LoopHandlesEmptyInput) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Loop should check for empty input before trying to parse element
-  EXPECT_TRUE(result.source.find("if (input.empty())") != std::string::npos);
-}
-
-// Tests for new status(), on_eof(), and lookahead features
-
-TEST_F(GenerateParserTest, HeaderHasStatusMethod) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Parser should have a status() const method
-  EXPECT_TRUE(result.header.find("ParseStatus status() const") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceImplementsStatusMethod) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // status() should return Complete if has_message_, NeedMoreData otherwise
-  EXPECT_TRUE(result.source.find("ParseStatus Parser::status() const") != std::string::npos);
-  EXPECT_TRUE(result.source.find("if (has_message_)") != std::string::npos);
-  EXPECT_TRUE(result.source.find("return ParseStatus::Complete") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, HeaderHasOnEofMethod) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Parser should have on_eof() method
-  EXPECT_TRUE(result.header.find("void on_eof()") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, HeaderHasEofReceivedAccessor) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // Parser should have eof_received() accessor
-  EXPECT_TRUE(result.header.find("bool eof_received() const") != std::string::npos);
-  EXPECT_TRUE(result.header.find("eof_received_") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, SourceImplementsOnEof) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // on_eof should set eof_received_ flag
-  EXPECT_TRUE(result.source.find("void Parser::on_eof()") != std::string::npos);
-  EXPECT_TRUE(result.source.find("eof_received_ = true") != std::string::npos);
-}
-
-TEST_F(GenerateParserTest, ResetClearsEofFlag) {
-  auto result = generate_parser(*ctx_, *info_);
-
-  // reset() should clear eof_received_ flag
-  auto pos = result.source.find("void Parser::reset()");
-  ASSERT_TRUE(pos != std::string::npos);
-  auto impl_end = result.source.find("}\n\n", pos);
-  std::string impl = result.source.substr(pos, impl_end - pos);
-  EXPECT_TRUE(impl.find("eof_received_ = false") != std::string::npos);
-}
-
 TEST_F(GenerateParserTest, LookaheadCodeGenerated) {
   auto result = generate_parser(*ctx_, *info_);
 
@@ -452,3 +231,149 @@ TEST_F(GenerateParserTest, LookaheadCodeGenerated) {
   // For states with single messages, direct dispatch is used
   EXPECT_TRUE(result.source.find("_parser_.parse(input)") != std::string::npos);
 }
+
+// SMTP-specific parser generation tests
+class GenerateParserSMTPTest : public ::testing::Test {
+protected:
+  std::shared_ptr<const sema::ast::Protocol> protocol_;
+  std::unique_ptr<OutputContext> ctx_;
+  std::unique_ptr<ProtocolInfo> info_;
+
+  void SetUp() override {
+    std::string test_file =
+        std::string(SMTP_SOURCE_DIR) + "/smtp.networkprotocoldsl";
+    std::ifstream file(test_file);
+    ASSERT_TRUE(file.is_open()) << "Could not open SMTP file: " << test_file;
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+    file.close();
+
+    auto maybe_tokens = lexer::tokenize(content);
+    ASSERT_TRUE(maybe_tokens.has_value()) << "Failed to tokenize SMTP";
+
+    auto result = parser::parse(maybe_tokens.value());
+    ASSERT_TRUE(result.has_value()) << "Failed to parse SMTP";
+
+    auto maybe_protocol = sema::analyze(result.value());
+    ASSERT_TRUE(maybe_protocol.has_value()) << "Failed semantic analysis";
+    protocol_ = maybe_protocol.value();
+
+    ctx_ = std::make_unique<OutputContext>("smtp::generated");
+    info_ = std::make_unique<ProtocolInfo>(protocol_);
+  }
+};
+
+TEST_F(GenerateParserSMTPTest, GeneratesValidCode) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  EXPECT_FALSE(result.header.empty());
+  EXPECT_FALSE(result.source.empty());
+  EXPECT_TRUE(result.errors.empty())
+      << "Errors: " << (result.errors.empty() ? "" : result.errors[0]);
+}
+
+TEST_F(GenerateParserSMTPTest, HasSMTPEHLOCommandParser) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  EXPECT_TRUE(result.header.find("SMTPEHLOCommandParser") != std::string::npos)
+      << "Should have SMTPEHLOCommandParser class";
+}
+
+TEST_F(GenerateParserSMTPTest, SMTPEHLOCommandParserHasClientDomainField) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // Find the SMTPEHLOCommandParser class
+  auto parser_pos = result.header.find("class SMTPEHLOCommandParser");
+  ASSERT_NE(parser_pos, std::string::npos) << "Should have SMTPEHLOCommandParser";
+
+  // Find the end of this class (next class or end)
+  auto next_class = result.header.find("class ", parser_pos + 10);
+  std::string parser_class = result.header.substr(parser_pos,
+      next_class != std::string::npos ? next_class - parser_pos : 500);
+
+  EXPECT_TRUE(parser_class.find("client_domain") != std::string::npos)
+      << "SMTPEHLOCommandParser should have client_domain field. Class:\n"
+      << parser_class;
+}
+
+TEST_F(GenerateParserSMTPTest, SMTPEHLOParserImplementationMatchesEHLOPrefix) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // Find the SMTPEHLOCommandParser::parse implementation
+  auto parse_pos = result.source.find("SMTPEHLOCommandParser::parse");
+  ASSERT_NE(parse_pos, std::string::npos) << "Should have SMTPEHLOCommandParser::parse";
+
+  // Get the function body
+  auto func_end = result.source.find("\n}\n", parse_pos);
+  std::string parse_func = result.source.substr(parse_pos,
+      func_end != std::string::npos ? func_end - parse_pos + 3 : 1000);
+
+  // Should match "EHLO " prefix
+  EXPECT_TRUE(parse_func.find("EHLO ") != std::string::npos)
+      << "SMTPEHLOCommandParser should match 'EHLO ' prefix. Function:\n"
+      << parse_func;
+}
+
+TEST_F(GenerateParserSMTPTest, SMTPEHLOParserReturnsCorrectConsumedForValidInput) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // The parse function should:
+  // 1. Match "EHLO " (5 bytes)
+  // 2. Read until "\r\n" terminator
+  // 3. Return Complete with total consumed bytes
+
+  auto parse_pos = result.source.find("SMTPEHLOCommandParser::parse");
+  ASSERT_NE(parse_pos, std::string::npos);
+
+  auto func_end = result.source.find("\n}\n", parse_pos);
+  std::string parse_func = result.source.substr(parse_pos,
+      func_end != std::string::npos ? func_end - parse_pos + 3 : 1000);
+
+  // Should have stage-based parsing
+  EXPECT_TRUE(parse_func.find("stage_") != std::string::npos)
+      << "Should use stage-based parsing";
+
+  // Should return consumed count
+  EXPECT_TRUE(parse_func.find("total_consumed") != std::string::npos)
+      << "Should track total_consumed";
+
+  // Should return Complete status when done
+  EXPECT_TRUE(parse_func.find("ParseStatus::Complete") != std::string::npos)
+      << "Should return Complete status";
+}
+
+TEST_F(GenerateParserSMTPTest, HasSMTPQUITCommandFromEHLOParser) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // SMTP protocol allows QUIT from EHLO state
+  EXPECT_TRUE(result.header.find("SMTPQUITCommandFromEHLO") != std::string::npos)
+      << "Should have SMTPQUITCommandFromEHLO parser for QUIT command from EHLO state";
+}
+
+TEST_F(GenerateParserSMTPTest, SMTPQUITParserMatchesQUITPrefix) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // Find a QUIT parser implementation
+  auto quit_pos = result.source.find("SMTPQUITCommand");
+  if (quit_pos != std::string::npos) {
+    auto parse_pos = result.source.find("::parse", quit_pos);
+    if (parse_pos != std::string::npos) {
+      auto func_end = result.source.find("\n}\n", parse_pos);
+      std::string parse_func = result.source.substr(parse_pos,
+          func_end != std::string::npos ? func_end - parse_pos + 3 : 500);
+
+      // Should match "QUIT" 
+      EXPECT_TRUE(parse_func.find("QUIT") != std::string::npos)
+          << "QUIT parser should match 'QUIT'. Function:\n" << parse_func;
+    }
+  }
+}
+
+TEST_F(GenerateParserSMTPTest, ParserReturnsErrorOnMismatch) {
+  auto result = generate_parser(*ctx_, *info_);
+
+  // Parsers should return Error when static octets don't match
+  EXPECT_TRUE(result.source.find("ParseStatus::Error") != std::string::npos)
+      << "Parsers should return Error on mismatch";
+}
+

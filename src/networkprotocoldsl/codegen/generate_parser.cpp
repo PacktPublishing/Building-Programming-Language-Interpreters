@@ -124,11 +124,13 @@ void generate_message_parser_reset(std::ostringstream &source,
 // Generate the parse method for a message parser
 void generate_message_parser_parse(std::ostringstream &source,
                                    const ReadTransitionInfo &rt) {
+  size_t total_stages = rt.actions.size();
+  
   source << "ParseResult " << rt.identifier
          << "Parser::parse(std::string_view input) {\n";
   source << "    size_t total_consumed = 0;\n";
   source << "    \n";
-  source << "    while (!complete_ && !input.empty()) {\n";
+  source << "    while (!complete_) {\n";
   source << "        switch (stage_) {\n";
 
   size_t stage = 0;
@@ -345,8 +347,7 @@ void generate_message_parser_parse(std::ostringstream &source,
   source << "        }\n";
   source << "    }\n";
   source << "    \n";
-  source << "    return {complete_ ? ParseStatus::Complete : "
-            "ParseStatus::NeedMoreData, total_consumed};\n";
+  source << "    return {ParseStatus::Complete, total_consumed};\n";
   source << "}\n\n";
 }
 

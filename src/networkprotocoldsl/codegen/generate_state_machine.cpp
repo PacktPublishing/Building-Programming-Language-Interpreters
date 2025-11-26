@@ -132,7 +132,10 @@ void generate_state_machine_class_header(std::ostringstream &header,
 
   header << "\n";
   header << "private:\n";
-  if (!states.empty()) {
+  // Initial state should be "Open" - the standard protocol entry point
+  if (states.count("Open") > 0) {
+    header << "    State current_state_ = State::Open;\n";
+  } else if (!states.empty()) {
     header << "    State current_state_ = State::"
            << state_name_to_identifier(*states.begin()) << ";\n";
   } else {
@@ -226,11 +229,12 @@ void generate_on_bytes_received(std::ostringstream &source,
       source << "            " << rt->identifier << "_parser_.reset();\n";
       source << "        }\n";
     } else if (!transitions.empty()) {
-      // Multiple transitions - try each parser until one completes
-      // Reset all parsers for this state first to ensure clean state
-      for (const auto *rt : transitions) {
-        source << "        " << rt->identifier << "_parser_.reset();\n";
-      }
+      // Multiple transitions - try each parser in parallel
+      // Don't reset parsers at start - they may have buffered data from previous calls
+      // We try all parsers and use the first one that completes
+      // If one returns Error immediately, we try the next
+      // If one is making progress (consumed > 0 or NeedMoreData with partial match), we continue with it
+      
       source << "        \n";
       
       for (size_t i = 0; i < transitions.size(); ++i) {
@@ -256,8 +260,21 @@ void generate_on_bytes_received(std::ostringstream &source,
           source << body_indent << rt2->identifier << "_parser_.reset();\n";
         }
         if (i + 1 < transitions.size()) {
+          // If this parser returned NeedMoreData with consumed bytes, keep them
+          // Only try next parser if this one immediately returned Error with 0 consumed
+          source << indent << "} else if (" << result_var << ".status == ParseStatus::NeedMoreData) {\n";
+          source << body_indent << "// Parser needs more data - keep buffered state\n";
+          source << body_indent << "total_consumed = " << result_var << ".consumed;\n";
+          // Reset the other parsers that haven't been tried yet since we're committing to this one
+          for (size_t j = i + 1; j < transitions.size(); ++j) {
+            source << body_indent << transitions[j]->identifier << "_parser_.reset();\n";
+          }
           source << indent << "} else {\n";
+          // Parser returned Error - reset it and try next
+          source << body_indent << rt->identifier << "_parser_.reset();\n";
         } else {
+          source << indent << "} else if (" << result_var << ".status == ParseStatus::NeedMoreData) {\n";
+          source << body_indent << "total_consumed = " << result_var << ".consumed;\n";
           source << indent << "}\n";
         }
       }
