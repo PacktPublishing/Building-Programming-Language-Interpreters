@@ -206,6 +206,8 @@ add_library(
     src/networkprotocoldsl/sema/ast/transition.hpp
     src/networkprotocoldsl/codegen/outputcontext.cpp
     src/networkprotocoldsl/codegen/outputcontext.hpp
+    src/networkprotocoldsl/codegen/protocolinfo.cpp
+    src/networkprotocoldsl/codegen/protocolinfo.hpp
     src/networkprotocoldsl/codegen/typemapping.cpp
     src/networkprotocoldsl/codegen/typemapping.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
