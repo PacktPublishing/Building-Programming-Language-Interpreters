@@ -208,6 +208,8 @@ add_library(
     src/networkprotocoldsl/codegen/generate_data_types.hpp
     src/networkprotocoldsl/codegen/generate_parser.cpp
     src/networkprotocoldsl/codegen/generate_parser.hpp
+    src/networkprotocoldsl/codegen/generate_serializer.cpp
+    src/networkprotocoldsl/codegen/generate_serializer.hpp
     src/networkprotocoldsl/codegen/generate_states.cpp
     src/networkprotocoldsl/codegen/generate_states.hpp
     src/networkprotocoldsl/codegen/outputcontext.cpp
