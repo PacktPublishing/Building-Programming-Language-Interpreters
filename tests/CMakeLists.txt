@@ -53,9 +53,11 @@ foreach(
     034-codegen-generate-parser
     035-codegen-generate-serializer
     036-codegen-generate-state-machine
+    037-codegen-compile-smtp
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+    target_compile_definitions(${TEST}.t PRIVATE -DSMTP_SOURCE_DIR="${CMAKE_SOURCE_DIR}/examples/smtpserver")
     target_link_libraries(
         ${TEST}.t
         PUBLIC

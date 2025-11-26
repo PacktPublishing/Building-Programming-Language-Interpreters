@@ -26,11 +26,15 @@ void generate_message_parser_header(std::ostringstream &header,
   header << "    // Check if parsing is complete\n";
   header << "    bool is_complete() const { return complete_; }\n";
   header << "    \n";
+  header << "    // Signal end-of-file on input stream\n";
+  header << "    void on_eof() { eof_received_ = true; }\n";
+  header << "    \n";
   header << "    // Take the parsed data (only valid when complete)\n";
   header << "    " << rt.identifier << "Data take_data();\n";
   header << "\n";
   header << "private:\n";
   header << "    bool complete_ = false;\n";
+  header << "    bool eof_received_ = false;\n";
   header << "    size_t stage_ = 0;\n";
 
   // Add buffer fields for fields that need accumulation
@@ -79,6 +83,7 @@ void generate_message_parser_reset(std::ostringstream &source,
                                    const ReadTransitionInfo &rt) {
   source << "void " << rt.identifier << "Parser::reset() {\n";
   source << "    complete_ = false;\n";
+  source << "    eof_received_ = false;\n";
   source << "    stage_ = 0;\n";
   for (const auto &action : rt.actions) {
     std::visit(
