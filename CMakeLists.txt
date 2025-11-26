@@ -267,6 +267,13 @@ target_include_directories( networkprotocoldsl_uv PUBLIC
 )
 target_link_libraries( networkprotocoldsl_uv PUBLIC networkprotocoldsl ${LIBUV_LIBRARIES} )
 
+# Protocol generator CLI tool
+find_package(CLI11 REQUIRED)
+add_executable(protocol_generator
+    src/networkprotocoldsl/codegen/protocol_generator.cpp
+)
+target_link_libraries(protocol_generator PRIVATE networkprotocoldsl CLI11::CLI11)
+
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(examples)
