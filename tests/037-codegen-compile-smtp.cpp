@@ -282,8 +282,8 @@ TEST_F(CompileSMTPTest, GeneratedCMakeListsHasCorrectContent) {
       << "Missing cmake_minimum_required";
   EXPECT_TRUE(content.find("add_library(smtp_protocol STATIC") != std::string::npos)
       << "Missing add_library for smtp_protocol";
-  EXPECT_TRUE(content.find("cxx_std_17") != std::string::npos)
-      << "Missing C++17 standard requirement";
+  EXPECT_TRUE(content.find("cxx_std_20") != std::string::npos)
+      << "Missing C++20 standard requirement";
   EXPECT_TRUE(content.find("target_include_directories") != std::string::npos)
       << "Missing target_include_directories";
 }

@@ -140,7 +140,8 @@ protected:
   }
 
   // Copy a test file and add it to CMakeLists.txt
-  void add_test_executable(const std::string &test_name) {
+  void add_test_executable(const std::string &test_name,
+                           const std::vector<std::string> &extra_libs = {}) {
     // Copy test source file
     std::string source_content = read_test_data(test_name + ".cpp");
     fs::path test_cpp = temp_dir_ / (test_name + ".cpp");
@@ -153,7 +154,11 @@ protected:
     cmake_append << "\nadd_executable(" << test_name << " " << test_name
                  << ".cpp)\n";
     cmake_append << "target_link_libraries(" << test_name
-                 << " PRIVATE smtp_protocol)\n";
+                 << " PRIVATE smtp_protocol";
+    for (const auto &lib : extra_libs) {
+      cmake_append << " " << lib;
+    }
+    cmake_append << ")\n";
     cmake_append.close();
   }
 
@@ -275,4 +280,40 @@ TEST_F(CodegenIntegrationTest, SansIOPartialData) {
   EXPECT_EQ(run_exit, 0) << "Test failed:\n" << run_output;
   EXPECT_TRUE(run_output.find("SANS_IO_SUCCESS") != std::string::npos)
       << "Sans-IO test failed. Output was:\n" << run_output;
+}
+
+/**
+ * Test libuv adapter with generated code
+ *
+ * Verifies that the ServerRunner can be used with libuv to create
+ * a working TCP server that handles SMTP protocol messages.
+ */
+TEST_F(CodegenIntegrationTest, LibuvAdapterWithRunner) {
+  ASSERT_TRUE(generate_and_build());
+
+  // Add libuv detection to CMakeLists.txt before the test executable
+  {
+    std::ofstream cmake_append(temp_dir_ / "CMakeLists.txt", std::ios::app);
+    cmake_append << "\nfind_path(LIBUV_INCLUDE_DIR NAMES uv.h)\n";
+    cmake_append << "find_library(LIBUV_LIBRARIES NAMES uv libuv)\n";
+    cmake_append.close();
+  }
+
+  add_test_executable("test_uv_adapter", {"${LIBUV_LIBRARIES}"});
+
+  // Also add include directories for libuv
+  {
+    std::ofstream cmake_append(temp_dir_ / "CMakeLists.txt", std::ios::app);
+    cmake_append << "target_include_directories(test_uv_adapter PRIVATE ${LIBUV_INCLUDE_DIR})\n";
+    cmake_append.close();
+  }
+
+  auto [run_exit, run_output] = build_and_run_test("test_uv_adapter");
+
+  std::cout << "UV adapter test output:\n" << run_output << std::endl;
+
+  EXPECT_EQ(run_exit, 0) << "UV adapter test failed:\n" << run_output;
+  EXPECT_TRUE(run_output.find("UV_ADAPTER_TEST_SUCCESS") != std::string::npos)
+      << "UV adapter test did not complete successfully. Output was:\n"
+      << run_output;
 }

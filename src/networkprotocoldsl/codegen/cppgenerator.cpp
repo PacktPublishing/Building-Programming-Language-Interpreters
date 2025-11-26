@@ -1,6 +1,7 @@
 #include <networkprotocoldsl/codegen/cppgenerator.hpp>
 #include <networkprotocoldsl/codegen/generate_data_types.hpp>
 #include <networkprotocoldsl/codegen/generate_parser.hpp>
+#include <networkprotocoldsl/codegen/generate_runner.hpp>
 #include <networkprotocoldsl/codegen/generate_serializer.hpp>
 #include <networkprotocoldsl/codegen/generate_state_machine.hpp>
 #include <networkprotocoldsl/codegen/generate_states.hpp>
@@ -74,6 +75,14 @@ bool CppGenerator::generate() {
                        state_machine_result.source) &&
             success;
 
+  // Generate runner (callback-based wrapper)
+  auto runner_result = generate_runner(ctx_, info_);
+  errors_.insert(errors_.end(), runner_result.errors.begin(),
+                 runner_result.errors.end());
+  success = write_pair("runner", runner_result.header,
+                       runner_result.source) &&
+            success;
+
   // Generate main header
   success = write_file("protocol.hpp", generate_main_header()) && success;
 
@@ -125,6 +134,7 @@ std::string CppGenerator::generate_main_header() {
   oss << "#include \"parser.hpp\"\n";
   oss << "#include \"serializer.hpp\"\n";
   oss << "#include \"state_machine.hpp\"\n";
+  oss << "#include \"runner.hpp\"\n";
   oss << "\n";
   oss << "#endif // " << guard << "\n";
 
@@ -146,10 +156,11 @@ std::string CppGenerator::generate_cmake_lists() {
   oss << "    parser.cpp\n";
   oss << "    serializer.cpp\n";
   oss << "    state_machine.cpp\n";
+  oss << "    runner.cpp\n";
   oss << ")\n";
   oss << "\n";
-  oss << "# Set C++ standard\n";
-  oss << "target_compile_features(" << library_name_ << " PUBLIC cxx_std_17)\n";
+  oss << "# Set C++ standard (C++20 for concepts support)\n";
+  oss << "target_compile_features(" << library_name_ << " PUBLIC cxx_std_20)\n";
   oss << "\n";
   oss << "# Include current directory for headers\n";
   oss << "target_include_directories(" << library_name_ << " PUBLIC\n";
