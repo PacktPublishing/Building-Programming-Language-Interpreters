@@ -117,40 +117,43 @@ TEST(TranslateASTToOptree, Translation) {
       bool all_exited = true;
       auto collection = this_mgr.get_collection();
       for (auto &[fd, context] : collection->interpreters) {
-        auto cbdata = context->output_buffer.pop();
-        if (cbdata.has_value()) {
-          all_exited = false;
-          this_writes << cbdata.value();
+        // Drain all data from the output buffer before potentially waiting
+        while (true) {
+          auto cbdata = context->output_buffer.pop();
+          if (cbdata.has_value()) {
+            all_exited = false;
+            this_writes << cbdata.value();
+            auto other_col = other_mgr.get_collection();
+            auto other_iter = other_col->interpreters.find(0);
+            if (other_iter != other_col->interpreters.end()) {
+              std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing data to other interpreter: " << cbdata.value()
+                        << std::endl;
+              other_iter->second->input_buffer.push_back(cbdata.value());
+              other_col->signals->wake_up_for_input.notify();
+              other_col->signals->wake_up_for_output.notify();
+              other_col->signals->wake_up_interpreter.notify();
+            }
+          } else {
+            // No more data in buffer
+            break;
+          }
+        }
+        // After draining, check if interpreter has exited
+        if (context->exited.load()) {
           auto other_col = other_mgr.get_collection();
           auto other_iter = other_col->interpreters.find(0);
           if (other_iter != other_col->interpreters.end()) {
-            std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing data to other interpreter: " << cbdata.value()
-                      << std::endl;
-            other_iter->second->input_buffer.push_back(cbdata.value());
+            std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing EOF" << std::endl;
+            other_iter->second->eof.store(true);
             other_col->signals->wake_up_for_input.notify();
             other_col->signals->wake_up_for_output.notify();
             other_col->signals->wake_up_interpreter.notify();
           }
         } else {
-          if (context->exited.load()) {
-            auto other_col = other_mgr.get_collection();
-            auto other_iter = other_col->interpreters.find(0);
-            if (other_iter != other_col->interpreters.end()) {
-              auto other_iter = other_col->interpreters.find(0);
-              if (other_iter != other_col->interpreters.end()) {
-                std::cerr << "[" << name << ":" << std::this_thread::get_id() << "] Pushing EOF" << std::endl;
-                other_iter->second->eof.store(true);
-                other_col->signals->wake_up_for_input.notify();
-                other_col->signals->wake_up_for_output.notify();
-                other_col->signals->wake_up_interpreter.notify();
-              }
-            }
-          } else {
-            all_exited = false;
-          }
-          if (context->eof.load()) {
-            collection->signals->wake_up_for_output.notify();
-          }
+          all_exited = false;
+        }
+        if (context->eof.load()) {
+          collection->signals->wake_up_for_output.notify();
         }
       }
       if (all_exited) {
