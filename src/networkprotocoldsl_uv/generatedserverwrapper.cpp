@@ -17,6 +17,13 @@ struct ConnectionData {
   int fd;
   std::unique_ptr<IConnectionRunner> runner;
   std::atomic<bool> closing{false};
+  std::atomic<int> pending_writes{0};
+};
+
+struct WriteRequest {
+  uv_write_t req;
+  ConnectionData *conn;
+  char *data;
 };
 
 struct ServerData {
@@ -54,6 +61,9 @@ namespace {
 
 void on_close(uv_handle_t *handle) {
   auto *conn = static_cast<ConnectionData *>(handle->data);
+  if (!conn) {
+    return;
+  }
   auto *impl = conn->impl;
 
   std::lock_guard<std::mutex> lock(impl->connections_mutex);
@@ -67,12 +77,21 @@ void on_server_close(uv_handle_t *handle) {
 }
 
 void on_write_complete(uv_write_t *req, int status) {
-  auto *conn = static_cast<ConnectionData *>(req->data);
-  auto *impl = conn->impl;
+  auto *write_req = reinterpret_cast<WriteRequest *>(req);
+  auto *conn = write_req->conn;
 
-  // Free the write request and buffer
-  delete[] static_cast<char *>(req->bufs[0].base);
-  delete req;
+  // Free the buffer and write request
+  delete[] write_req->data;
+  delete write_req;
+
+  if (!conn) {
+    return;
+  }
+
+  // Decrement pending write count
+  int remaining = --conn->pending_writes;
+
+  auto *impl = conn->impl;
 
   if (status < 0) {
     // Write error, close connection
@@ -87,7 +106,8 @@ void on_write_complete(uv_write_t *req, int status) {
     if (!conn->closing.exchange(true)) {
       uv_close(reinterpret_cast<uv_handle_t *>(&conn->handle), on_close);
     }
-  } else {
+  } else if (remaining == 0) {
+    // Only process more output when all pending writes are done
     impl->process_output(conn);
   }
 }
@@ -184,12 +204,16 @@ void GeneratedServerWrapperBase::Impl::process_output(ConnectionData *conn) {
     // Mark bytes as consumed
     conn->runner->bytes_written(len);
 
-    // Create write request
-    uv_write_t *req = new uv_write_t;
-    req->data = conn;
+    // Increment pending write count before starting write
+    ++conn->pending_writes;
+
+    // Create write request with our wrapper
+    WriteRequest *write_req = new WriteRequest;
+    write_req->conn = conn;
+    write_req->data = data;
     uv_buf_t buf = uv_buf_init(data, len);
 
-    uv_write(req, reinterpret_cast<uv_stream_t *>(&conn->handle), &buf, 1,
+    uv_write(&write_req->req, reinterpret_cast<uv_stream_t *>(&conn->handle), &buf, 1,
              on_write_complete);
   }
 }
