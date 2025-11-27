@@ -204,6 +204,26 @@ add_library(
     src/networkprotocoldsl/sema/ast/state.hpp
     src/networkprotocoldsl/sema/ast/transition.cpp
     src/networkprotocoldsl/sema/ast/transition.hpp
+    src/networkprotocoldsl/codegen/cppgenerator.cpp
+    src/networkprotocoldsl/codegen/cppgenerator.hpp
+    src/networkprotocoldsl/codegen/generate_data_types.cpp
+    src/networkprotocoldsl/codegen/generate_data_types.hpp
+    src/networkprotocoldsl/codegen/generate_parser.cpp
+    src/networkprotocoldsl/codegen/generate_parser.hpp
+    src/networkprotocoldsl/codegen/generate_runner.cpp
+    src/networkprotocoldsl/codegen/generate_runner.hpp
+    src/networkprotocoldsl/codegen/generate_serializer.cpp
+    src/networkprotocoldsl/codegen/generate_serializer.hpp
+    src/networkprotocoldsl/codegen/generate_state_machine.cpp
+    src/networkprotocoldsl/codegen/generate_state_machine.hpp
+    src/networkprotocoldsl/codegen/generate_states.cpp
+    src/networkprotocoldsl/codegen/generate_states.hpp
+    src/networkprotocoldsl/codegen/outputcontext.cpp
+    src/networkprotocoldsl/codegen/outputcontext.hpp
+    src/networkprotocoldsl/codegen/protocolinfo.cpp
+    src/networkprotocoldsl/codegen/protocolinfo.hpp
+    src/networkprotocoldsl/codegen/typemapping.cpp
+    src/networkprotocoldsl/codegen/typemapping.hpp
     src/networkprotocoldsl/support/mutexlockqueue.cpp
     src/networkprotocoldsl/support/mutexlockqueue.hpp
     src/networkprotocoldsl/support/notificationsignal.cpp
@@ -242,12 +262,21 @@ add_library( networkprotocoldsl_uv
     src/networkprotocoldsl_uv/libuvclientwrapper.hpp     # new file added
     src/networkprotocoldsl_uv/asyncworkqueue.cpp
     src/networkprotocoldsl_uv/asyncworkqueue.hpp
+    src/networkprotocoldsl_uv/generatedserverwrapper.cpp  # wrapper for generated code
+    src/networkprotocoldsl_uv/generatedserverwrapper.hpp
 )
 target_include_directories( networkprotocoldsl_uv PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/
     ${LIBUV_INCLUDE_DIR}
 )
 target_link_libraries( networkprotocoldsl_uv PUBLIC networkprotocoldsl ${LIBUV_LIBRARIES} )
+
+# Protocol generator CLI tool
+find_package(CLI11 REQUIRED)
+add_executable(protocol_generator
+    src/networkprotocoldsl/codegen/protocol_generator.cpp
+)
+target_link_libraries(protocol_generator PRIVATE networkprotocoldsl CLI11::CLI11)
 
 enable_testing()
 add_subdirectory(tests)

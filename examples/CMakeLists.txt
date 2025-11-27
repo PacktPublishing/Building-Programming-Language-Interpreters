@@ -1,1 +1,2 @@
 add_subdirectory(smtpserver)
+add_subdirectory(smtpserver_generated)
