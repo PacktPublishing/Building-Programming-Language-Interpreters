@@ -247,6 +247,9 @@ void generate_runner_class_header(std::ostringstream &header,
   header << "    // Check if connection is closed\n";
   header << "    bool is_closed() const { return state_machine_.is_closed(); }\n";
   header << "    \n";
+  header << "    // Check if a protocol error occurred\n";
+  header << "    bool has_error() const { return state_machine_.has_error(); }\n";
+  header << "    \n";
   header << "    // Get current state\n";
   header << "    State current_state() const { return state_machine_.current_state(); }\n";
   header << "    \n";

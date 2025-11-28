@@ -54,11 +54,13 @@ foreach(
     035-codegen-generate-serializer
     036-codegen-generate-state-machine
     037-codegen-compile-smtp
-    038-codegen-integration-test
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
     target_compile_definitions(${TEST}.t PRIVATE -DSMTP_SOURCE_DIR="${CMAKE_SOURCE_DIR}/examples/smtpserver")
+    target_compile_definitions(${TEST}.t PRIVATE -DTEST_BUILD_DIR="${CMAKE_BINARY_DIR}/test_workdirs")
+    target_compile_definitions(${TEST}.t PRIVATE -DNETWORKPROTOCOLDSL_UV_INCLUDE_DIR="${CMAKE_SOURCE_DIR}/src")
+    target_compile_definitions(${TEST}.t PRIVATE -DNETWORKPROTOCOLDSL_UV_LIB_DIR="${CMAKE_BINARY_DIR}")
     target_link_libraries(
         ${TEST}.t
         PUBLIC
@@ -72,3 +74,7 @@ foreach(
         ENVIRONMENT "TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/tsan_suppressions.txt"
     )
 endforeach()
+
+# Add codegen integration tests subdirectory
+add_subdirectory(codegen_integration)
+
