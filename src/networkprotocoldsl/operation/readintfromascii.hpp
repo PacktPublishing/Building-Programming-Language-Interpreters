@@ -31,6 +31,8 @@ public:
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
 
+  bool ready_to_evaluate(InputOutputOperationContext &ctx) const;
+
   std::string stringify() const { return "ReadIntFromAscii{}"; }
 };
 static_assert(InputOutputOperationConcept<ReadIntFromAscii>);

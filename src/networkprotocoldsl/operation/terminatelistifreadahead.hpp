@@ -25,6 +25,9 @@ public:
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
 
+  // Returns true if the operation has enough data to produce a result.
+  bool ready_to_evaluate(InputOutputOperationContext &ctx) const;
+
   std::string stringify() const {
     return "TerminateListIfReadAhead{terminator: \"" + terminator + "\"}";
   }

@@ -49,4 +49,10 @@ size_t ReadInt32Native::handle_write(InputOutputOperationContext &ctx,
   return 0;
 }
 
+bool ReadInt32Native::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  // Ready when we have 4 bytes, or at EOF
+  return ctx.buffer.length() >= 4 || ctx.eof;
+}
+
 } // namespace networkprotocoldsl::operation

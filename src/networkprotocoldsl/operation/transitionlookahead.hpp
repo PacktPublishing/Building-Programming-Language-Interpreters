@@ -36,6 +36,11 @@ struct TransitionLookahead {
   std::size_t handle_write(InputOutputOperationContext &ctx,
                            std::size_t s) const;
   void handle_eof(InputOutputOperationContext &ctx) const;
+
+  // Returns true if the operation has enough data to produce a result.
+  // This lookahead is ready when any condition can be definitively matched or rejected.
+  bool ready_to_evaluate(InputOutputOperationContext &ctx) const;
+
   std::string stringify() const;
 
 private:

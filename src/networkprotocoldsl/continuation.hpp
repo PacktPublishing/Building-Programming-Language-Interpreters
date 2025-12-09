@@ -65,6 +65,8 @@ public:
   size_t handle_write(size_t s);
 
   void handle_eof();
+
+  bool ready_to_evaluate();
 };
 
 } // namespace networkprotocoldsl

@@ -115,6 +115,18 @@ static size_t _handle_write(Continuation *c, const O &o, size_t s) {
       std::get<InputOutputOperationContext>(c->top().get_context()), s);
 }
 
+template <typename O>
+static bool _ready_to_evaluate(Continuation *c, const O &o) {
+  // Non-I/O operations are always ready
+  return true;
+}
+
+template <InputOutputOperationConcept O>
+static bool _ready_to_evaluate(Continuation *c, const O &o) {
+  return o.ready_to_evaluate(
+      std::get<InputOutputOperationContext>(c->top().get_context()));
+}
+
 static ContinuationState map_result_to_state(Value v) {
   return ContinuationState::Ready;
 }
@@ -200,6 +212,11 @@ std::string_view Continuation::get_write_buffer() {
 
 size_t Continuation::handle_write(size_t s) {
   return std::visit([this, s](auto &o) { return _handle_write(this, o, s); },
+                    stack.top().get_operation());
+}
+
+bool Continuation::ready_to_evaluate() {
+  return std::visit([this](auto &o) { return _ready_to_evaluate(this, o); },
                     stack.top().get_operation());
 }
 
