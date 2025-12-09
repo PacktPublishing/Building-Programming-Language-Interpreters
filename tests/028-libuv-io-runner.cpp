@@ -86,17 +86,19 @@ TEST(LibuvIORunnerTest, Complete) {
                                     async_queue);
 
   // Wait for the bind result before proceeding.
+  // Use port 0 to let the OS assign an available port.
   std::future<LibuvServerRunner::BindResult> bind_future =
-      server_wrapper.start("127.0.0.1", 8080);
+      server_wrapper.start("127.0.0.1", 0);
   bind_future.wait();
   auto bind_result = bind_future.get();
   if (std::holds_alternative<std::string>(bind_result)) {
     std::cerr << "Bind failed: " << std::get<std::string>(bind_result)
               << std::endl;
   }
-  ASSERT_EQ(std::holds_alternative<int>(bind_result), true);
-  // the bind result is the file descriptor of the server
-  ASSERT_NE(std::get<int>(bind_result), 0);
+  ASSERT_EQ(std::holds_alternative<BindInfo>(bind_result), true);
+  auto bind_info = std::get<BindInfo>(bind_result);
+  ASSERT_NE(bind_info.port, 0);
+  int server_port = bind_info.port;
 
   // Generate client program.
   auto maybe_client_program = InterpretedProgram::generate_client(test_file);
@@ -142,8 +144,8 @@ TEST(LibuvIORunnerTest, Complete) {
   networkprotocoldsl_uv::LibuvClientWrapper client_wrapper(
       client_program, client_callbacks, async_queue);
 
-  // Start connecting.
-  auto connection_future = client_wrapper.start("127.0.0.1", 8080);
+  // Start connecting to the dynamically assigned server port.
+  auto connection_future = client_wrapper.start("127.0.0.1", server_port);
   connection_future.wait();
   auto connection_result_value = connection_future.get();
   if (std::holds_alternative<std::string>(connection_result_value)) {
@@ -170,4 +172,59 @@ TEST(LibuvIORunnerTest, Complete) {
   io_thread.join();
 
   // ...existing assertions to validate responses...
+}
+
+TEST(LibuvIORunnerTest, ConnectionRefused) {
+  std::string test_file =
+      std::string(TEST_DATA_DIR) + "/023-source-code-http-client-server.txt";
+
+  // Create libuv loop and initialize the LibuvIORunner.
+  uv_loop_t *loop = uv_default_loop();
+  // Create an async work queue for the client.
+  networkprotocoldsl_uv::AsyncWorkQueue async_queue(loop);
+
+  std::thread io_thread([&]() { uv_run(loop, UV_RUN_DEFAULT); });
+
+  // Generate client program.
+  auto maybe_client_program = InterpretedProgram::generate_client(test_file);
+  ASSERT_TRUE(maybe_client_program.has_value());
+  auto client_program = maybe_client_program.value();
+
+  // Create client wrapper with a local callback map.
+  networkprotocoldsl::InterpreterRunner::callback_map client_callbacks = {
+      {"Open",
+       [](const std::vector<Value> &args) -> Value {
+         return value::DynamicList{
+             {_o("Client Closes Connection"), value::Dictionary{}}};
+       }},
+      {"Closed",
+       [](const std::vector<Value> &args) -> Value {
+         return value::DynamicList{{_o("N/A"), args.at(0)}};
+       }},
+  };
+
+  // Create the client wrapper.
+  networkprotocoldsl_uv::LibuvClientWrapper client_wrapper(
+      client_program, client_callbacks, async_queue);
+
+  // Start connecting to a port where no server is listening.
+  // Use a high port number that's unlikely to have a server.
+  auto connection_future = client_wrapper.start("127.0.0.1", 59999);
+  connection_future.wait();
+  auto connection_result_value = connection_future.get();
+
+  // Connection should fail with an error string.
+  ASSERT_EQ(std::holds_alternative<std::string>(connection_result_value), true);
+  std::cerr << "Connection refused (expected): "
+            << std::get<std::string>(connection_result_value) << std::endl;
+
+  // The client_result future should also be set with an exception.
+  auto &client_interpreter_result = client_wrapper.result();
+  // This should not hang - the fix ensures the future is set on connection
+  // failure.
+  ASSERT_THROW(client_interpreter_result.get(), std::runtime_error);
+
+  // de-register the async handle to stop the loop
+  async_queue.shutdown().wait();
+  io_thread.join();
 }

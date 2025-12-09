@@ -1,5 +1,6 @@
 #include "libuvserverrunner.hpp"
 #include "asyncworkqueue.hpp"
+#include <arpa/inet.h>
 #include <atomic>
 #include <cstdlib>
 #include <cstring>
@@ -57,14 +58,18 @@ static void pusher_thread_loop_all(LibuvServerRunnerImpl *impl) {
     auto collection = impl->mgr_->get_collection();
     int active_interpreters = 0;
     int blocked_interpreters = 0;
+    int pending_close = 0;
+    bool any_exited = false;
     for (const auto &entry : collection->interpreters) {
       auto interpreter = entry.second;
       // Each interpreter's additional_data holds its UvConnectionData.
       UvConnectionData *conn_data =
           static_cast<UvConnectionData *>(interpreter->additional_data);
       if (interpreter->exited.load()) {
+        any_exited = true;
         if (!conn_data->connection_close_request_sent.load()) {
           conn_data->connection_close_request_sent.store(true);
+          pending_close++;
           impl->mgr_->remove_interpreter(conn_data->fd);
           impl->work_queue->push_work([conn_data]() {
             uv_close(reinterpret_cast<uv_handle_t *>(&conn_data->conn),
@@ -75,29 +80,41 @@ static void pusher_thread_loop_all(LibuvServerRunnerImpl *impl) {
       }
       active_interpreters++;
 
-      auto output_opt = entry.second->output_buffer.pop();
-      collection->signals->wake_up_interpreter.notify();
-      if (output_opt.has_value()) {
-        blocked_interpreters++;
-        std::string output = output_opt.value();
-        impl->work_queue->push_work([conn_data, output, collection]() {
-          uv_write_t *req = new uv_write_t;
-          req->data = conn_data;
-          uv_buf_t wrbuf =
-              uv_buf_init(const_cast<char *>(output.data()), output.size());
-          uv_write(req, reinterpret_cast<uv_stream_t *>(&conn_data->conn),
-                   &wrbuf, 1, on_write_completed);
-        });
+      // Drain all outgoing data from the interpreter's output_buffer.
+      while (true) {
+        auto output_opt = entry.second->output_buffer.pop();
+        if (output_opt.has_value()) {
+          blocked_interpreters++;
+          collection->signals->wake_up_interpreter.notify();
+          std::string output = output_opt.value();
+          impl->work_queue->push_work([conn_data, output, collection]() {
+            uv_write_t *req = new uv_write_t;
+            req->data = conn_data;
+            uv_buf_t wrbuf =
+                uv_buf_init(const_cast<char *>(output.data()), output.size());
+            uv_write(req, reinterpret_cast<uv_stream_t *>(&conn_data->conn),
+                     &wrbuf, 1, on_write_completed);
+          });
+        } else {
+          // No more data in buffer
+          break;
+        }
       }
     }
-    if (active_interpreters == 0) {
-      if (impl->exit_when_done.load()) {
-        impl->server_stopped.set_value();
-        return;
-      }
+    if (impl->exit_when_done.load() && active_interpreters == 0) {
+      impl->server_stopped.set_value();
+      return;
     }
-    if (blocked_interpreters == 0) {
-      collection->signals->wake_up_for_output.wait();
+    // Only wait if we didn't schedule any close operations and there's nothing
+    // to output. Also check that the collection hasn't changed and no
+    // interpreter exited during iteration (to avoid lost wakeups).
+    if (blocked_interpreters == 0 && pending_close == 0 && !any_exited) {
+      // Re-check the collection before waiting - if it changed, loop again.
+      // Also re-check exit_when_done to avoid missing stop signals.
+      if (impl->mgr_->get_collection() == collection &&
+          !impl->exit_when_done.load()) {
+        collection->signals->wake_up_for_output.wait();
+      }
     }
   }
 }
@@ -173,13 +190,14 @@ static void on_new_connection_cb(uv_stream_t *server, int status) {
 } // namespace
 
 void LibuvServerRunner::stop_accepting() {
+  // Set exit_when_done first, before pushing work, to avoid race conditions.
+  if (impl_->exit_when_done.exchange(true))
+    return; // Already stopping.
+  // Notify the pusher thread to check exit_when_done.
+  impl_->mgr_->get_collection()->signals->wake_up_for_output.notify();
   // Defer the uv_close call to the loop thread.
-  if (impl_->exit_when_done.load())
-    return;
   impl_->work_queue->push_work([this]() {
     uv_close(reinterpret_cast<uv_handle_t *>(&impl_->server_), on_close_cb);
-    impl_->exit_when_done.store(true);
-    impl_->mgr_->get_collection()->signals->wake_up_for_output.notify();
   });
 }
 
@@ -209,15 +227,27 @@ LibuvServerRunner::LibuvServerRunner(
       bind_result.set_value(std::string(uv_strerror(rc)));
       return;
     }
-    uv_os_fd_t fd;
-    if (uv_fileno(reinterpret_cast<uv_handle_t *>(&impl_->server_), &fd) == 0) {
-      bind_result.set_value(static_cast<int>(fd));
-      uv_listen(reinterpret_cast<uv_stream_t *>(&impl_->server_), 1024,
-                on_new_connection_cb);
-    } else {
-      bind_result.set_value(
-          "Failed to retrieve file descriptor after binding.");
+    // Get the actual bound port (useful when binding to port 0).
+    struct sockaddr_storage bound_addr;
+    int namelen = sizeof(bound_addr);
+    rc = uv_tcp_getsockname(&impl_->server_,
+                            reinterpret_cast<struct sockaddr *>(&bound_addr),
+                            &namelen);
+    if (rc != 0) {
+      bind_result.set_value(std::string(uv_strerror(rc)));
+      return;
     }
+    int actual_port =
+        ntohs(reinterpret_cast<struct sockaddr_in *>(&bound_addr)->sin_port);
+    uv_os_fd_t fd;
+    if (uv_fileno(reinterpret_cast<uv_handle_t *>(&impl_->server_), &fd) != 0) {
+      bind_result.set_value(
+          std::string("Failed to get file descriptor after binding."));
+      return;
+    }
+    bind_result.set_value(BindInfo{actual_port, static_cast<int>(fd)});
+    uv_listen(reinterpret_cast<uv_stream_t *>(&impl_->server_), 1024,
+              on_new_connection_cb);
     // Spawn a single, global pusher thread.
     ctx->runner->pusher_thread =
         std::thread(pusher_thread_loop_all, ctx->runner);
