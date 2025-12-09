@@ -19,8 +19,15 @@ namespace networkprotocoldsl {
 
 namespace {
 
-static bool handle_read(InterpreterContext &context,
-                        InterpreterSignals &signals) {
+// Result of handling a blocked interpreter
+enum class HandleBlockedResult {
+  StillBlocked,  // Interpreter is still blocked, needs external event
+  Unblocked,     // Interpreter is now ready to proceed
+  NeedsRetry     // Interpreter should be retried (e.g., after buffer concatenation)
+};
+
+static HandleBlockedResult handle_read(InterpreterContext &context,
+                                       InterpreterSignals &signals) {
   auto buffer = context.input_buffer.pop();
   if (buffer.has_value()) {
     INTERPRETERRUNNER_DEBUG("handle_read: got buffer of size " << buffer->size() << ": '"
@@ -28,85 +35,106 @@ static bool handle_read(InterpreterContext &context,
     size_t consumed = context.interpreter.handle_read(buffer.value());
     INTERPRETERRUNNER_DEBUG("handle_read: consumed " << consumed << " bytes");
     if (consumed == 0) {
-      // since the op didn't consume anything, we try to join with the next
-      // buffer to see if the next read works when things get joined together
-      auto nextbuffer = context.input_buffer.pop();
-      if (nextbuffer.has_value()) {
-        INTERPRETERRUNNER_DEBUG("handle_read: joining buffers of size " << buffer->size() << " and " << nextbuffer->size() << ": '"
-                                          << *buffer << "' + '" << *nextbuffer << "'");
-        auto joined = buffer.value() + nextbuffer.value();
-        consumed = context.interpreter.handle_read(joined);
-        INTERPRETERRUNNER_DEBUG("handle_read: after joined read, consumed " << consumed << " bytes");
-        if (consumed < joined.size()) {
-          context.input_buffer.push_front(joined.substr(consumed));
-          INTERPRETERRUNNER_DEBUG("handle_read: pushed back unconsumed data of size " << (joined.size() - consumed) << ": '"
-                                            << joined.substr(consumed) << "'");
+      // Since the op didn't consume anything, keep joining with subsequent
+      // buffers until either parsing succeeds or there are no more buffers.
+      // This is necessary because one network notification may result in
+      // multiple buffer fragments, and we need to join them all before
+      // declaring that we need more data.
+      std::string joined = buffer.value();
+      bool did_join = false;
+      while (consumed == 0) {
+        auto nextbuffer = context.input_buffer.pop();
+        if (nextbuffer.has_value()) {
+          did_join = true;
+          INTERPRETERRUNNER_DEBUG("handle_read: joining buffers, adding " << nextbuffer->size() << " bytes: '"
+                                            << *nextbuffer << "'");
+          joined += nextbuffer.value();
+          consumed = context.interpreter.handle_read(joined);
+          INTERPRETERRUNNER_DEBUG("handle_read: after joined read, consumed " << consumed << " bytes");
+        } else {
+          // No more buffers available, push back what we have
+          context.input_buffer.push_front(joined);
+          INTERPRETERRUNNER_DEBUG("handle_read: pushed back joined buffer of size " << joined.size() << ": '"
+                                            << joined << "'");
+          // Check if the operation is ready to evaluate even though it consumed 0 bytes.
+          // This handles lookahead operations that store data without consuming.
+          if (context.interpreter.ready_to_evaluate()) {
+            INTERPRETERRUNNER_DEBUG("handle_read: operation is ready to evaluate despite consumed=0");
+            return HandleBlockedResult::Unblocked;
+          }
+          // If we joined buffers, request a retry - the operation may now
+          // have enough data to proceed (e.g., lookahead operations that
+          // store data without consuming). If we didn't join anything,
+          // we're truly blocked waiting for more data.
+          return did_join ? HandleBlockedResult::NeedsRetry 
+                          : HandleBlockedResult::StillBlocked;
         }
-        return true;
-      } else {
-        context.input_buffer.push_front(buffer.value());
-        INTERPRETERRUNNER_DEBUG("handle_read: pushed back original buffer of size " << buffer->size() << ": '"
-                                          << buffer.value() << "'");
-        return false;
       }
+      // We consumed something from the joined buffer
+      if (consumed < joined.size()) {
+        context.input_buffer.push_front(joined.substr(consumed));
+        INTERPRETERRUNNER_DEBUG("handle_read: pushed back unconsumed data of size " << (joined.size() - consumed) << ": '"
+                                          << joined.substr(consumed) << "'");
+      }
+      return HandleBlockedResult::Unblocked;
     } else {
       if (consumed < buffer.value().size()) {
         INTERPRETERRUNNER_DEBUG("handle_read: pushed back unconsumed data of size " << (buffer->size() - consumed) << ": '"
                                           << buffer->substr(consumed) << "'");
         context.input_buffer.push_front(buffer->substr(consumed));
       }
-      return true;
+      return HandleBlockedResult::Unblocked;
     }
   } else {
     if (context.eof.load()) {
       context.interpreter.handle_eof();
       INTERPRETERRUNNER_DEBUG("handle_read: EOF reached");
-      return true;
+      return HandleBlockedResult::Unblocked;
     }
     signals.wake_up_for_input.notify();
     signals.wake_up_for_output.notify();
   }
-  return false;
+  return HandleBlockedResult::StillBlocked;
 }
 
-bool handle_write(InterpreterContext &context, InterpreterSignals &signals) {
+HandleBlockedResult handle_write(InterpreterContext &context, InterpreterSignals &signals) {
   if (context.eof.load()) {
     context.interpreter.handle_eof();
     signals.wake_up_for_output.notify();
     signals.wake_up_for_input.notify();
-    return true;
+    return HandleBlockedResult::Unblocked;
   } else {
     auto buffer = context.interpreter.get_write_buffer();
     std::string copy(buffer);
     context.output_buffer.push_back(copy);
     context.interpreter.handle_write(buffer.size());
     signals.wake_up_for_output.notify();
-    return true;
+    return HandleBlockedResult::Unblocked;
   }
 }
 
-bool handle_start_callback(InterpreterContext &context,
+HandleBlockedResult handle_start_callback(InterpreterContext &context,
                            InterpreterSignals &signals) {
   context.callback_request_queue.push_back(
       std::make_pair(context.interpreter.get_callback_key(),
                      context.interpreter.get_callback_arguments()));
   context.interpreter.set_callback_called();
   signals.wake_up_for_callback.notify();
-  return true;
+  return HandleBlockedResult::Unblocked;
 }
 
-bool handle_finish_callback(InterpreterContext &context,
+HandleBlockedResult handle_finish_callback(InterpreterContext &context,
                             InterpreterSignals &signals) {
   auto v = context.callback_response_queue.pop();
   if (v.has_value()) {
     context.interpreter.set_callback_return(v.value());
-    return true;
+    return HandleBlockedResult::Unblocked;
   } else {
-    return false;
+    return HandleBlockedResult::StillBlocked;
   }
 }
 
-bool handle_blocked_interpreter(InterpreterContext &context,
+HandleBlockedResult handle_blocked_interpreter(InterpreterContext &context,
                                 InterpreterSignals &signals) {
   using namespace networkprotocoldsl;
   OperationResult r = context.interpreter.get_result();
@@ -129,10 +157,10 @@ bool handle_blocked_interpreter(InterpreterContext &context,
     case ReasonForBlockedOperation::WaitingForCallableResult:
       INTERPRETERRUNNER_DEBUG("WaitingForCallableInvocation/Result");
       // this is not really a blocker, the interpreter sorts itself
-      return true;
+      return HandleBlockedResult::Unblocked;
     }
   }
-  return true;
+  return HandleBlockedResult::Unblocked;
 }
 } // namespace
 
@@ -141,6 +169,7 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
     auto collection = mgr.get_collection();
     int active_interpreters = 0;
     int ready_interpreters = 0;
+    bool needs_retry = false;
     for (auto &[fd, context] : collection->interpreters) {
       if (context->exited.load()) {
         continue;
@@ -153,13 +182,22 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
         active_interpreters++;
         INTERPRETERRUNNER_DEBUG("Ready interpreter");
         break;
-      case ContinuationState::Blocked:
+      case ContinuationState::Blocked: {
         active_interpreters++;
-        if (handle_blocked_interpreter(*context, *collection->signals)) {
+        auto result = handle_blocked_interpreter(*context, *collection->signals);
+        switch (result) {
+        case HandleBlockedResult::Unblocked:
           ready_interpreters++;
+          break;
+        case HandleBlockedResult::NeedsRetry:
+          needs_retry = true;
+          break;
+        case HandleBlockedResult::StillBlocked:
+          break;
         }
         INTERPRETERRUNNER_DEBUG("Blocked interpreter");
         break;
+      }
       case ContinuationState::Exited:
         context->exited.store(true);
         OperationResult r = context->interpreter.get_result();
@@ -193,7 +231,10 @@ void InterpreterRunner::interpreter_loop(InterpreterCollectionManager &mgr) {
           INTERPRETERRUNNER_DEBUG("Woken up...");
         }
       } else {
-        if (ready_interpreters == 0) {
+        // Only wait if no interpreter is ready AND no interpreter needs retry.
+        // NeedsRetry means we concatenated buffers and should re-step to see
+        // if the operation can now proceed (e.g., lookahead operations).
+        if (ready_interpreters == 0 && !needs_retry) {
           INTERPRETERRUNNER_DEBUG("Waiting, no ready interpreter");
           collection->signals->wake_up_interpreter.wait();
           INTERPRETERRUNNER_DEBUG("Woken up...");
