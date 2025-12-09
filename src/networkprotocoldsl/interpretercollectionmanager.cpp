@@ -34,7 +34,11 @@ std::future<Value> InterpreterCollectionManager::insert_interpreter(
         return std::make_shared<InterpreterCollection>(
             std::move(new_interpreters), current->signals);
       });
-  _collection.current()->signals->wake_up_interpreter.notify();
+  auto signals = _collection.current()->signals;
+  signals->wake_up_interpreter.notify();
+  signals->wake_up_for_output.notify();
+  signals->wake_up_for_input.notify();
+  signals->wake_up_for_callback.notify();
 
   return ctx->interpreter_result.get_future();
 }
@@ -48,6 +52,10 @@ void InterpreterCollectionManager::remove_interpreter(int fd) {
         return std::make_shared<const InterpreterCollection>(
             std::move(new_interpreters), current->signals);
       });
-  _collection.current()->signals->wake_up_interpreter.notify();
+  auto signals = _collection.current()->signals;
+  signals->wake_up_interpreter.notify();
+  signals->wake_up_for_output.notify();
+  signals->wake_up_for_input.notify();
+  signals->wake_up_for_callback.notify();
 }
 } // namespace networkprotocoldsl
