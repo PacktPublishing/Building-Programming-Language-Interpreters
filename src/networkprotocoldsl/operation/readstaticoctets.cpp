@@ -46,4 +46,10 @@ size_t ReadStaticOctets::handle_write(InputOutputOperationContext &ctx,
   return 0;
 }
 
+bool ReadStaticOctets::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  // Ready when we have enough bytes to compare, or at EOF
+  return ctx.buffer.length() >= contents.length() || ctx.eof;
+}
+
 } // namespace networkprotocoldsl::operation

@@ -64,4 +64,25 @@ size_t TerminateListIfReadAhead::handle_write(InputOutputOperationContext &ctx,
   return 0;
 }
 
+bool TerminateListIfReadAhead::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  if (ctx.buffer.length() == 0) {
+    // nothing to compare yet.
+    return ctx.eof;
+  } else if (ctx.buffer.length() < terminator.length()) {
+    // we don't have the complete thing yet, but if it already mismatches we
+    // can just finish the operator.
+    if (ctx.buffer == terminator.substr(0, ctx.buffer.length())) {
+      // we match so far, but we can't be sure yet.
+      return ctx.eof;
+    } else {
+      // we already know it doesn't match. Ready to return false.
+      return true;
+    }
+  } else {
+    // we have enough length to finish the comparison.
+    return true;
+  }
+}
+
 } // namespace networkprotocoldsl::operation

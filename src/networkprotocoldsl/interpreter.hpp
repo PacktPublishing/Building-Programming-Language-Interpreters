@@ -106,6 +106,10 @@ public:
   }
 
   void handle_eof() { return continuation_stack.top().handle_eof(); }
+
+  bool ready_to_evaluate() {
+    return continuation_stack.top().ready_to_evaluate();
+  }
 };
 
 } // namespace networkprotocoldsl

@@ -109,6 +109,7 @@ concept InputOutputOperationConcept = requires(OT op,
   { op(ctx, args) } -> std::convertible_to<OperationResult>;
   { op.handle_read(ctx, sv) } -> std::convertible_to<std::size_t>;
   { op.get_write_buffer(ctx) } -> std::convertible_to<std::string_view>;
+  { op.ready_to_evaluate(ctx) } -> std::convertible_to<bool>;
   {op.handle_write(ctx, s)};
   {op.handle_eof(ctx)};
 };

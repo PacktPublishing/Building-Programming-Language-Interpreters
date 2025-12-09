@@ -95,8 +95,9 @@ main_server(const std::span<const char *> &args,
               << std::endl;
     return std::nullopt;
   }
-  std::cerr << "Server started on descriptor: " << std::get<int>(bind_result)
-            << std::endl;
+  auto bind_info = std::get<networkprotocoldsl_uv::BindInfo>(bind_result);
+  std::cerr << "Server started on port " << bind_info.port << " (fd: "
+            << bind_info.fd << ")" << std::endl;
 
   // Setup signal handling for SIGINT.
   std::signal(SIGINT, signal_handler);

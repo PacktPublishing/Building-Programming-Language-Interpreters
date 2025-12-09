@@ -120,5 +120,26 @@ std::string TransitionLookahead::condition_to_string(const std::string &c) {
   return "StaticString(" + c + ")";
 }
 
+bool TransitionLookahead::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  // The operation is ready when we can definitively decide:
+  // either a condition matches, or all conditions are permanently invalid
+  bool all_permanently_invalid = true;
+  for (const auto &condition : conditions) {
+    const auto &cond = condition.first;
+
+    auto [is_valid, is_permanently_invalid] = std::visit(
+        [&](const auto &c) { return match_condition(ctx, c); }, cond);
+    if (is_valid) {
+      return true; // Found a match, we're ready
+    }
+    if (!is_permanently_invalid) {
+      all_permanently_invalid = false;
+    }
+  }
+  // Ready if all conditions are permanently invalid (will return error)
+  return all_permanently_invalid;
+}
+
 } // namespace operation
 } // namespace networkprotocoldsl

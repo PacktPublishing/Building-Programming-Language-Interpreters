@@ -58,11 +58,28 @@ public:
   std::promise<ConnectionResult> connection_result;
 
   /**
+   * @brief promise for the client result
+   *
+   * The promise will be set when the client interpreter returns,
+   * or with an error if the connection fails.
+   */
+  std::promise<networkprotocoldsl::Value> client_result_promise;
+
+  /**
    * @brief future of the value for the client
    *
-   * The future will be set when the client interpreter returns
+   * The future will be set when the client interpreter returns,
+   * or with an error if the connection fails.
    */
   std::future<networkprotocoldsl::Value> client_result;
+
+  /**
+   * @brief future from the interpreter (internal use)
+   *
+   * This is set when the interpreter is inserted, and will be used
+   * to propagate the result to client_result_promise.
+   */
+  std::future<networkprotocoldsl::Value> interpreter_result_future;
 
   /**
    * @brief the thread which pushes data from the interpter to uv

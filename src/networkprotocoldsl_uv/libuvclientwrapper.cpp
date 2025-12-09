@@ -17,7 +17,14 @@ LibuvClientWrapper::LibuvClientWrapper(
 }
 
 LibuvClientWrapper::~LibuvClientWrapper() {
-  // ...existing cleanup...
+  // Signal threads to exit before joining.
+  runner_.exit_when_done.store(true);
+  auto collection = mgr_.get_collection();
+  collection->signals->wake_up_for_output.notify();
+  collection->signals->wake_up_for_input.notify();
+  collection->signals->wake_up_for_callback.notify();
+  collection->signals->wake_up_interpreter.notify();
+
   if (interpreter_thread_.joinable())
     interpreter_thread_.join();
   if (callback_thread_.joinable())

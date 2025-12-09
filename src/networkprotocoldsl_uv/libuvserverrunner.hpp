@@ -15,17 +15,24 @@
 
 namespace networkprotocoldsl_uv {
 
+/**
+ * @brief Information about a successful bind operation.
+ */
+struct BindInfo {
+  int port; ///< The port number the server is bound to.
+  int fd;   ///< The file descriptor of the server socket.
+};
+
 struct LibuvServerRunnerImpl;
 class LibuvServerRunner {
 public:
   /**
    * @brief Result of a bind attempt.
    *
-   * If successful, the file descriptor is returned, which is also the
-   * key in the InterpreterCollectionManager. If unsuccessful, an error
-   * message is returned.
+   * If successful, a BindInfo struct is returned containing the port and fd.
+   * If unsuccessful, an error message is returned.
    */
-  using BindResult = std::variant<int, std::string>;
+  using BindResult = std::variant<BindInfo, std::string>;
 
   /**
    * @brief Bind to an IP address and port, and start accepting connections.

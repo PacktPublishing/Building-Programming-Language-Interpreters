@@ -38,8 +38,10 @@ void alloc_buffer_cb(uv_handle_t *handle, size_t suggested, uv_buf_t *buf) {
 // New unified close callback for client connections.
 static void unified_close_cb(uv_handle_t *handle) {
   UvConnectionData *data = static_cast<UvConnectionData *>(handle->data);
-  delete data->context;
-  delete data;
+  if (data) {
+    delete data->context;
+    delete data;
+  }
 }
 
 // Updated on_read callback to push received data into input_buffer.
@@ -105,27 +107,46 @@ void pusher_thread_loop(LibuvClientRunner *r, UvConnectionData *data) {
         uv_close(reinterpret_cast<uv_handle_t *>(&data->conn),
                  unified_close_cb);
       });
+      // Propagate the interpreter result to client_result_promise.
+      if (r->interpreter_result_future.valid()) {
+        try {
+          auto result = r->interpreter_result_future.get();
+          r->client_result_promise.set_value(result);
+        } catch (...) {
+          r->client_result_promise.set_exception(std::current_exception());
+        }
+      }
       return;
     }
-    // Pop outgoing data from the interpreter's output_buffer.
+    // Drain all outgoing data from the interpreter's output_buffer.
     auto &interpreter_context = it->second;
-    auto output_opt = interpreter_context->output_buffer.pop();
-    if (output_opt.has_value()) {
-      did_something = true;
-      std::string output = output_opt.value();
-      // Enqueue a write task using UvConnectionData for the callback.
-      data->context->work_queue->push_work([data, output, collection]() {
-        uv_write_t *req = new uv_write_t;
-        req->data = data; // set UvConnectionData as the write callback data.
-        uv_buf_t wrbuf =
-            uv_buf_init(const_cast<char *>(output.data()), output.size());
-        uv_write(req, reinterpret_cast<uv_stream_t *>(&data->conn), &wrbuf, 1,
-                 on_write_completed);
-      });
+    while (true) {
+      auto output_opt = interpreter_context->output_buffer.pop();
+      if (output_opt.has_value()) {
+        did_something = true;
+        std::string output = output_opt.value();
+        // Enqueue a write task using UvConnectionData for the callback.
+        data->context->work_queue->push_work([data, output, collection]() {
+          uv_write_t *req = new uv_write_t;
+          req->data = data; // set UvConnectionData as the write callback data.
+          uv_buf_t wrbuf =
+              uv_buf_init(const_cast<char *>(output.data()), output.size());
+          uv_write(req, reinterpret_cast<uv_stream_t *>(&data->conn), &wrbuf, 1,
+                   on_write_completed);
+        });
+      } else {
+        // No more data in buffer
+        break;
+      }
     }
     // If nothing was found, wait for wake_up_for_output notification.
+    // But only if the collection hasn't changed and the interpreter hasn't
+    // exited (to avoid lost wakeups from exit notifications).
     if (!did_something) {
-      collection->signals->wake_up_for_output.wait();
+      if (data->context->mgr->get_collection() == collection &&
+          !interpreter_context->exited.load()) {
+        collection->signals->wake_up_for_output.wait();
+      }
     }
   }
 }
@@ -136,9 +157,13 @@ static void on_connect_client_cb(uv_connect_t *client, int status) {
   auto *runner = conn_data->context->runner;
   if (status < 0) {
     runner->connection_result.set_value(std::string(uv_strerror(status)));
+    // Set an exception on client_result_promise so waiting on client_result
+    // won't hang.
+    runner->client_result_promise.set_exception(
+        std::make_exception_ptr(std::runtime_error(uv_strerror(status))));
     delete client;
-    // Instead of manually deleting conn_data, close the handle so
-    // unified_close_cb deletes it.
+    // Set handle->data before closing so unified_close_cb can clean up.
+    conn_data->conn.data = conn_data;
     uv_close(reinterpret_cast<uv_handle_t *>(&conn_data->conn),
              unified_close_cb);
     return;
@@ -148,9 +173,10 @@ static void on_connect_client_cb(uv_connect_t *client, int status) {
   uv_os_fd_t fd;
   if (uv_fileno(reinterpret_cast<uv_handle_t *>(handle), &fd) == 0) {
     conn_data->fd = fd;
-    runner->client_result = conn_data->context->mgr->insert_interpreter(
-        static_cast<int>(fd), conn_data->context->program, std::nullopt,
-        conn_data);
+    runner->interpreter_result_future =
+        conn_data->context->mgr->insert_interpreter(
+            static_cast<int>(fd), conn_data->context->program, std::nullopt,
+            conn_data);
     runner->connection_result.set_value(static_cast<int>(fd));
     uv_read_start(reinterpret_cast<uv_stream_t *>(handle), alloc_buffer_cb,
                   on_read_cb);
@@ -160,6 +186,11 @@ static void on_connect_client_cb(uv_connect_t *client, int status) {
   } else {
     runner->connection_result.set_value(
         "Connection did not provide a valid file descriptor.");
+    // Set an exception on client_result_promise so waiting on client_result
+    // won't hang.
+    runner->client_result_promise.set_exception(std::make_exception_ptr(
+        std::runtime_error("Connection did not provide a valid file "
+                           "descriptor.")));
     uv_close(reinterpret_cast<uv_handle_t *>(handle), unified_close_cb);
     delete client;
     return;
@@ -172,7 +203,8 @@ static void on_connect_client_cb(uv_connect_t *client, int status) {
 LibuvClientRunner::LibuvClientRunner(
     networkprotocoldsl::InterpreterCollectionManager &mgr, uv_loop_t *loop,
     const std::string &ip, int port, const InterpretedProgram &program,
-    networkprotocoldsl_uv::AsyncWorkQueue &async_queue) {
+    networkprotocoldsl_uv::AsyncWorkQueue &async_queue)
+    : client_result{client_result_promise.get_future()} {
   struct sockaddr_in connect_addr;
   uv_ip4_addr(ip.c_str(), port, &connect_addr);
   UvConnectionData *data = new UvConnectionData();

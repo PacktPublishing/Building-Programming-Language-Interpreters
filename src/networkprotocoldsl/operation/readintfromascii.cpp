@@ -66,4 +66,10 @@ size_t ReadIntFromAscii::handle_write(InputOutputOperationContext &ctx,
   return 0;
 }
 
+bool ReadIntFromAscii::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  // Ready when we've found a non-digit (ctx.ready) or at EOF
+  return ctx.ready || ctx.eof;
+}
+
 } // namespace networkprotocoldsl::operation

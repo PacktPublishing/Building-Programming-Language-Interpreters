@@ -46,4 +46,10 @@ size_t ReadOctetsUntilTerminator::handle_write(InputOutputOperationContext &ctx,
   return 0;
 }
 
+bool ReadOctetsUntilTerminator::ready_to_evaluate(
+    InputOutputOperationContext &ctx) const {
+  // Ready when we've found the terminator (ctx.ready) or reached EOF
+  return ctx.ready || ctx.eof;
+}
+
 } // namespace networkprotocoldsl::operation

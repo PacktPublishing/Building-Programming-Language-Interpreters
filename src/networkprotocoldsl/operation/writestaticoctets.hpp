@@ -32,6 +32,10 @@ public:
 
   size_t handle_write(InputOutputOperationContext &ctx, size_t s) const;
 
+  bool ready_to_evaluate(InputOutputOperationContext &ctx) const {
+    return true;  // Write operations don't wait for input
+  }
+
   std::string stringify() const {
     return "WriteStaticOctets{contents: \"" + contents + "\"}";
   }
