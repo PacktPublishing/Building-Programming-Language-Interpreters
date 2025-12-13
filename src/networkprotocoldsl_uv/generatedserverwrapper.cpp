@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstring>
+#include <iostream>
 #include <mutex>
 #include <unordered_map>
 
@@ -102,7 +103,7 @@ void on_write_complete(uv_write_t *req, int status) {
   }
 
   // Check for more output or if connection should close
-  if (conn->runner->is_closed()) {
+  if (conn->runner->is_closed() || conn->runner->has_error()) {
     if (!conn->closing.exchange(true)) {
       uv_close(reinterpret_cast<uv_handle_t *>(&conn->handle), on_close);
     }
@@ -126,8 +127,16 @@ void on_read(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     std::string_view data(buf->base, nread);
     conn->runner->on_bytes_received(data);
 
-    // Process any output
-    impl->process_output(conn);
+    // Check for protocol errors
+    if (conn->runner->has_error()) {
+      // Protocol mismatch - close the connection
+      if (!conn->closing.exchange(true)) {
+        uv_close(reinterpret_cast<uv_handle_t *>(&conn->handle), on_close);
+      }
+    } else {
+      // Process any output
+      impl->process_output(conn);
+    }
   } else if (nread < 0) {
     // Connection closed or error
     if (!conn->closing.exchange(true)) {

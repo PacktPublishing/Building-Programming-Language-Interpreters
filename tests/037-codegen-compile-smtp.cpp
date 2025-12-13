@@ -15,12 +15,14 @@
 #include <networkprotocoldsl/parser/parse.hpp>
 #include <networkprotocoldsl/sema/analyze.hpp>
 
+#include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 
 namespace fs = std::filesystem;
 
@@ -33,6 +35,16 @@ protected:
   fs::path temp_dir_;
   fs::path build_dir_;
   fs::path smtp_file_;
+
+  static std::string get_unique_dir_name() {
+    // Use test name + process ID + timestamp for uniqueness
+    auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    std::string test_name = test_info ? test_info->name() : "unknown";
+    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+    std::ostringstream oss;
+    oss << "compile_smtp_" << test_name << "_" << getpid() << "_" << now;
+    return oss.str();
+  }
 
   void SetUp() override {
     // Load and parse the SMTP protocol file
@@ -59,8 +71,9 @@ protected:
         << "Failed semantic analysis of SMTP protocol";
     protocol_ = maybe_protocol.value();
 
-    // Create temporary directory for generated files
-    temp_dir_ = fs::temp_directory_path() / "codegen_test_smtp";
+    // Create unique temporary directory for generated files under build dir
+    std::string unique_name = get_unique_dir_name();
+    temp_dir_ = fs::path(TEST_BUILD_DIR) / unique_name;
     build_dir_ = temp_dir_ / "build";
     fs::create_directories(temp_dir_);
     fs::create_directories(build_dir_);

@@ -114,6 +114,9 @@ void generate_state_machine_class_header(std::ostringstream &header,
   header << "    // Check if connection is closed\n";
   header << "    bool is_closed() const { return current_state_ == State::Closed; }\n";
   header << "    \n";
+  header << "    // Check if a protocol error occurred (received data that doesn't match any expected message)\n";
+  header << "    bool has_error() const { return has_error_; }\n";
+  header << "    \n";
   header << "    // Signal end-of-file on input stream\n";
   header << "    // Call this when the connection is closed by the remote peer.\n";
   header << "    // This notifies parsers that no more data will arrive, allowing them to\n";
@@ -142,6 +145,7 @@ void generate_state_machine_class_header(std::ostringstream &header,
     header << "    State current_state_{};\n";
   }
   header << "    bool has_message_ = false;\n";
+  header << "    bool has_error_ = false;\n";
   header << "    State message_state_{}; // Which state the message transitioned to\n";
   header << "    std::string output_buffer_;\n";
   header << "    \n";
@@ -193,11 +197,12 @@ void generate_on_bytes_received(std::ostringstream &source,
 
   source << "size_t " << class_name
          << "::on_bytes_received(std::string_view data) {\n";
-  source << "    if (data.empty() || is_closed()) {\n";
+  source << "    if (data.empty() || is_closed() || has_error_) {\n";
   source << "        return 0;\n";
   source << "    }\n";
   source << "    \n";
   source << "    size_t total_consumed = 0;\n";
+  source << "    bool any_parser_progressed = false;\n";
   source << "    \n";
   source << "    // Dispatch to appropriate parser based on current state\n";
   source << "    switch (current_state_) {\n";
@@ -227,6 +232,9 @@ void generate_on_bytes_received(std::ostringstream &source,
       source << "            message_state_ = State::" << then_state_id << ";\n";
       source << "            current_state_ = State::" << then_state_id << ";\n";
       source << "            " << rt->identifier << "_parser_.reset();\n";
+      source << "            any_parser_progressed = true;\n";
+      source << "        } else if (result.status == ParseStatus::NeedMoreData) {\n";
+      source << "            any_parser_progressed = true;\n";
       source << "        }\n";
     } else if (!transitions.empty()) {
       // Multiple transitions - try each parser in parallel
@@ -259,6 +267,7 @@ void generate_on_bytes_received(std::ostringstream &source,
         for (const auto *rt2 : transitions) {
           source << body_indent << rt2->identifier << "_parser_.reset();\n";
         }
+        source << body_indent << "any_parser_progressed = true;\n";
         if (i + 1 < transitions.size()) {
           // If this parser returned NeedMoreData with consumed bytes, keep them
           // Only try next parser if this one immediately returned Error with 0 consumed
@@ -269,12 +278,14 @@ void generate_on_bytes_received(std::ostringstream &source,
           for (size_t j = i + 1; j < transitions.size(); ++j) {
             source << body_indent << transitions[j]->identifier << "_parser_.reset();\n";
           }
+          source << body_indent << "any_parser_progressed = true;\n";
           source << indent << "} else {\n";
           // Parser returned Error - reset it and try next
           source << body_indent << rt->identifier << "_parser_.reset();\n";
         } else {
           source << indent << "} else if (" << result_var << ".status == ParseStatus::NeedMoreData) {\n";
           source << body_indent << "total_consumed = " << result_var << ".consumed;\n";
+          source << body_indent << "any_parser_progressed = true;\n";
           source << indent << "}\n";
         }
       }
@@ -291,6 +302,11 @@ void generate_on_bytes_received(std::ostringstream &source,
 
   source << "    default:\n";
   source << "        break;\n";
+  source << "    }\n";
+  source << "    \n";
+  source << "    // If we had data but no parser could process it, it's a protocol error\n";
+  source << "    if (!data.empty() && !any_parser_progressed && total_consumed == 0) {\n";
+  source << "        has_error_ = true;\n";
   source << "    }\n";
   source << "    \n";
   source << "    return total_consumed;\n";

@@ -68,6 +68,14 @@ public:
    * @brief Check if the connection should be closed.
    */
   virtual bool is_closed() const = 0;
+
+  /**
+   * @brief Check if a protocol error occurred.
+   * 
+   * Returns true if the received data doesn't match any expected message
+   * format for the current state.
+   */
+  virtual bool has_error() const = 0;
 };
 
 /**
@@ -161,6 +169,8 @@ public:
   void bytes_written(size_t count) override { runner_.bytes_written(count); }
 
   bool is_closed() const override { return runner_.is_closed(); }
+
+  bool has_error() const override { return runner_.has_error(); }
 
 private:
   Runner runner_;  // Owns the per-connection state machine
