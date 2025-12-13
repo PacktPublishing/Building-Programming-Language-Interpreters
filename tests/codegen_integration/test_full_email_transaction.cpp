@@ -116,6 +116,17 @@ struct FullTransactionHandler {
     
     AwaitServerDATAContentResponseOutput on_AwaitServerDATAContentResponse(const SMTPDATAContentData& msg) const {
         std::cout << "Server: Received DATA content (" << msg.content.size() << " bytes)" << std::endl;
+        std::cout << "Server: Content preview: " << msg.content.substr(0, 200) << "..." << std::endl;
+        
+        // Verify that dot-stuffing was correctly un-escaped
+        // The email body should contain "\r\n.signature" (with single dot)
+        // because the wire format "\r\n..signature" was un-escaped
+        if (msg.content.find("\r\n.signature") != std::string::npos) {
+            std::cout << "Server: Dot-stuffing correctly un-escaped!" << std::endl;
+        } else {
+            std::cout << "Server: WARNING - Expected to find '.signature' line" << std::endl;
+        }
+        
         messages_processed.fetch_add(1);
         SMTPDATAWrittenData written;
         written.client_domain = msg.client_domain;
@@ -350,15 +361,21 @@ int main() {
             }
             
             // 10. Send DATA content (email body + terminator)
+            // Note: Lines starting with "." must be dot-stuffed (doubled) on the wire
+            // The ".signature" line becomes "..signature" in the wire format
             const char* data_content = 
                 "From: sender@example.com\r\n"
                 "To: recipient@example.com\r\n"
-                "Subject: Test Email\r\n"
+                "Subject: Test Email with Dot-Stuffing\r\n"
                 "\r\n"
                 "This is a test email body.\r\n"
+                "Here is a line with dots in the middle...no escaping needed.\r\n"
+                "..signature\r\n"  // Wire format: ".signature" becomes "..signature"
+                "Best regards,\r\n"
+                "Test\r\n"
                 ".\r\n";
             send(sock, data_content, strlen(data_content), 0);
-            std::cout << "Client: Sent DATA content" << std::endl;
+            std::cout << "Client: Sent DATA content with dot-stuffed line" << std::endl;
             
             // 11. Read DATA written response
             n = recv(sock, buf, sizeof(buf), 0);

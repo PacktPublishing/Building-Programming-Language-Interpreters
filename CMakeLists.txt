@@ -123,6 +123,8 @@ add_library(
     src/networkprotocoldsl/operation/writeint32native.hpp
     src/networkprotocoldsl/operation/writeoctets.cpp
     src/networkprotocoldsl/operation/writeoctets.hpp
+    src/networkprotocoldsl/operation/writeoctetswithescape.cpp
+    src/networkprotocoldsl/operation/writeoctetswithescape.hpp
     src/networkprotocoldsl/operation/writestaticoctets.cpp
     src/networkprotocoldsl/operation/writestaticoctets.hpp
     src/networkprotocoldsl/operation/lexicalpadasdict.cpp

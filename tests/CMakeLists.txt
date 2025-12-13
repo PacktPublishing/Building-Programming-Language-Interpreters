@@ -54,6 +54,8 @@ foreach(
     035-codegen-generate-serializer
     036-codegen-generate-state-machine
     037-codegen-compile-smtp
+    038-escape-replacement-operations
+    039-codegen-escape-replacement
 )
     add_executable(${TEST}.t ${TEST}.cpp)
     target_compile_definitions(${TEST}.t PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")

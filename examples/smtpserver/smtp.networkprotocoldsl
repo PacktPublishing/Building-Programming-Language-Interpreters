@@ -274,8 +274,10 @@ message "SMTP DATA Content" {
         content: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=65536>; 
     } 
     parts { 
-        tokens { content } 
-        terminator { "\r\n.\r\n" }  
+        // SMTP dot-stuffing: lines starting with "." are escaped as ".."
+        // The terminator is "\r\n.\r\n" (a line with just a dot)
+        // If the content has "\r\n." it becomes "\r\n.." on wire
+        tokens<terminator="\r\n.\r\n", escape=replace<"\r\n.", "\r\n..">> { content }
     } 
 }
 

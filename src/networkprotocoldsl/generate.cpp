@@ -116,10 +116,18 @@ recursive_variable_access(
 
 static std::optional<OpTreeNode>
 write_octets_from_value(const std::shared_ptr<const parser::tree::Type> &type,
-                        OpTreeNode value) {
+                        OpTreeNode value,
+                        const std::optional<sema::ast::action::EscapeInfo> &escape = std::nullopt) {
   if (type->name->name == "int") {
+    if (escape.has_value()) {
+      return OpTreeNode{WriteOctetsWithEscape{escape->character, escape->sequence},
+                        {{IntToAscii{}, {value}}}};
+    }
     return OpTreeNode{WriteOctets{}, {{IntToAscii{}, {value}}}};
   } else if (type->name->name == "str") {
+    if (escape.has_value()) {
+      return OpTreeNode{WriteOctetsWithEscape{escape->character, escape->sequence}, {value}};
+    }
     return OpTreeNode{WriteOctets{}, {value}};
   }
   return std::nullopt;
@@ -127,11 +135,19 @@ write_octets_from_value(const std::shared_ptr<const parser::tree::Type> &type,
 
 static std::optional<OpTreeNode>
 read_value_from_octets(const std::shared_ptr<const parser::tree::Type> &type,
-                       const std::string &terminator) {
+                       const std::string &terminator,
+                       const std::optional<sema::ast::action::EscapeInfo> &escape = std::nullopt) {
   if (type->name->name == "int") {
+    if (escape.has_value()) {
+      return OpTreeNode{ReadIntFromAscii{},
+                        {{ReadOctetsUntilTerminator(terminator, escape->character, escape->sequence), {}}}};
+    }
     return OpTreeNode{ReadIntFromAscii{},
                       {{ReadOctetsUntilTerminator(terminator), {}}}};
   } else if (type->name->name == "str") {
+    if (escape.has_value()) {
+      return OpTreeNode{ReadOctetsUntilTerminator(terminator, escape->character, escape->sequence), {}};
+    }
     return OpTreeNode{ReadOctetsUntilTerminator(terminator), {}};
   }
   return std::nullopt;
@@ -150,7 +166,7 @@ static std::optional<OpTreeNode> visit_action(
   auto member = action->identifier->member;
   if (!member.has_value()) {
     auto maybe_optreenode =
-        read_value_from_octets(maybe_type.value(), action->terminator);
+        read_value_from_octets(maybe_type.value(), action->terminator, action->escape);
     if (!maybe_optreenode)
       return std::nullopt;
     return OpTreeNode{LexicalPadSet(identifier), {*maybe_optreenode}};
@@ -159,7 +175,7 @@ static std::optional<OpTreeNode> visit_action(
     auto maybe_access = recursive_variable_access(
         maybe_type.value(), member.value(), variable_access,
         [&](const std::shared_ptr<const parser::tree::Type> &type) {
-          return read_value_from_octets(type, action->terminator);
+          return read_value_from_octets(type, action->terminator, action->escape);
         });
     if (!maybe_access)
       return std::nullopt;
@@ -194,9 +210,9 @@ static std::optional<OpTreeNode> visit_action(
     if (!maybe_access)
       return std::nullopt;
     auto [last_access, last_type] = *maybe_access;
-    return write_octets_from_value(last_type, last_access);
+    return write_octets_from_value(last_type, last_access, action->escape);
   } else {
-    return write_octets_from_value(maybe_type.value(), variable_access);
+    return write_octets_from_value(maybe_type.value(), variable_access, action->escape);
   }
 }
 

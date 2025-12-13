@@ -1,0 +1,47 @@
+// HTTP/1.1-like protocol with header continuation line support
+// This tests the escape=replace<"\n", "\r\n "> feature
+// where "\r\n " on the wire represents a newline in the header value
+
+message "Request Line" {
+    when: Open;
+    then: ExpectResponse;
+    agent: Client;
+    data: {
+        method: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=10>;
+        path: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>;
+        host: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>;
+    }
+    parts {
+        tokens { method }
+        terminator { " " }
+        tokens { path }
+        terminator { " HTTP/1.1\r\nHost: " }
+        // host field with escape support - embedded terminator means no terminator block needed
+        tokens<terminator="\r\n\r\n", escape=replace<"\n", "\r\n ">> { host }
+    }
+}
+
+message "Response Line" {
+    when: ExpectResponse;
+    then: Done;
+    agent: Server;
+    data: {
+        status: int<encoding=AsciiInt, unsigned=True, bits=16>;
+        reason: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=256>;
+        content_type: str<encoding=Ascii7Bit, sizing=Dynamic, max_length=1024>;
+    }
+    parts {
+        tokens { "HTTP/1.1 " status }
+        terminator { " " }
+        tokens { reason }
+        terminator { "\r\nContent-Type: " }
+        // content_type field with escape support - embedded terminator
+        tokens<terminator="\r\n\r\n", escape=replace<"\n", "\r\n ">> { content_type }
+    }
+}
+
+message "Close Connection" {
+    when: Done;
+    then: Closed;
+    agent: Client;
+}

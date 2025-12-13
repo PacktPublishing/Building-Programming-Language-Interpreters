@@ -115,13 +115,16 @@ public:
     }
   }
 
+  // Helper to process a token sequence with its options (terminator and escape)
   static ParseStateReturn
-  match(TokenIterator begin, TokenIterator end,
-        std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
-        std::shared_ptr<const parser::tree::Terminator> terminator) {
-    // Parse the token sequence, but add the terminator to the end
+  process_token_sequence(TokenIterator begin, TokenIterator end,
+                         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
+                         const std::string &terminator_str) {
+    // Parse the token sequence, adding the terminator to the end
     auto full_sequence = unroll_variant(token_sequence->tokens);
-    full_sequence.push_back(terminator->value);
+    // Create a StringLiteral for the terminator
+    auto terminator_lit = std::make_shared<parser::tree::StringLiteral>(terminator_str);
+    full_sequence.push_back(terminator_lit);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
     
     // Apply escape replacement if present
@@ -132,11 +135,28 @@ public:
     }
     return {r.node, begin, end};
   }
+
+  static ParseStateReturn
+  match(TokenIterator begin, TokenIterator end,
+        std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
+        std::shared_ptr<const parser::tree::Terminator> terminator) {
+    // We have an external Terminator block - check that token_sequence doesn't have embedded terminator
+    if (token_sequence->terminator.has_value()) {
+      // Error: both embedded terminator option AND explicit Terminator block
+      return {std::nullopt, begin, end};
+    }
+    // Use the external Terminator block's value
+    return process_token_sequence(begin, end, token_sequence, terminator->value->value);
+  }
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
         EndOfInput) {
-    // Parse the token sequence
+    // If the token sequence has an embedded terminator option, use it
+    if (token_sequence->terminator.has_value()) {
+      return process_token_sequence(begin, end, token_sequence, token_sequence->terminator.value());
+    }
+    // Otherwise, parse without a terminator
     auto full_sequence = unroll_variant(token_sequence->tokens);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
     

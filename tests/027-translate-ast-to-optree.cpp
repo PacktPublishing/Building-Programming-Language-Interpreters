@@ -197,11 +197,11 @@ TEST(TranslateASTToOptree, Translation) {
   server_interpreter_thread.join();
 
   ASSERT_EQ(client_writes.str(), "GET /test HTTP/1.1\r\n"
-                                 "Accept:application/json\r\n"
-                                 "TestHeader:Value\r\n"
+                                 "Accept: application/json\r\n"
+                                 "TestHeader: Value\r\n"
                                  "\r\n");
   ASSERT_EQ(server_writes.str(), "HTTP/1.1 200 Looks good\r\n"
-                                 "Some-Response:some value\r\n"
-                                 "TestHeader:Value\r\n"
+                                 "Some-Response: some value\r\n"
+                                 "TestHeader: Value\r\n"
                                  "\r\n");
 }

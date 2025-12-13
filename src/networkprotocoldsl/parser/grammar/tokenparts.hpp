@@ -43,35 +43,29 @@ public:
   }
   static void partial_match(lexer::token::Identifier,
                             lexer::token::punctuation::AngleBracketOpen) {}
-  static StringLiteral *recurse_one(lexer::token::Identifier,
-                                    lexer::token::punctuation::AngleBracketOpen) {
-    return nullptr;
-  }
   static void partial_match(lexer::token::Identifier,
                             lexer::token::punctuation::AngleBracketOpen,
-                            std::shared_ptr<const tree::StringLiteral>) {}
-  static StringLiteral *recurse_one(lexer::token::Identifier,
-                                    lexer::token::punctuation::AngleBracketOpen,
-                                    std::shared_ptr<const tree::StringLiteral>,
-                                    lexer::token::punctuation::Comma) {
-    return nullptr;
-  }
+                            lexer::token::literal::String) {}
   static void partial_match(lexer::token::Identifier,
                             lexer::token::punctuation::AngleBracketOpen,
-                            std::shared_ptr<const tree::StringLiteral>,
+                            lexer::token::literal::String,
+                            lexer::token::punctuation::Comma) {}
+  static void partial_match(lexer::token::Identifier,
+                            lexer::token::punctuation::AngleBracketOpen,
+                            lexer::token::literal::String,
                             lexer::token::punctuation::Comma,
-                            std::shared_ptr<const tree::StringLiteral>) {}
+                            lexer::token::literal::String) {}
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         lexer::token::Identifier,
         lexer::token::punctuation::AngleBracketOpen,
-        std::shared_ptr<const tree::StringLiteral> character,
+        lexer::token::literal::String character,
         lexer::token::punctuation::Comma,
-        std::shared_ptr<const tree::StringLiteral> sequence,
+        lexer::token::literal::String sequence,
         lexer::token::punctuation::AngleBracketClose) {
     auto result = std::make_shared<tree::EscapeReplacement>();
-    result->character = character->value;
-    result->sequence = sequence->value;
+    result->character = character.value;
+    result->sequence = sequence.value;
     return {result, begin, end};
   }
 };
@@ -98,12 +92,15 @@ public:
 };
 
 // Parses a single option like: terminator="\r\n" or escape=replace<"\n", "\r\n ">
+// Note: "terminator" is tokenized as a keyword, so we need to handle both
+// Identifier and Terminator keyword as the option name
 class TokenSequenceOption
     : public support::RecursiveParser<TokenSequenceOption, ParseTraits,
                                       Tracer<TokenSequenceOption>> {
 public:
   static constexpr const char *name = "TokenSequenceOption";
   static void partial_match() {}
+  // Handle identifier as option name (e.g., "escape")
   static void partial_match(lexer::token::Identifier) {}
   static TokenSequenceOptionValue *recurse_one(lexer::token::Identifier,
                                                lexer::token::punctuation::Equal) {
@@ -114,6 +111,18 @@ public:
                                 lexer::token::punctuation::Equal,
                                 std::shared_ptr<tree::TokenSequenceOptionValue> value) {
     return {std::make_shared<const tree::TokenSequenceOptionPair>(identifier.name, *value), begin, end};
+  }
+  // Handle "terminator" keyword as option name
+  static void partial_match(lexer::token::keyword::Terminator) {}
+  static TokenSequenceOptionValue *recurse_one(lexer::token::keyword::Terminator,
+                                               lexer::token::punctuation::Equal) {
+    return nullptr;
+  }
+  static ParseStateReturn match(TokenIterator begin, TokenIterator end,
+                                lexer::token::keyword::Terminator,
+                                lexer::token::punctuation::Equal,
+                                std::shared_ptr<tree::TokenSequenceOptionValue> value) {
+    return {std::make_shared<const tree::TokenSequenceOptionPair>("terminator", *value), begin, end};
   }
 };
 
@@ -182,20 +191,20 @@ public:
   }
   // When options are provided
   static void partial_match(lexer::token::keyword::Tokens,
-                            std::shared_ptr<tree::TokenSequenceOptionsMap>) {}
+                            std::shared_ptr<const tree::TokenSequenceOptionsMap>) {}
   static TokenPart *recurse_many(lexer::token::keyword::Tokens,
-                                 std::shared_ptr<tree::TokenSequenceOptionsMap>,
+                                 std::shared_ptr<const tree::TokenSequenceOptionsMap>,
                                  lexer::token::punctuation::CurlyBraceOpen) {
     return nullptr;
   }
   static void
   partial_match(lexer::token::keyword::Tokens,
-                std::shared_ptr<tree::TokenSequenceOptionsMap>,
+                std::shared_ptr<const tree::TokenSequenceOptionsMap>,
                 lexer::token::punctuation::CurlyBraceOpen,
                 std::vector<std::shared_ptr<const tree::TokenPart>>) {}
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end, lexer::token::keyword::Tokens,
-        std::shared_ptr<tree::TokenSequenceOptionsMap> options,
+        std::shared_ptr<const tree::TokenSequenceOptionsMap> options,
         lexer::token::punctuation::CurlyBraceOpen,
         std::vector<std::shared_ptr<const tree::TokenPart>> parts,
         lexer::token::punctuation::CurlyBraceClose) {

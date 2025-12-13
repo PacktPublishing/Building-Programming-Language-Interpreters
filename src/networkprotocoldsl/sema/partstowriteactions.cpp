@@ -1,4 +1,5 @@
 #include <networkprotocoldsl/parser/tree/messagesequence.hpp>
+#include <networkprotocoldsl/parser/tree/stringliteral.hpp>
 #include <networkprotocoldsl/parser/tree/tokensequenceoptions.hpp>
 #include <networkprotocoldsl/sema/ast/action.hpp>
 #include <networkprotocoldsl/sema/partstowriteactions.hpp>
@@ -106,8 +107,16 @@ public:
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence) {
-    // Parse the token sequence, but add the terminator to the end
+    // Parse the token sequence
     auto full_sequence = unroll_variant(token_sequence->tokens);
+    
+    // If there's an embedded terminator, we need to add it to the full_sequence
+    // so it gets written as a static octets at the end
+    if (token_sequence->terminator.has_value()) {
+      auto terminator_lit = std::make_shared<parser::tree::StringLiteral>(token_sequence->terminator.value());
+      full_sequence.push_back(terminator_lit);
+    }
+    
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
     
     // Apply escape replacement if present
