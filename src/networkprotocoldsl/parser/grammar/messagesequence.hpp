@@ -1,7 +1,10 @@
 #ifndef INCLUDED_NETWORKPROTOCOLDSL_PARSER_GRAMMAR_MESSAGEFORLOOP_HPP
 #define INCLUDED_NETWORKPROTOCOLDSL_PARSER_GRAMMAR_MESSAGEFORLOOP_HPP
 
+#include <map>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include <networkprotocoldsl/lexer/token.hpp>
@@ -21,30 +24,36 @@ class MessageForLoop
 public:
   static constexpr const char *name = "MessageForLoop";
   static void partial_match() {}
-  static IdentifierReference *recurse_one(lexer::token::keyword::For) {
+  // Try to parse optional options first
+  static TokenSequenceOptions *recurse_maybe(lexer::token::keyword::For) {
     return nullptr;
   }
-  static void partial_match(lexer::token::keyword::For,
+  // When no options provided (nullopt case) - go directly to recurse_one
+  static IdentifierReference *recurse_one(lexer::token::keyword::For,
+                                          std::nullopt_t) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::keyword::For, std::nullopt_t,
                             std::shared_ptr<const tree::IdentifierReference>) {}
   static IdentifierReference *
-  recurse_one(lexer::token::keyword::For,
+  recurse_one(lexer::token::keyword::For, std::nullopt_t,
               std::shared_ptr<const tree::IdentifierReference>,
               lexer::token::keyword::In) {
     return nullptr;
   }
-  static void partial_match(lexer::token::keyword::For,
+  static void partial_match(lexer::token::keyword::For, std::nullopt_t,
                             std::shared_ptr<const tree::IdentifierReference>,
                             lexer::token::keyword::In,
                             std::shared_ptr<const tree::IdentifierReference>) {}
   static MessageSequence *
-  recurse_one(lexer::token::keyword::For,
+  recurse_one(lexer::token::keyword::For, std::nullopt_t,
               std::shared_ptr<const tree::IdentifierReference>,
               lexer::token::keyword::In,
               std::shared_ptr<const tree::IdentifierReference>,
               lexer::token::punctuation::CurlyBraceOpen) {
     return nullptr;
   }
-  static void partial_match(lexer::token::keyword::For,
+  static void partial_match(lexer::token::keyword::For, std::nullopt_t,
                             std::shared_ptr<const tree::IdentifierReference>,
                             lexer::token::keyword::In,
                             std::shared_ptr<const tree::IdentifierReference>,
@@ -52,14 +61,72 @@ public:
                             std::shared_ptr<const tree::MessageSequence>) {}
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end, lexer::token::keyword::For,
+        std::nullopt_t,
         std::shared_ptr<const tree::IdentifierReference> identifier1,
         lexer::token::keyword::In,
         std::shared_ptr<const tree::IdentifierReference> identifier2,
         lexer::token::punctuation::CurlyBraceOpen,
         std::shared_ptr<const tree::MessageSequence> seq,
         lexer::token::punctuation::CurlyBraceClose) {
-    return {std::make_shared<const tree::MessageForLoop>(identifier1,
-                                                         identifier2, seq),
+    return {std::make_shared<const tree::MessageForLoop>(tree::MessageForLoop{
+                identifier1, identifier2, seq, std::nullopt}),
+            begin, end};
+  }
+  // When options are provided - go directly to recurse_one
+  static IdentifierReference *
+  recurse_one(lexer::token::keyword::For,
+              std::shared_ptr<tree::TokenSequenceOptionsMap>) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::keyword::For,
+                            std::shared_ptr<tree::TokenSequenceOptionsMap>,
+                            std::shared_ptr<const tree::IdentifierReference>) {}
+  static IdentifierReference *
+  recurse_one(lexer::token::keyword::For,
+              std::shared_ptr<tree::TokenSequenceOptionsMap>,
+              std::shared_ptr<const tree::IdentifierReference>,
+              lexer::token::keyword::In) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::keyword::For,
+                            std::shared_ptr<tree::TokenSequenceOptionsMap>,
+                            std::shared_ptr<const tree::IdentifierReference>,
+                            lexer::token::keyword::In,
+                            std::shared_ptr<const tree::IdentifierReference>) {}
+  static MessageSequence *
+  recurse_one(lexer::token::keyword::For,
+              std::shared_ptr<tree::TokenSequenceOptionsMap>,
+              std::shared_ptr<const tree::IdentifierReference>,
+              lexer::token::keyword::In,
+              std::shared_ptr<const tree::IdentifierReference>,
+              lexer::token::punctuation::CurlyBraceOpen) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::keyword::For,
+                            std::shared_ptr<tree::TokenSequenceOptionsMap>,
+                            std::shared_ptr<const tree::IdentifierReference>,
+                            lexer::token::keyword::In,
+                            std::shared_ptr<const tree::IdentifierReference>,
+                            lexer::token::punctuation::CurlyBraceOpen,
+                            std::shared_ptr<const tree::MessageSequence>) {}
+  static ParseStateReturn
+  match(TokenIterator begin, TokenIterator end, lexer::token::keyword::For,
+        std::shared_ptr<tree::TokenSequenceOptionsMap> options,
+        std::shared_ptr<const tree::IdentifierReference> identifier1,
+        lexer::token::keyword::In,
+        std::shared_ptr<const tree::IdentifierReference> identifier2,
+        lexer::token::punctuation::CurlyBraceOpen,
+        std::shared_ptr<const tree::MessageSequence> seq,
+        lexer::token::punctuation::CurlyBraceClose) {
+    std::optional<std::string> terminator;
+    if (options) {
+      auto &opts = *options;
+      if (opts.count("terminator")) {
+        terminator = opts.at("terminator");
+      }
+    }
+    return {std::make_shared<const tree::MessageForLoop>(
+                tree::MessageForLoop{identifier1, identifier2, seq, terminator}),
             begin, end};
   }
 };

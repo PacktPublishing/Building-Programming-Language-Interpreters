@@ -32,24 +32,54 @@
 <TokenPart> ::=
    <IdentifierReference> |
    <StringLiteral>
+
+// TokenSequenceOption uses identifier=string pattern (like TypeParameter)
+// Valid identifiers are "terminator" and "escape" (contextual, not keywords)
+// - terminator: the string that ends this token sequence
+// - escape: a sequence that, when found, continues reading instead of terminating
+//           (used for HTTP/1.1 header continuation lines: CRLF followed by space)
+<TokenSequenceOption> ::=
+   token::Identifier  // "terminator" or "escape"
+   token::punctuation::Equals
+   <StringLiteral>
+<TokenSequenceOptions> ::=
+   token::punctuation::AngleBracketOpen
+   <TokenSequenceOption>
+   (token::punctuation::Comma <TokenSequenceOption>)*
+   token::punctuation::AngleBracketClose
+
 <TokenSequence> ::=
-   <IdentifierReference> // identifier name must be "tokens"
+   token::keyword::Tokens
+   <TokenSequenceOptions>?
    token::punctuation::CurlyBraceOpen
    <TokenPart>*
    token::punctuation::CurlyBraceClose
+
+// Legacy terminator syntax (for backward compatibility)
 <Terminator> ::=
    <IdentifierReference> // identifier name must be "terminator"
    token::punctuation::CurlyBraceOpen
    <StringLiteral>
-   token::punctuation::CurlyBraceClose // Added missing closing curly brace
+   token::punctuation::CurlyBraceClose
+
+// ForLoopOptions uses the same pattern as TokenSequenceOptions
+// Valid identifier is "terminator" (contextual, not a keyword)
+<ForLoopOptions> ::=
+   token::punctuation::AngleBracketOpen
+   <TokenSequenceOption>
+   (token::punctuation::Comma <TokenSequenceOption>)*
+   token::punctuation::AngleBracketClose
+
 <MessageForLoop> ::=
    token::keyword::For
+   <ForLoopOptions>?
    <IdentifierReference>
    token::keyword::In
    <IdentifierReference>
    token::punctuation::CurlyBraceOpen
    <MessagePart>*
    token::punctuation::CurlyBraceClose
+
 <MessagePart> ::=
    <TokenSequence> |
    <Terminator> |
