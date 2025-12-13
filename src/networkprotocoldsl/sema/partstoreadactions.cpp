@@ -95,6 +95,26 @@ public:
   static void partial_match(){};
   static void
       partial_match(std::shared_ptr<const parser::tree::TokenSequence>){};
+
+  // Helper to apply escape sequence to ReadOctetsUntilTerminator actions
+  static void apply_escape_to_actions(std::vector<ast::Action> &actions,
+                                       const std::optional<std::string> &escape) {
+    if (!escape.has_value()) return;
+    for (auto &action : actions) {
+      std::visit([&](auto &a) {
+        using T = std::decay_t<decltype(*a)>;
+        if constexpr (std::is_same_v<T, ast::action::ReadOctetsUntilTerminator>) {
+          // Create a new action with the escape sequence
+          auto new_action = std::make_shared<ast::action::ReadOctetsUntilTerminator>();
+          new_action->terminator = a->terminator;
+          new_action->identifier = a->identifier;
+          new_action->escape = escape;
+          a = new_action;
+        }
+      }, action);
+    }
+  }
+
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
@@ -103,6 +123,13 @@ public:
     auto full_sequence = unroll_variant(token_sequence->tokens);
     full_sequence.push_back(terminator->value);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
+    
+    // Apply escape sequence if present
+    if (r.node.has_value() && token_sequence->escape.has_value()) {
+      auto actions = std::get<std::vector<ast::Action>>(r.node.value());
+      apply_escape_to_actions(actions, token_sequence->escape);
+      return {actions, begin, end};
+    }
     return {r.node, begin, end};
   }
   static ParseStateReturn
@@ -112,6 +139,13 @@ public:
     // Parse the token sequence
     auto full_sequence = unroll_variant(token_sequence->tokens);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
+    
+    // Apply escape sequence if present
+    if (r.node.has_value() && token_sequence->escape.has_value()) {
+      auto actions = std::get<std::vector<ast::Action>>(r.node.value());
+      apply_escape_to_actions(actions, token_sequence->escape);
+      return {actions, begin, end};
+    }
     return {r.node, begin, end};
   }
   static void
