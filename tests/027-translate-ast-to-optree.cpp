@@ -80,7 +80,7 @@ TEST(TranslateASTToOptree, Translation) {
                  std::cerr << "Server received request: "
                            << std::get<value::Octets>(
                                   dict.members->at("request_target"))
-                                  .data.get()
+                                  .data->c_str()
                            << std::endl;
                  return value::DynamicList{
                      {_o("HTTP Response"),
