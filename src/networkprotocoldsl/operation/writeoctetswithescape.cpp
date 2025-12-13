@@ -6,12 +6,14 @@
 
 namespace networkprotocoldsl::operation {
 
-// Helper to perform escape replacement on a string
+// Helper to perform escape replacement on a string.
+// Replaces occurrences of escape_char with escape_sequence in the output.
 static std::string apply_escape_replacement(const std::string &input,
                                             const std::string &escape_char,
                                             const std::string &escape_sequence) {
   std::string result;
-  result.reserve(input.size()); // Reserve at least input size
+  // Reserve extra space since escape_sequence is typically longer than escape_char
+  result.reserve(input.size() + input.size() / 4);
   
   size_t pos = 0;
   while (pos < input.size()) {

@@ -21,8 +21,12 @@ ReadOctetsUntilTerminator::operator()(InputOutputOperationContext &ctx,
 
 size_t ReadOctetsUntilTerminator::handle_read(InputOutputOperationContext &ctx,
                                               std::string_view in) const {
-  // If we have escape sequences to handle, we need to search for both
-  // the terminator and the escape sequence
+  // Escape replacement algorithm:
+  // When reading, we search for both the terminator and the escape_sequence.
+  // If we find escape_sequence first (or at the same position as terminator),
+  // we replace it with escape_char in the captured value and continue.
+  // This handles cases like HTTP header continuation where "\r\n " on the wire
+  // becomes "\n" in the value, while "\r\n" (without space) ends the header.
   if (escape_char.has_value() && escape_sequence.has_value()) {
     size_t pos = 0;
     while (pos < in.size()) {
@@ -35,17 +39,16 @@ size_t ReadOctetsUntilTerminator::handle_read(InputOutputOperationContext &ctx,
         return 0;
       }
       
-      // When escape_sequence starts with terminator (e.g., "\r\n " vs "\r\n"),
-      // we need to prefer the escape sequence when it fully matches
+      // Determine whether to handle escape sequence or terminator.
+      // Priority rules:
+      // 1. If only escape found -> handle escape
+      // 2. If escape found before terminator -> handle escape
+      // 3. If escape and terminator at same position -> prefer escape
+      //    (escape_sequence is longer and contains terminator as prefix)
+      // 4. Otherwise -> handle terminator
       bool prefer_escape = false;
       if (esc_pos != in.npos) {
-        if (term_pos == in.npos) {
-          prefer_escape = true;
-        } else if (esc_pos < term_pos) {
-          prefer_escape = true;
-        } else if (esc_pos == term_pos) {
-          // Same position - escape sequence is longer and contains terminator,
-          // so if escape matches, prefer it
+        if (term_pos == in.npos || esc_pos < term_pos || esc_pos == term_pos) {
           prefer_escape = true;
         }
       }

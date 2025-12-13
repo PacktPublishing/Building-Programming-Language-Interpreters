@@ -142,7 +142,9 @@ public:
         std::shared_ptr<const parser::tree::Terminator> terminator) {
     // We have an external Terminator block - check that token_sequence doesn't have embedded terminator
     if (token_sequence->terminator.has_value()) {
-      // Error: both embedded terminator option AND explicit Terminator block
+      // Error: conflicting terminator definitions - both embedded terminator option
+      // in tokens<terminator="..."> AND explicit terminator { } block.
+      // Use one or the other, not both.
       return {std::nullopt, begin, end};
     }
     // Use the external Terminator block's value
