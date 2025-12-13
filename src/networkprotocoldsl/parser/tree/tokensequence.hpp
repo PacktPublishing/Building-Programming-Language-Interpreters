@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <networkprotocoldsl/parser/tree/tokenpart.hpp>
+#include <networkprotocoldsl/parser/tree/tokensequenceoptions.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -12,7 +13,7 @@ namespace networkprotocoldsl::parser::tree {
 struct TokenSequence {
   std::vector<std::shared_ptr<const TokenPart>> tokens;
   std::optional<std::string> terminator;
-  std::optional<std::string> escape;
+  std::optional<EscapeReplacement> escape;
   std::string stringify() const {
     std::string result = "tokens";
     if (terminator.has_value() || escape.has_value()) {
@@ -24,7 +25,7 @@ struct TokenSequence {
         }
       }
       if (escape.has_value()) {
-        result += "escape=\"" + escape.value() + "\"";
+        result += "escape=replace<\"" + escape.value().character + "\", \"" + escape.value().sequence + "\">";
       }
       result += ">";
     }

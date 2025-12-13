@@ -14,12 +14,19 @@ struct ReadStaticOctets {
   std::string octets;
 };
 
+// Escape replacement info for ReadOctetsUntilTerminator
+struct EscapeInfo {
+  std::string character;  // what to insert in the captured value (e.g., "\n")
+  std::string sequence;   // what appears on the wire (e.g., "\r\n ")
+};
+
 struct ReadOctetsUntilTerminator {
   std::string terminator;
   std::shared_ptr<const parser::tree::IdentifierReference> identifier;
-  // Optional escape sequence - if present and found before terminator,
-  // the escape is removed and reading continues (for HTTP header continuation)
-  std::optional<std::string> escape;
+  // Optional escape replacement - if present:
+  // - when parsing: replace escape_sequence with escape_char in captured value
+  // - when serializing: replace escape_char with escape_sequence in output
+  std::optional<EscapeInfo> escape;
 };
 
 } // namespace networkprotocoldsl::sema::ast::action

@@ -30,7 +30,74 @@ public:
   }
 };
 
-// Parses a single option like: terminator="\r\n" or escape="\r\n "
+// Parses escape replacement: replace<"\n", "\r\n ">
+class EscapeReplacement
+    : public support::RecursiveParser<EscapeReplacement, ParseTraits,
+                                      Tracer<EscapeReplacement>> {
+public:
+  static constexpr const char *name = "EscapeReplacement";
+  static void partial_match() {}
+  // Must start with identifier "replace"
+  static bool conditional_partial_match(lexer::token::Identifier id) {
+    return id.name == "replace";
+  }
+  static void partial_match(lexer::token::Identifier,
+                            lexer::token::punctuation::AngleBracketOpen) {}
+  static StringLiteral *recurse_one(lexer::token::Identifier,
+                                    lexer::token::punctuation::AngleBracketOpen) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::Identifier,
+                            lexer::token::punctuation::AngleBracketOpen,
+                            std::shared_ptr<const tree::StringLiteral>) {}
+  static StringLiteral *recurse_one(lexer::token::Identifier,
+                                    lexer::token::punctuation::AngleBracketOpen,
+                                    std::shared_ptr<const tree::StringLiteral>,
+                                    lexer::token::punctuation::Comma) {
+    return nullptr;
+  }
+  static void partial_match(lexer::token::Identifier,
+                            lexer::token::punctuation::AngleBracketOpen,
+                            std::shared_ptr<const tree::StringLiteral>,
+                            lexer::token::punctuation::Comma,
+                            std::shared_ptr<const tree::StringLiteral>) {}
+  static ParseStateReturn
+  match(TokenIterator begin, TokenIterator end,
+        lexer::token::Identifier,
+        lexer::token::punctuation::AngleBracketOpen,
+        std::shared_ptr<const tree::StringLiteral> character,
+        lexer::token::punctuation::Comma,
+        std::shared_ptr<const tree::StringLiteral> sequence,
+        lexer::token::punctuation::AngleBracketClose) {
+    auto result = std::make_shared<tree::EscapeReplacement>();
+    result->character = character->value;
+    result->sequence = sequence->value;
+    return {result, begin, end};
+  }
+};
+
+// Parses option value: either a string literal or an escape replacement
+class TokenSequenceOptionValue
+    : public support::RecursiveParser<TokenSequenceOptionValue, ParseTraits,
+                                      Tracer<TokenSequenceOptionValue>> {
+public:
+  static constexpr const char *name = "TokenSequenceOptionValue";
+  static std::tuple<StringLiteral, EscapeReplacement> *recurse_any() {
+    return nullptr;
+  }
+  static ParseStateReturn match(TokenIterator begin, TokenIterator end,
+                                std::shared_ptr<const tree::StringLiteral> str) {
+    auto result = std::make_shared<tree::TokenSequenceOptionValue>(str->value);
+    return {result, begin, end};
+  }
+  static ParseStateReturn match(TokenIterator begin, TokenIterator end,
+                                std::shared_ptr<tree::EscapeReplacement> esc) {
+    auto result = std::make_shared<tree::TokenSequenceOptionValue>(*esc);
+    return {result, begin, end};
+  }
+};
+
+// Parses a single option like: terminator="\r\n" or escape=replace<"\n", "\r\n ">
 class TokenSequenceOption
     : public support::RecursiveParser<TokenSequenceOption, ParseTraits,
                                       Tracer<TokenSequenceOption>> {
@@ -38,19 +105,19 @@ public:
   static constexpr const char *name = "TokenSequenceOption";
   static void partial_match() {}
   static void partial_match(lexer::token::Identifier) {}
-  static StringLiteral *recurse_one(lexer::token::Identifier,
-                                    lexer::token::punctuation::Equal) {
+  static TokenSequenceOptionValue *recurse_one(lexer::token::Identifier,
+                                               lexer::token::punctuation::Equal) {
     return nullptr;
   }
   static ParseStateReturn match(TokenIterator begin, TokenIterator end,
                                 lexer::token::Identifier identifier,
                                 lexer::token::punctuation::Equal,
-                                std::shared_ptr<const tree::StringLiteral> value) {
-    return {std::make_shared<const tree::TokenSequenceOptionPair>(identifier.name, value->value), begin, end};
+                                std::shared_ptr<tree::TokenSequenceOptionValue> value) {
+    return {std::make_shared<const tree::TokenSequenceOptionPair>(identifier.name, *value), begin, end};
   }
 };
 
-// Parses options block: < terminator="\r\n", escape="\r\n " >
+// Parses options block: < terminator="\r\n", escape=replace<"\n", "\r\n "> >
 class TokenSequenceOptions
     : public support::RecursiveParser<TokenSequenceOptions, ParseTraits,
                                       Tracer<TokenSequenceOptions>> {
@@ -137,10 +204,16 @@ public:
     if (options) {
       auto &opts = *options;
       if (opts.count("terminator")) {
-        seq->terminator = opts.at("terminator");
+        auto &val = opts.at("terminator");
+        if (std::holds_alternative<std::string>(val)) {
+          seq->terminator = std::get<std::string>(val);
+        }
       }
       if (opts.count("escape")) {
-        seq->escape = opts.at("escape");
+        auto &val = opts.at("escape");
+        if (std::holds_alternative<tree::EscapeReplacement>(val)) {
+          seq->escape = std::get<tree::EscapeReplacement>(val);
+        }
       }
     }
     return {seq, begin, end};

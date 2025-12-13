@@ -1,4 +1,5 @@
 #include <networkprotocoldsl/parser/tree/messagesequence.hpp>
+#include <networkprotocoldsl/parser/tree/tokensequenceoptions.hpp>
 #include <networkprotocoldsl/sema/ast/action.hpp>
 #include <networkprotocoldsl/sema/partstowriteactions.hpp>
 #include <networkprotocoldsl/sema/support.hpp>
@@ -83,12 +84,38 @@ class PartSequenceFragmentToWriteActions
 public:
   static constexpr const char *name = "PartSequenceFragmentToWriteActions";
   static void partial_match(){};
+
+  // Helper to apply escape replacement to WriteFromIdentifier actions
+  static void apply_escape_to_actions(std::vector<ast::Action> &actions,
+                                       const parser::tree::EscapeReplacement &escape) {
+    ast::action::EscapeInfo escape_info{escape.character, escape.sequence};
+    for (auto &action : actions) {
+      std::visit([&](auto &a) {
+        using T = std::decay_t<decltype(*a)>;
+        if constexpr (std::is_same_v<T, ast::action::WriteFromIdentifier>) {
+          // Create a new action with the escape info
+          auto new_action = std::make_shared<ast::action::WriteFromIdentifier>();
+          new_action->identifier = a->identifier;
+          new_action->escape = escape_info;
+          a = new_action;
+        }
+      }, action);
+    }
+  }
+
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence) {
     // Parse the token sequence, but add the terminator to the end
     auto full_sequence = unroll_variant(token_sequence->tokens);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
+    
+    // Apply escape replacement if present
+    if (r.node.has_value() && token_sequence->escape.has_value()) {
+      auto actions = std::get<std::vector<ast::Action>>(r.node.value());
+      apply_escape_to_actions(actions, token_sequence->escape.value());
+      return {actions, begin, end};
+    }
     return {r.node, begin, end};
   }
   static ParseStateReturn

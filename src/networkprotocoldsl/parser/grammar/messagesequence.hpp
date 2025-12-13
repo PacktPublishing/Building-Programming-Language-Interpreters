@@ -122,7 +122,10 @@ public:
     if (options) {
       auto &opts = *options;
       if (opts.count("terminator")) {
-        terminator = opts.at("terminator");
+        auto &val = opts.at("terminator");
+        if (std::holds_alternative<std::string>(val)) {
+          terminator = std::get<std::string>(val);
+        }
       }
     }
     return {std::make_shared<const tree::MessageForLoop>(
