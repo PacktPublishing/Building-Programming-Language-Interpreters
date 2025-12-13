@@ -96,6 +96,7 @@ const std::vector<TokenRule> token_rules = {
     {";",
      [](TP_ARGS) { tokens.push_back(token::punctuation::StatementEnd()); }},
     {"\\.", [](TP_ARGS) { tokens.push_back(token::punctuation::Dot()); }},
+    {"\\/\\/[^\\n]*", [](TP_ARGS) {}}, // Single-line comments (// ...)
     {"[ \\t\\n]+", [](TP_ARGS) {}}, // No action for whitespace
     {"[a-zA-Z][a-zA-Z0-9_]*",
      [](TP_ARGS) { tokens.push_back(token::Identifier{std::string(str)}); }}};

@@ -32,6 +32,40 @@ std::string generate_write_expression(
   return access_expr;
 }
 
+// Generate code to apply escape replacement to a string value
+// When serializing, replace escape_char with escape_sequence
+void generate_escape_replacement_code(std::ostringstream &source,
+                                      const std::string &indent,
+                                      const std::string &source_expr,
+                                      const sema::ast::action::EscapeInfo &escape) {
+  std::string escape_char_escaped = OutputContext::escape_string_literal(escape.character);
+  std::string escape_seq_escaped = OutputContext::escape_string_literal(escape.sequence);
+  
+  source << indent << "// Apply escape replacement: " << escape_char_escaped 
+         << " -> " << escape_seq_escaped << "\n";
+  source << indent << "{\n";
+  source << indent << "    std::string temp = " << source_expr << ";\n";
+  source << indent << "    std::string result;\n";
+  source << indent << "    result.reserve(temp.size() * 2); // Estimate\n";
+  source << indent << "    static const char escape_char[] = " << escape_char_escaped << ";\n";
+  source << indent << "    static const char escape_seq[] = " << escape_seq_escaped << ";\n";
+  source << indent << "    constexpr size_t escape_char_len = " << escape.character.size() << ";\n";
+  source << indent << "    constexpr size_t escape_seq_len = " << escape.sequence.size() << ";\n";
+  source << indent << "    size_t pos = 0;\n";
+  source << indent << "    while (pos < temp.size()) {\n";
+  source << indent << "        if (pos + escape_char_len <= temp.size() &&\n";
+  source << indent << "            std::memcmp(temp.data() + pos, escape_char, escape_char_len) == 0) {\n";
+  source << indent << "            result.append(escape_seq, escape_seq_len);\n";
+  source << indent << "            pos += escape_char_len;\n";
+  source << indent << "        } else {\n";
+  source << indent << "            result += temp[pos];\n";
+  source << indent << "            ++pos;\n";
+  source << indent << "        }\n";
+  source << indent << "    }\n";
+  source << indent << "    current_chunk_ = std::move(result);\n";
+  source << indent << "}\n";
+}
+
 // Generate the header declaration for a single message serializer
 void generate_message_serializer_header(std::ostringstream &header,
                                         const WriteTransitionInfo &wt) {
@@ -155,12 +189,20 @@ void generate_message_serializer_next_chunk(std::ostringstream &source,
                 std::string member_name = field.substr(dot_pos + 1);
                 std::string access_expr = "data_." + array_name + "[loop_index_]." + member_name;
                 source << "        // Write from nested identifier: " << field << "\n";
-                source << "        current_chunk_ = " << access_expr << ";\n";
+                if (a->escape.has_value()) {
+                  generate_escape_replacement_code(source, "        ", access_expr, a->escape.value());
+                } else {
+                  source << "        current_chunk_ = " << access_expr << ";\n";
+                }
               } else {
                 std::string access_expr = "data_." + field;
                 std::string write_expr = generate_write_expression(wt.data, field, access_expr);
                 source << "        // Write from identifier: " << field << "\n";
-                source << "        current_chunk_ = " << write_expr << ";\n";
+                if (a->escape.has_value()) {
+                  generate_escape_replacement_code(source, "        ", write_expr, a->escape.value());
+                } else {
+                  source << "        current_chunk_ = " << write_expr << ";\n";
+                }
               }
               source << "        break;\n";
             }
@@ -196,12 +238,17 @@ void generate_message_serializer_next_chunk(std::ostringstream &source,
                       if (la->identifier) {
                         std::string field = la->identifier->name;
                         size_t dot_pos = field.find('.');
+                        std::string access_expr;
                         if (dot_pos != std::string::npos) {
                           std::string member_name = field.substr(dot_pos + 1);
-                          source << "            current_chunk_ = data_." << array_field
-                                 << "[loop_index_]." << member_name << ";\n";
+                          access_expr = "data_." + array_field + "[loop_index_]." + member_name;
                         } else {
-                          source << "            current_chunk_ = data_." << field << ";\n";
+                          access_expr = "data_." + field;
+                        }
+                        if (la->escape.has_value()) {
+                          generate_escape_replacement_code(source, "            ", access_expr, la->escape.value());
+                        } else {
+                          source << "            current_chunk_ = " << access_expr << ";\n";
                         }
                         source << "            break;\n";
                       }
@@ -336,6 +383,7 @@ SerializerResult generate_serializer(const OutputContext &ctx,
   // Source file
   source << "// This file is auto-generated. Do not edit.\n\n";
   source << "#include \"serializer.hpp\"\n";
+  source << "#include <cstring>\n";  // For std::memcmp in escape replacement
   source << "\n";
   source << ctx.open_namespace();
   source << "\n";

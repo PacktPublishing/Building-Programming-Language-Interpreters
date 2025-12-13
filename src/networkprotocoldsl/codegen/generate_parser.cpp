@@ -165,29 +165,72 @@ void generate_message_parser_parse(std::ostringstream &source,
             source << "            break;\n";
           } else if constexpr (std::is_same_v<
                                    T, sema::ast::action::ReadOctetsUntilTerminator>) {
-            // Read until terminator
+            // Read until terminator (with optional escape replacement support)
             std::string escaped =
                 OutputContext::escape_string_literal(a->terminator);
-            source << "            // Read until terminator: " << escaped
-                   << "\n";
+            source << "            // Read until terminator: " << escaped;
+            if (a->escape.has_value()) {
+              source << " (escape: replace " 
+                     << OutputContext::escape_string_literal(a->escape->character)
+                     << " with " 
+                     << OutputContext::escape_string_literal(a->escape->sequence) << ")";
+            }
+            source << "\n";
             source << "            {\n";
             source << "                constexpr size_t term_len = "
                    << a->terminator.size() << ";\n";
             source << "                static const char terminator[] = "
                    << escaped << ";\n";
+            
+            if (a->escape.has_value()) {
+              std::string escape_seq_escaped = OutputContext::escape_string_literal(a->escape->sequence);
+              std::string escape_char_escaped = OutputContext::escape_string_literal(a->escape->character);
+              source << "                constexpr size_t escape_seq_len = " << a->escape->sequence.size() << ";\n";
+              source << "                static const char escape_seq[] = " << escape_seq_escaped << ";\n";
+              source << "                static const char escape_char[] = " << escape_char_escaped << ";\n";
+              source << "                constexpr size_t escape_char_len = " << a->escape->character.size() << ";\n";
+            }
+            
             source << "                \n";
             source << "                // Search for terminator in input\n";
             source << "                size_t pos = 0;\n";
             source << "                bool found = false;\n";
-            source << "                while (pos + term_len <= input.size()) "
-                      "{\n";
-            source << "                    if (std::memcmp(input.data() + pos, "
-                      "terminator, term_len) == 0) {\n";
-            source << "                        found = true;\n";
-            source << "                        break;\n";
-            source << "                    }\n";
-            source << "                    ++pos;\n";
-            source << "                }\n";
+            
+            if (a->escape.has_value()) {
+              // With escape replacement support - more complex loop
+              source << "                while (pos + term_len <= input.size()) {\n";
+              source << "                    // Check for escape sequence first\n";
+              source << "                    if (pos + escape_seq_len <= input.size() &&\n";
+              source << "                        std::memcmp(input.data() + pos, escape_seq, escape_seq_len) == 0) {\n";
+              source << "                        // Found escape - buffer data before it, add replacement char, skip escape\n";
+              if (a->identifier) {
+                source << "                        " << a->identifier->name << "_buffer_.append(input.data(), pos);\n";
+                source << "                        " << a->identifier->name << "_buffer_.append(escape_char, escape_char_len);\n";
+              }
+              source << "                        input.remove_prefix(pos + escape_seq_len);\n";
+              source << "                        total_consumed += pos + escape_seq_len;\n";
+              source << "                        pos = 0; // Reset position for new search\n";
+              source << "                        continue;\n";
+              source << "                    }\n";
+              source << "                    // Check for terminator\n";
+              source << "                    if (std::memcmp(input.data() + pos, terminator, term_len) == 0) {\n";
+              source << "                        found = true;\n";
+              source << "                        break;\n";
+              source << "                    }\n";
+              source << "                    ++pos;\n";
+              source << "                }\n";
+            } else {
+              // Original simple loop without escape handling
+              source << "                while (pos + term_len <= input.size()) {\n";
+              source << "                    if (std::memcmp(input.data() + pos, "
+                        "terminator, term_len) == 0) {\n";
+              source << "                        found = true;\n";
+              source << "                        break;\n";
+              source << "                    }\n";
+              source << "                    ++pos;\n";
+              source << "                }\n";
+            }
+            
             source << "                \n";
             source << "                if (found) {\n";
             if (a->identifier) {

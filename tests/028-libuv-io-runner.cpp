@@ -56,10 +56,30 @@ TEST(LibuvIORunnerTest, Complete) {
          value::Dictionary dict = std::get<value::Dictionary>(args[0]);
          std::cerr << "Member count: " << dict.members->size() << std::endl;
          std::cerr << "Server received request: "
-                   << std::get<value::Octets>(
+                   << *std::get<value::Octets>(
                           dict.members->at("request_target"))
-                          .data.get()
+                          .data
                    << std::endl;
+         // Verify that header values with continuation lines were correctly
+         // parsed (escape sequence replaced)
+         auto headers =
+             std::get<value::DynamicList>(dict.members->at("headers"));
+         for (const auto &header : *headers.values) {
+           auto hdr = std::get<value::Dictionary>(header);
+           auto key = *std::get<value::Octets>(hdr.members->at("key")).data;
+           auto hdr_value =
+               *std::get<value::Octets>(hdr.members->at("value")).data;
+           std::cerr << "Server received header: " << key << " = " << hdr_value
+                     << std::endl;
+           // The Accept header should have the newline preserved from escape
+           if (key == "Accept") {
+             // Should contain embedded newline from continuation line
+             if (hdr_value.find('\n') != std::string::npos) {
+               std::cerr << "Found continuation line in Accept header!"
+                         << std::endl;
+             }
+           }
+         }
          return value::DynamicList{
              {_o("HTTP Response"),
               value::Dictionary{
@@ -67,10 +87,11 @@ TEST(LibuvIORunnerTest, Complete) {
                    {"reason_phrase", _o("Looks good")},
                    {"major_version", 1},
                    {"minor_version", 1},
+                   // Response header with embedded newline - tests write escape
                    {"headers",
                     value::DynamicList{
-                        {value::Dictionary{{{"key", _o("Some-Response")},
-                                            {"value", _o("some value")}}},
+                        {value::Dictionary{{{"key", _o("Content-Type")},
+                                            {"value", _o("text/plain;\n charset=utf-8")}}},
                          value::Dictionary{{{"key", _o("TestHeader")},
                                             {"value", _o("Value")}}}}}}}}}};
        }},
@@ -119,6 +140,9 @@ TEST(LibuvIORunnerTest, Complete) {
            return value::DynamicList{
                {_o("Client Closes Connection"), value::Dictionary{}}};
          }
+         // Request header with embedded newline - tests write escape
+         // The newline in the Accept header value will be escaped as
+         // continuation line on the wire: "application/json\r\n text/html"
          return value::DynamicList{
              {_o("HTTP Request"),
               value::Dictionary{
@@ -129,7 +153,7 @@ TEST(LibuvIORunnerTest, Complete) {
                    {"headers",
                     value::DynamicList{
                         {value::Dictionary{{{"key", _o("Accept")},
-                                            {"value", _o("application/json")}}},
+                                            {"value", _o("application/json\n text/html")}}},
                          value::Dictionary{{{"key", _o("TestHeader")},
                                             {"value", _o("Value")}}}}}}}}}};
        }},

@@ -32,24 +32,67 @@
 <TokenPart> ::=
    <IdentifierReference> |
    <StringLiteral>
+
+// TokenSequenceOption uses identifier=value pattern (like TypeParameter)
+// Valid identifiers are "terminator" and "escape" (contextual, not keywords)
+// - terminator: the string that ends this token sequence (value is StringLiteral)
+// - escape: defines character replacement for escape sequences
+//           value is replace<"char", "sequence"> meaning:
+//           - when parsing: replace "sequence" with "char" in captured value
+//           - when serializing: replace "char" with "sequence" in output
+//           Example: escape=replace<"\n", "\r\n "> for HTTP/1.1 header continuation
+<EscapeReplacement> ::=
+   token::Identifier  // must be "replace"
+   token::punctuation::AngleBracketOpen
+   <StringLiteral>    // the character to represent (e.g., "\n")
+   token::punctuation::Comma
+   <StringLiteral>    // the escape sequence on the wire (e.g., "\r\n ")
+   token::punctuation::AngleBracketClose
+<TokenSequenceOptionValue> ::=
+   <StringLiteral> |
+   <EscapeReplacement>
+<TokenSequenceOption> ::=
+   token::Identifier  // "terminator" or "escape"
+   token::punctuation::Equals
+   <TokenSequenceOptionValue>
+<TokenSequenceOptions> ::=
+   token::punctuation::AngleBracketOpen
+   <TokenSequenceOption>
+   (token::punctuation::Comma <TokenSequenceOption>)*
+   token::punctuation::AngleBracketClose
+
 <TokenSequence> ::=
-   <IdentifierReference> // identifier name must be "tokens"
+   token::keyword::Tokens
+   <TokenSequenceOptions>?
    token::punctuation::CurlyBraceOpen
    <TokenPart>*
    token::punctuation::CurlyBraceClose
+
+// Legacy terminator syntax (for backward compatibility)
 <Terminator> ::=
    <IdentifierReference> // identifier name must be "terminator"
    token::punctuation::CurlyBraceOpen
    <StringLiteral>
-   token::punctuation::CurlyBraceClose // Added missing closing curly brace
+   token::punctuation::CurlyBraceClose
+
+// ForLoopOptions uses the same pattern as TokenSequenceOptions
+// Valid identifier is "terminator" (contextual, not a keyword)
+<ForLoopOptions> ::=
+   token::punctuation::AngleBracketOpen
+   <TokenSequenceOption>
+   (token::punctuation::Comma <TokenSequenceOption>)*
+   token::punctuation::AngleBracketClose
+
 <MessageForLoop> ::=
    token::keyword::For
+   <ForLoopOptions>?
    <IdentifierReference>
    token::keyword::In
    <IdentifierReference>
    token::punctuation::CurlyBraceOpen
    <MessagePart>*
    token::punctuation::CurlyBraceClose
+
 <MessagePart> ::=
    <TokenSequence> |
    <Terminator> |

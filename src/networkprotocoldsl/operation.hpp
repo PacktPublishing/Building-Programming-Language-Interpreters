@@ -33,6 +33,7 @@
 #include <networkprotocoldsl/operation/unarycallback.hpp>
 #include <networkprotocoldsl/operation/writeint32native.hpp>
 #include <networkprotocoldsl/operation/writeoctets.hpp>
+#include <networkprotocoldsl/operation/writeoctetswithescape.hpp>
 #include <networkprotocoldsl/operation/writestaticoctets.hpp>
 
 #include <variant>
@@ -58,10 +59,10 @@ using Operation = std::variant<
     operation::StaticCallable, operation::Subtract,
     operation::TerminateListIfReadAhead, operation::UnaryCallback,
     operation::WriteInt32Native, operation::WriteOctets,
-    operation::WriteStaticOctets, operation::DictionaryInitialize,
-    operation::DictionarySet, operation::DictionaryGet,
-    operation::LexicalPadAsDict, operation::TransitionLookahead,
-    operation::StateMachineOperation>;
+    operation::WriteOctetsWithEscape, operation::WriteStaticOctets,
+    operation::DictionaryInitialize, operation::DictionarySet,
+    operation::DictionaryGet, operation::LexicalPadAsDict,
+    operation::TransitionLookahead, operation::StateMachineOperation>;
 
 } // namespace networkprotocoldsl
 

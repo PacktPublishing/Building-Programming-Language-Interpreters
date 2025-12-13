@@ -95,23 +95,79 @@ public:
   static void partial_match(){};
   static void
       partial_match(std::shared_ptr<const parser::tree::TokenSequence>){};
+
+  // Helper to apply escape replacement to ReadOctetsUntilTerminator actions
+  static void apply_escape_to_actions(std::vector<ast::Action> &actions,
+                                       const parser::tree::EscapeReplacement &escape) {
+    ast::action::EscapeInfo escape_info{escape.character, escape.sequence};
+    for (auto &action : actions) {
+      std::visit([&](auto &a) {
+        using T = std::decay_t<decltype(*a)>;
+        if constexpr (std::is_same_v<T, ast::action::ReadOctetsUntilTerminator>) {
+          // Create a new action with the escape info
+          auto new_action = std::make_shared<ast::action::ReadOctetsUntilTerminator>();
+          new_action->terminator = a->terminator;
+          new_action->identifier = a->identifier;
+          new_action->escape = escape_info;
+          a = new_action;
+        }
+      }, action);
+    }
+  }
+
+  // Helper to process a token sequence with its options (terminator and escape)
+  static ParseStateReturn
+  process_token_sequence(TokenIterator begin, TokenIterator end,
+                         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
+                         const std::string &terminator_str) {
+    // Parse the token sequence, adding the terminator to the end
+    auto full_sequence = unroll_variant(token_sequence->tokens);
+    // Create a StringLiteral for the terminator
+    auto terminator_lit = std::make_shared<parser::tree::StringLiteral>(terminator_str);
+    full_sequence.push_back(terminator_lit);
+    auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
+    
+    // Apply escape replacement if present
+    if (r.node.has_value() && token_sequence->escape.has_value()) {
+      auto actions = std::get<std::vector<ast::Action>>(r.node.value());
+      apply_escape_to_actions(actions, token_sequence->escape.value());
+      return {actions, begin, end};
+    }
+    return {r.node, begin, end};
+  }
+
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
         std::shared_ptr<const parser::tree::Terminator> terminator) {
-    // Parse the token sequence, but add the terminator to the end
-    auto full_sequence = unroll_variant(token_sequence->tokens);
-    full_sequence.push_back(terminator->value);
-    auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
-    return {r.node, begin, end};
+    // We have an external Terminator block - check that token_sequence doesn't have embedded terminator
+    if (token_sequence->terminator.has_value()) {
+      // Error: conflicting terminator definitions - both embedded terminator option
+      // in tokens<terminator="..."> AND explicit terminator { } block.
+      // Use one or the other, not both.
+      return {std::nullopt, begin, end};
+    }
+    // Use the external Terminator block's value
+    return process_token_sequence(begin, end, token_sequence, terminator->value->value);
   }
   static ParseStateReturn
   match(TokenIterator begin, TokenIterator end,
         std::shared_ptr<const parser::tree::TokenSequence> token_sequence,
         EndOfInput) {
-    // Parse the token sequence
+    // If the token sequence has an embedded terminator option, use it
+    if (token_sequence->terminator.has_value()) {
+      return process_token_sequence(begin, end, token_sequence, token_sequence->terminator.value());
+    }
+    // Otherwise, parse without a terminator
     auto full_sequence = unroll_variant(token_sequence->tokens);
     auto r = TokenSequence::parse(full_sequence.cbegin(), full_sequence.cend());
+    
+    // Apply escape replacement if present
+    if (r.node.has_value() && token_sequence->escape.has_value()) {
+      auto actions = std::get<std::vector<ast::Action>>(r.node.value());
+      apply_escape_to_actions(actions, token_sequence->escape.value());
+      return {actions, begin, end};
+    }
     return {r.node, begin, end};
   }
   static void

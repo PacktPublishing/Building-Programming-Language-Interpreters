@@ -21,6 +21,7 @@
 #include <networkprotocoldsl/parser/tree/terminator.hpp>
 #include <networkprotocoldsl/parser/tree/tokenpart.hpp>
 #include <networkprotocoldsl/parser/tree/tokensequence.hpp>
+#include <networkprotocoldsl/parser/tree/tokensequenceoptions.hpp>
 #include <networkprotocoldsl/parser/tree/type.hpp>
 #include <networkprotocoldsl/parser/tree/typeparametermap.hpp>
 #include <networkprotocoldsl/parser/tree/typeparametervalue.hpp>
@@ -39,6 +40,10 @@ using NodeVariant =
                  std::shared_ptr<const tree::TypeParameterMap>,
                  std::shared_ptr<const tree::TokenSequence>,
                  std::shared_ptr<const tree::TokenPart>,
+                 std::shared_ptr<tree::EscapeReplacement>,
+                 std::shared_ptr<tree::TokenSequenceOptionValue>,
+                 std::shared_ptr<const tree::TokenSequenceOptionPair>,
+                 std::shared_ptr<const tree::TokenSequenceOptionsMap>,
                  std::shared_ptr<const tree::Terminator>,
                  std::shared_ptr<const tree::ProtocolDescription>,
                  std::shared_ptr<const tree::MessageSequence>,

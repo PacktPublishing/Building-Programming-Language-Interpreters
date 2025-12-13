@@ -36,9 +36,10 @@ message "HTTP Request" {
         terminator { "\r\n" } 
         for header in headers { 
             tokens { header.key } 
-            terminator { ":" } 
-            tokens { header.value } 
-            terminator { "\r\n"} 
+            terminator { ": " } 
+            // Header values support continuation lines: \r\n followed by space/tab
+            // On wire: "value\r\n continued" becomes "value\n continued" in app
+            tokens<terminator="\r\n", escape=replace<"\n", "\r\n ">> { header.value } 
         } 
         terminator { "\r\n" } 
     } 
@@ -82,9 +83,10 @@ message "HTTP Response" {
         terminator { "\r\n" } 
         for header in headers { 
             tokens { header.key } 
-            terminator { ":" } 
-            tokens { header.value } 
-            terminator { "\r\n"} 
+            terminator { ": " } 
+            // Header values support continuation lines: \r\n followed by space/tab
+            // On wire: "value\r\n continued" becomes "value\n continued" in app
+            tokens<terminator="\r\n", escape=replace<"\n", "\r\n ">> { header.value } 
         } 
         terminator { "\r\n" } 
     } 
