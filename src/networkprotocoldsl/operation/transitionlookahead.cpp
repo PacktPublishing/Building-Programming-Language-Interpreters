@@ -66,14 +66,14 @@ std::string TransitionLookahead::stringify() const {
 std::pair<bool, bool>
 TransitionLookahead::match_condition(InputOutputOperationContext &ctx,
                                      const EOFCondition &) {
-  if (ctx.eof) {
-    return {true, false};
-  } else {
-    if (ctx.buffer.empty()) {
-      return {false, false};
+  if (ctx.buffer.empty()) {
+    if (ctx.eof) {
+      return {true, true};
     } else {
-      return {false, true};
+      return {false, false};
     }
+  } else {
+    return {false, true};
   }
 }
 
